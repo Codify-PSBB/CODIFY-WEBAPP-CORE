@@ -1,0 +1,2 @@
+-- Placeholder migration file.
+-- Add initial users/problems/submissions schema in a follow-up step.

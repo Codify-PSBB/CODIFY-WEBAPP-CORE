@@ -1,0 +1,14 @@
+{
+  "name": "@coding-club/shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/types.ts",
+  "types": "src/types.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

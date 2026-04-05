@@ -1,0 +1,16 @@
+{
+  "name": "coding-club-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "frontend",
+    "worker",
+    "shared"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:worker": "npm --prefix worker run dev",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}

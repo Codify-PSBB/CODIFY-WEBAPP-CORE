@@ -1,0 +1,14 @@
+name = "coding-club-worker"
+main = "src/index.ts"
+compatibility_date = "2026-04-05"
+
+# Replace placeholder IDs before running in Cloudflare.
+[[d1_databases]]
+binding = "DB"
+database_name = "coding-club-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "APP_STATE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
