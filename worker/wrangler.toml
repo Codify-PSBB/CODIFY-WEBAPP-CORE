@@ -2,6 +2,9 @@ name = "coding-club-worker"
 main = "src/index.ts"
 compatibility_date = "2026-04-05"
 
+# Set this with: wrangler secret put CLERK_SECRET_KEY
+# (do not store real secret in this file)
+
 # Replace placeholder IDs before running in Cloudflare.
 [[d1_databases]]
 binding = "DB"

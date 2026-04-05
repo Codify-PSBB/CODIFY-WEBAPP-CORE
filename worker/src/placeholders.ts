@@ -1,14 +1,13 @@
-import type { Env } from "./index";
+import type { RouteHandler } from "./types";
 
-type PlaceholderHandler = (request: Request, env: Env) => Promise<Response>;
-
-function placeholderResponse(endpoint: string): Response {
+function placeholderResponse(endpoint: string, user: { userId: string; email: string; role: string }): Response {
   return Response.json(
     {
       status: "success",
       data: {
         endpoint,
         implemented: false,
+        user,
         message: "Placeholder handler only. Business logic is not implemented yet."
       }
     },
@@ -16,28 +15,52 @@ function placeholderResponse(endpoint: string): Response {
   );
 }
 
-export const leaderboardHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/leaderboard");
+export const leaderboardHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/leaderboard", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
-export const problemsHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/problems");
+export const problemsHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/problems", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
-export const submissionsHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/submissions");
+export const submissionsHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/submissions", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
-export const adminSubmissionsHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/admin/submissions");
+export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/admin/submissions", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
-export const adminReviewHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/admin/review");
+export const adminReviewHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/admin/review", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
-export const adminToggleHandler: PlaceholderHandler = async () => {
-  return placeholderResponse("/api/admin/toggle");
+export const adminToggleHandler: RouteHandler = async (ctx) => {
+  return placeholderResponse("/api/admin/toggle", {
+    userId: ctx.user?.userId ?? "",
+    email: ctx.user?.email ?? "",
+    role: ctx.user?.role ?? "member"
+  });
 };
 
 export function notFoundHandler(): Response {

@@ -1,9 +1,5 @@
 import { handleApiRequest } from "./router";
-
-export interface Env {
-  DB: D1Database;
-  APP_STATE: KVNamespace;
-}
+import type { Env } from "./types";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {

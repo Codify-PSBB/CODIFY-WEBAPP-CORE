@@ -1,5 +1,11 @@
 # Worker
 
-Cloudflare Worker scaffold for `/api/*` routes.
+Cloudflare Worker backend for `/api/*` routes.
 
-Status: scaffold only, business endpoints are not implemented yet.
+## Authentication
+
+- Clerk session tokens are verified in `src/middleware/auth.ts`.
+- Allowed email domain: `@psbbschools.edu.in`.
+- Admin emails are defined in a hardcoded list in `src/middleware/auth.ts`.
+- Set Clerk secret before running:
+  - `wrangler secret put CLERK_SECRET_KEY`
