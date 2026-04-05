@@ -32,3 +32,12 @@ export interface LeaderboardEntry {
   name: string;
   xp: number;
 }
+
+export interface AdminUser {
+  name: string;
+  email: string;
+  role: "member" | "admin";
+  xp: number;
+}
+
+export type AppStatus = "ON" | "OFF";

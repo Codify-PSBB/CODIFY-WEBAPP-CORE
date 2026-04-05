@@ -1,10 +1,12 @@
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
+import { adminToggleHandler } from "./handlers/adminToggle";
+import { adminUsersHandler } from "./handlers/adminUsers";
 import { leaderboardHandler } from "./handlers/leaderboard";
 import { submissionsHandler } from "./handlers/submissions";
 import { requireAdmin } from "./middleware/admin";
 import { requireAuth } from "./middleware/auth";
-import { adminToggleHandler, notFoundHandler, problemsHandler } from "./placeholders";
+import { notFoundHandler, problemsHandler } from "./placeholders";
 import type { Env, Middleware, RequestContext, RouteHandler } from "./types";
 
 interface Route {
@@ -26,6 +28,12 @@ const routes: Route[] = [
     path: "/api/admin/submissions",
     middlewares: adminOnly,
     handler: adminSubmissionsHandler
+  },
+  {
+    method: "GET",
+    path: "/api/admin/users",
+    middlewares: adminOnly,
+    handler: adminUsersHandler
   },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },
   { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler }
