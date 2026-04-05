@@ -1,15 +1,9 @@
+import { resolveAuthToken } from "./auth";
+
 export interface ApiResponse<TData> {
   status: "success" | "error";
   data?: TData;
   message?: string;
-}
-
-function getAuthToken(): string {
-  if (typeof window === "undefined") {
-    return "";
-  }
-
-  return window.localStorage.getItem("auth_token") ?? "";
 }
 
 interface ApiRequestOptions {
@@ -22,7 +16,7 @@ export async function apiRequest<TData>(
   options: ApiRequestOptions = {}
 ): Promise<ApiResponse<TData>> {
   const headers = new Headers();
-  const token = getAuthToken();
+  const token = await resolveAuthToken();
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -37,7 +31,8 @@ export async function apiRequest<TData>(
   const response = await fetch(path, {
     method: options.method ?? "GET",
     headers,
-    body
+    body,
+    credentials: "include"
   });
 
   const payload = (await response.json().catch(() => null)) as ApiResponse<TData> | null;

@@ -38,12 +38,22 @@ export default function AdminDashboardPage() {
     setUsers(Array.isArray(response.data?.users) ? response.data.users : []);
   }
 
+  async function loadAppStatus() {
+    const response = await apiRequest<ToggleResponse>("/api/admin/toggle");
+    const status = response.data?.app_status;
+    if (status === "ON" || status === "OFF") {
+      setAppStatus(status);
+    } else {
+      setAppStatus("UNKNOWN");
+    }
+  }
+
   async function refreshDashboard() {
     setLoading(true);
     setMessage("");
 
     try {
-      await Promise.all([loadPendingSubmissions(), loadUsers()]);
+      await Promise.all([loadPendingSubmissions(), loadUsers(), loadAppStatus()]);
     } catch (error) {
       const text = error instanceof Error ? error.message : "Failed to load admin dashboard.";
       setMessage(text);

@@ -1,13 +1,8 @@
-import { verifyToken } from "@clerk/backend";
+import { createClerkClient, verifyToken } from "@clerk/backend";
 import type { AuthenticatedUser, Middleware } from "../types";
 
 const ALLOWED_EMAIL_DOMAIN = "@psbbschools.edu.in";
-
-// Update this list with real admin emails used by the coding club.
-const ADMIN_EMAILS = new Set<string>([
-  "admin1@psbbschools.edu.in",
-  "admin2@psbbschools.edu.in"
-]);
+const DEFAULT_ADMIN_EMAILS = ["admin1@psbbschools.edu.in", "admin2@psbbschools.edu.in"];
 
 type TokenClaims = Record<string, unknown> & {
   sub?: unknown;
@@ -38,7 +33,7 @@ function readString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
-function extractEmail(claims: TokenClaims): string | null {
+function extractEmailFromClaims(claims: TokenClaims): string | null {
   const direct =
     readString(claims.email) ??
     readString(claims.email_address) ??
@@ -57,8 +52,34 @@ function extractEmail(claims: TokenClaims): string | null {
   return null;
 }
 
-function resolveRole(email: string): "member" | "admin" {
-  return ADMIN_EMAILS.has(email) ? "admin" : "member";
+function getAdminEmailSet(configValue: string | undefined): Set<string> {
+  const configured = (configValue ?? "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+
+  const source = configured.length > 0 ? configured : DEFAULT_ADMIN_EMAILS;
+  return new Set(source);
+}
+
+async function resolveEmail(secretKey: string, userId: string, claims: TokenClaims): Promise<string | null> {
+  const fromClaims = extractEmailFromClaims(claims);
+  if (fromClaims) {
+    return fromClaims.toLowerCase();
+  }
+
+  try {
+    const clerkClient = createClerkClient({ secretKey });
+    const user = await clerkClient.users.getUser(userId);
+
+    const primary =
+      user.emailAddresses.find((emailAddress) => emailAddress.id === user.primaryEmailAddressId) ??
+      user.emailAddresses[0];
+
+    return primary?.emailAddress?.toLowerCase() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export const requireAuth: Middleware = async (ctx) => {
@@ -80,20 +101,25 @@ export const requireAuth: Middleware = async (ctx) => {
   }
 
   const userId = readString(claims.sub);
-  const email = extractEmail(claims)?.toLowerCase();
-
-  if (!userId || !email) {
+  if (!userId) {
     return jsonError("Unable to resolve user identity from Clerk session.", 401);
+  }
+
+  const email = await resolveEmail(secretKey, userId, claims);
+  if (!email) {
+    return jsonError("Unable to resolve user email from Clerk session.", 401);
   }
 
   if (!email.endsWith(ALLOWED_EMAIL_DOMAIN)) {
     return jsonError("Access restricted to @psbbschools.edu.in accounts.", 403);
   }
 
+  const adminEmailSet = getAdminEmailSet(ctx.env.ADMIN_EMAILS);
+
   const user: AuthenticatedUser = {
     userId,
     email,
-    role: resolveRole(email),
+    role: adminEmailSet.has(email) ? "admin" : "member",
     sessionId: readString(claims.sid) ?? undefined
   };
 

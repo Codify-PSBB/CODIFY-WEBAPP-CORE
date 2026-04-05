@@ -1,12 +1,14 @@
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
-import { adminToggleHandler } from "./handlers/adminToggle";
+import { adminToggleGetHandler, adminToggleHandler } from "./handlers/adminToggle";
 import { adminUsersHandler } from "./handlers/adminUsers";
 import { leaderboardHandler } from "./handlers/leaderboard";
+import { problemsHandler } from "./handlers/problems";
 import { submissionsHandler } from "./handlers/submissions";
 import { requireAdmin } from "./middleware/admin";
 import { requireAuth } from "./middleware/auth";
-import { notFoundHandler, problemsHandler } from "./placeholders";
+import { requireAppOnForMembers } from "./middleware/appStatus";
+import { notFoundHandler } from "./placeholders";
 import type { Env, Middleware, RequestContext, RouteHandler } from "./types";
 
 interface Route {
@@ -17,12 +19,13 @@ interface Route {
 }
 
 const authOnly = [requireAuth];
+const authAndAppOn = [requireAuth, requireAppOnForMembers];
 const adminOnly = [requireAuth, requireAdmin];
 
 const routes: Route[] = [
   { method: "GET", path: "/api/leaderboard", middlewares: authOnly, handler: leaderboardHandler },
-  { method: "GET", path: "/api/problems", middlewares: authOnly, handler: problemsHandler },
-  { method: "POST", path: "/api/submissions", middlewares: authOnly, handler: submissionsHandler },
+  { method: "GET", path: "/api/problems", middlewares: authAndAppOn, handler: problemsHandler },
+  { method: "POST", path: "/api/submissions", middlewares: authAndAppOn, handler: submissionsHandler },
   {
     method: "GET",
     path: "/api/admin/submissions",
@@ -35,6 +38,7 @@ const routes: Route[] = [
     middlewares: adminOnly,
     handler: adminUsersHandler
   },
+  { method: "GET", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleGetHandler },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },
   { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler }
 ];
@@ -61,7 +65,7 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
     return Response.json({
       status: "success",
       data: {
-        message: "API router scaffold ready.",
+        message: "API router ready.",
         routes: routes.map((route) => ({ method: route.method, path: route.path }))
       }
     });

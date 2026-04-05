@@ -5,6 +5,10 @@ compatibility_date = "2026-04-05"
 # Set this with: wrangler secret put CLERK_SECRET_KEY
 # (do not store real secret in this file)
 
+[vars]
+# Comma-separated admin emails (lowercase recommended)
+ADMIN_EMAILS = "admin1@psbbschools.edu.in,admin2@psbbschools.edu.in"
+
 # Replace placeholder IDs before running in Cloudflare.
 [[d1_databases]]
 binding = "DB"

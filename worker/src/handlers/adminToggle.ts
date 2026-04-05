@@ -8,6 +8,11 @@ interface ToggleRequestBody {
   status?: unknown;
 }
 
+function normalizeStatus(value: string | null): AppStatus {
+  const upper = (value ?? "ON").trim().toUpperCase();
+  return upper === "OFF" ? "OFF" : "ON";
+}
+
 function parseStatus(value: unknown): AppStatus | null {
   if (typeof value !== "string") {
     return null;
@@ -20,6 +25,27 @@ function parseStatus(value: unknown): AppStatus | null {
 
   return null;
 }
+
+export const adminToggleGetHandler: RouteHandler = async (ctx) => {
+  try {
+    const current = await ctx.env.APP_STATE.get(APP_STATUS_KEY);
+
+    return Response.json({
+      status: "success",
+      data: {
+        app_status: normalizeStatus(current)
+      }
+    });
+  } catch {
+    return Response.json(
+      {
+        status: "error",
+        message: "Failed to read app status."
+      },
+      { status: 500 }
+    );
+  }
+};
 
 export const adminToggleHandler: RouteHandler = async (ctx) => {
   let body: ToggleRequestBody;
