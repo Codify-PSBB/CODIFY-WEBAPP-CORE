@@ -4,13 +4,14 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 
-const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const publishableKey =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 function MissingClerkConfig() {
   return (
     <main>
       <h1>Coding Club Platform</h1>
-      <p>Missing VITE_CLERK_PUBLISHABLE_KEY in frontend environment.</p>
+      <p>Missing Clerk publishable key in frontend environment.</p>
     </main>
   );
 }
