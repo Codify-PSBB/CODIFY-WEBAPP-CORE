@@ -1,9 +1,10 @@
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
+import { leaderboardHandler } from "./handlers/leaderboard";
 import { submissionsHandler } from "./handlers/submissions";
 import { requireAdmin } from "./middleware/admin";
 import { requireAuth } from "./middleware/auth";
-import { adminToggleHandler, leaderboardHandler, notFoundHandler, problemsHandler } from "./placeholders";
+import { adminToggleHandler, notFoundHandler, problemsHandler } from "./placeholders";
 import type { Env, Middleware, RequestContext, RouteHandler } from "./types";
 
 interface Route {
