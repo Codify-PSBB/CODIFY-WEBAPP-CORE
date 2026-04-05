@@ -2,4 +2,5 @@
 
 D1 migration files live in `database/migrations/`.
 
-Status: schema migrations are not implemented yet.
+Current migrations:
+- `0001_initial_schema.sql`: creates `users`, `problems`, and `submissions` tables.
