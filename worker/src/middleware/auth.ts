@@ -1,8 +1,6 @@
 import { createClerkClient, verifyToken } from "@clerk/backend";
+import { isAdminEmail, isAllowedSchoolEmail, normalizeEmail } from "../lib/schoolRules";
 import type { AuthenticatedUser, Middleware } from "../types";
-
-const ALLOWED_EMAIL_DOMAIN = "@psbbschools.edu.in";
-const DEFAULT_ADMIN_EMAILS = ["admin1@psbbschools.edu.in", "admin2@psbbschools.edu.in"];
 
 type TokenClaims = Record<string, unknown> & {
   sub?: unknown;
@@ -52,20 +50,10 @@ function extractEmailFromClaims(claims: TokenClaims): string | null {
   return null;
 }
 
-function getAdminEmailSet(configValue: string | undefined): Set<string> {
-  const configured = (configValue ?? "")
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-
-  const source = configured.length > 0 ? configured : DEFAULT_ADMIN_EMAILS;
-  return new Set(source);
-}
-
 async function resolveEmail(secretKey: string, userId: string, claims: TokenClaims): Promise<string | null> {
   const fromClaims = extractEmailFromClaims(claims);
   if (fromClaims) {
-    return fromClaims.toLowerCase();
+    return normalizeEmail(fromClaims);
   }
 
   try {
@@ -76,7 +64,11 @@ async function resolveEmail(secretKey: string, userId: string, claims: TokenClai
       user.emailAddresses.find((emailAddress) => emailAddress.id === user.primaryEmailAddressId) ??
       user.emailAddresses[0];
 
-    return primary?.emailAddress?.toLowerCase() ?? null;
+    if (!primary?.emailAddress) {
+      return null;
+    }
+
+    return normalizeEmail(primary.emailAddress);
   } catch {
     return null;
   }
@@ -110,16 +102,14 @@ export const requireAuth: Middleware = async (ctx) => {
     return jsonError("Unable to resolve user email from Clerk session.", 401);
   }
 
-  if (!email.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+  if (!isAllowedSchoolEmail(email)) {
     return jsonError("Access restricted to @psbbschools.edu.in accounts.", 403);
   }
-
-  const adminEmailSet = getAdminEmailSet(ctx.env.ADMIN_EMAILS);
 
   const user: AuthenticatedUser = {
     userId,
     email,
-    role: adminEmailSet.has(email) ? "admin" : "member",
+    role: isAdminEmail(email) ? "admin" : "member",
     sessionId: readString(claims.sid) ?? undefined
   };
 

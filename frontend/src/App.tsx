@@ -9,6 +9,7 @@ import {
 import { useEffect } from "react";
 import { NavLink, Route, Routes } from "react-router-dom";
 import { clearAuthTokenProvider, setAuthTokenProvider } from "./lib/auth";
+import SchoolEmailGuard from "./components/SchoolEmailGuard";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import CompetitionPage from "./pages/CompetitionPage";
 import InterpreterPage from "./pages/InterpreterPage";
@@ -73,7 +74,9 @@ export default function App() {
       </SignedOut>
 
       <SignedIn>
-        <SignedInShell />
+        <SchoolEmailGuard>
+          <SignedInShell />
+        </SchoolEmailGuard>
       </SignedIn>
     </main>
   );
