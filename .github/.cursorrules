@@ -1,0 +1,358 @@
+========================================
+AGENT_GUIDE.txt
+AI DEVELOPMENT INSTRUCTIONS
+========================================
+
+
+PURPOSE
+----------------------------------------
+This document defines how AI coding assistants should work on this project.
+
+The goal is to ensure AI tools generate correct code without introducing unnecessary complexity.
+
+
+PROJECT SUMMARY
+----------------------------------------
+This is an internal web platform used by a school coding club to run Python competitions.
+
+Students solve coding problems and submit Python solutions.
+
+Admins manually review submissions and award XP.
+
+The platform runs entirely on Cloudflare infrastructure.
+
+Scale is small (~30 students).
+
+
+TECH STACK (STRICT)
+----------------------------------------
+Frontend
+React with Vite (or Next.js)
+
+Hosting
+Cloudflare Pages
+
+Backend
+Cloudflare Workers (TypeScript)
+
+Database
+Cloudflare D1 (SQLite)
+
+Global State
+Cloudflare KV
+
+Authentication
+Clerk
+
+Python Runtime
+Pyodide running in the browser
+
+
+AI agents must NOT introduce alternative technologies.
+
+
+ABSOLUTE RULES
+----------------------------------------
+
+1. DO NOT introduce new frameworks or infrastructure.
+
+2. DO NOT replace Cloudflare Workers with Express, FastAPI, or any server.
+
+3. DO NOT use Docker, containers, or Kubernetes.
+
+4. DO NOT run Python on the backend.
+
+5. DO NOT introduce websockets unless explicitly requested.
+
+6. DO NOT add unnecessary dependencies.
+
+7. DO NOT create microservices.
+
+8. DO NOT implement complex anti-cheat systems.
+
+9. DO NOT implement automated judging systems.
+
+10. Python execution must always happen in the browser using Pyodide.
+
+
+KEEP THE PROJECT SIMPLE.
+
+
+PROJECT STRUCTURE
+----------------------------------------
+
+The repository should follow this structure.
+
+
+root
+
+frontend/
+React application
+
+worker/
+Cloudflare Worker backend
+
+database/
+D1 migration files
+
+docs/
+project documentation
+
+shared/
+shared types and utilities
+
+
+AI agents should respect this structure.
+
+
+BACKEND RULES
+----------------------------------------
+
+Backend must run entirely inside a Cloudflare Worker.
+
+Use TypeScript.
+
+All API routes should live under:
+
+/api/
+
+
+Example routes
+
+/api/leaderboard
+/api/problems
+/api/submissions
+/api/admin/submissions
+/api/admin/review
+/api/admin/toggle
+
+
+Workers must interact with:
+
+D1 for persistent data
+KV for app toggle state
+
+
+Do NOT store structured data in KV.
+
+
+AUTHENTICATION RULES
+----------------------------------------
+
+Authentication is handled by Clerk.
+
+AI agents must assume the frontend already has a Clerk session.
+
+Worker endpoints must verify the session.
+
+Only allow users whose email ends with:
+
+@psbbschools.edu.in
+
+Reject all other domains.
+
+
+ADMIN ACCESS
+----------------------------------------
+
+Admins are defined by a hardcoded list of email addresses.
+
+Example logic:
+
+If user email exists in ADMIN_EMAILS list
+role = admin
+
+Otherwise
+role = member
+
+
+DATABASE RULES
+----------------------------------------
+
+Database is Cloudflare D1.
+
+Use SQLite syntax.
+
+Tables required:
+
+users
+problems
+submissions
+
+
+Avoid complex joins and keep queries simple.
+
+Use parameterized queries.
+
+
+APP TOGGLE SYSTEM
+----------------------------------------
+
+The application has a global ON/OFF state.
+
+This state is stored in Cloudflare KV.
+
+Key:
+
+app_status
+
+Values:
+
+ON
+OFF
+
+
+Worker must check this before processing requests.
+
+If status = OFF
+
+Members can only access:
+
+/api/leaderboard
+
+Admins bypass this restriction.
+
+
+SUBMISSION FLOW
+----------------------------------------
+
+1. Student submits code.
+
+2. Worker stores submission in D1.
+
+3. Submission status = pending.
+
+4. Admin reviews submission.
+
+5. Admin approves or rejects.
+
+6. If approved:
+User XP increases.
+
+
+SUBMISSION STATUS VALUES
+
+pending
+approved
+rejected
+
+
+FRONTEND RULES
+----------------------------------------
+
+Frontend must be a React application.
+
+The UI should remain minimal.
+
+Students only see two main pages:
+
+Competition page
+Python interpreter page
+
+
+COMPETITION PAGE
+
+Displays:
+
+problem description
+code editor
+submit button
+submission history
+
+
+PYTHON INTERPRETER PAGE
+
+Loads Pyodide.
+
+Runs Python in browser.
+
+No backend execution.
+
+
+PYODIDE RULES
+----------------------------------------
+
+Pyodide is large (~6MB).
+
+AI agents must lazy load Pyodide only when the interpreter page loads.
+
+Do not load Pyodide globally.
+
+
+ADMIN DASHBOARD
+----------------------------------------
+
+Admins should have access to:
+
+submission review queue
+user list
+leaderboard
+competition toggle
+
+
+The dashboard should remain simple.
+
+
+ERROR HANDLING
+----------------------------------------
+
+All API endpoints must return structured JSON responses.
+
+Example success response
+
+status: success
+data: ...
+
+
+Example error response
+
+status: error
+message: ...
+
+
+Do not return raw stack traces.
+
+
+CODE STYLE
+----------------------------------------
+
+Prefer clear readable code.
+
+Avoid clever abstractions.
+
+Prefer explicit logic over magic frameworks.
+
+Keep files small and modular.
+
+
+TESTING
+----------------------------------------
+
+Basic manual testing is sufficient.
+
+No complex testing frameworks are required.
+
+
+WHEN UNSURE
+----------------------------------------
+
+If the AI agent is unsure about a decision:
+
+1. Prefer the simplest solution.
+2. Avoid adding new technologies.
+3. Follow existing architecture.
+
+
+FINAL PRINCIPLE
+----------------------------------------
+
+This project prioritizes:
+
+clarity
+simplicity
+maintainability
+
+NOT complexity.
+
+
+End of AI guide.
