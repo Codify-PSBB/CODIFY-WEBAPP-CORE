@@ -10,7 +10,7 @@
   "scripts": {
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:worker": "npm --prefix worker run dev",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present && node scripts/sync-frontend-dist.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present"
   }
 }
