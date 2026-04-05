@@ -1,22 +1,24 @@
+import { handleApiRequest } from "./router";
+
 export interface Env {
   DB: D1Database;
   APP_STATE: KVNamespace;
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/api/")) {
-      return Response.json(
-        {
-          status: "error",
-          message: "Scaffold only. API endpoints are not implemented yet."
-        },
-        { status: 501 }
-      );
+    if (url.pathname.startsWith("/api")) {
+      return handleApiRequest(request, env);
     }
 
-    return new Response("Coding Club Worker scaffold is ready.", { status: 200 });
+    return Response.json({
+      status: "success",
+      data: {
+        service: "coding-club-worker",
+        message: "Worker is running."
+      }
+    });
   }
 };
