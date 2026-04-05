@@ -9,13 +9,13 @@ compatibility_date = "2026-04-05"
 # Comma-separated admin emails (lowercase recommended)
 ADMIN_EMAILS = "admin1@psbbschools.edu.in,admin2@psbbschools.edu.in"
 
-# Replace placeholder IDs before running in Cloudflare.
 [[d1_databases]]
 binding = "DB"
 database_name = "coding-club-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "be6fea66-8269-467e-a1c4-c95925546c90"
+migrations_dir = "../database/migrations"
 
 [[kv_namespaces]]
 binding = "APP_STATE"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
+id = "964f0061958e4d3f8ba3851f9ba8e727"
+preview_id = "5734318764204f1981c707369eee141a"
