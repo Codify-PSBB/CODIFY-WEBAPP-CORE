@@ -1,0 +1,67 @@
+:root {
+  font-family: sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  margin: 0 auto;
+  max-width: 960px;
+  padding: 16px;
+}
+
+nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+nav a {
+  color: inherit;
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin: 8px 0 4px;
+}
+
+input,
+textarea,
+button {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+button {
+  width: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: #f6f6f6;
+  padding: 8px;
+}
