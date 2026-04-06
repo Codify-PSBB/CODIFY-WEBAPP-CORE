@@ -1,7 +1,6 @@
 # Codify
 
 <p align="center">
-  <img src="logos/2323/4.png" alt="Codify logo mark" width="140" />
   <img src="logos/2323/5.png" alt="Codify wordmark" width="320" />
 </p>
 
