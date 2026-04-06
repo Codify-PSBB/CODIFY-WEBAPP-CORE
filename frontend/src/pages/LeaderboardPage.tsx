@@ -26,15 +26,27 @@ interface LeaderboardResponse {
 
 function topBadge(rank: number) {
   if (rank === 1) {
-    return { label: "Gold", className: "bg-amber-100 text-amber-800 border-amber-200" }
+    return {
+      label: "Gold",
+      className:
+        "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:border-amber-300/40",
+    }
   }
 
   if (rank === 2) {
-    return { label: "Silver", className: "bg-slate-100 text-slate-700 border-slate-200" }
+    return {
+      label: "Silver",
+      className:
+        "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-300/20 dark:text-slate-100 dark:border-slate-300/35",
+    }
   }
 
   if (rank === 3) {
-    return { label: "Bronze", className: "bg-orange-100 text-orange-800 border-orange-200" }
+    return {
+      label: "Bronze",
+      className:
+        "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-500/20 dark:text-orange-200 dark:border-orange-300/35",
+    }
   }
 
   return null
@@ -65,7 +77,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-white/12 dark:bg-slate-900/82 dark:shadow-[0_24px_70px_-36px_rgba(15,23,42,0.85)]">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -85,7 +97,7 @@ export default function LeaderboardPage() {
         </CardHeader>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_24px_70px_-40px_rgba(15,23,42,0.9)]">
         <CardHeader>
           <CardTitle className="text-2xl">Competition Leaderboard</CardTitle>
           <CardDescription>Columns: Rank | Student | XP</CardDescription>
@@ -115,7 +127,11 @@ export default function LeaderboardPage() {
                   return (
                     <TableRow
                       key={`${entry.rank}-${entry.name}`}
-                      className={index % 2 === 0 ? "bg-white/40" : "bg-slate-50/65"}
+                      className={
+                        index % 2 === 0
+                          ? "bg-white/40 hover:bg-white/55 dark:bg-slate-800/45 dark:hover:bg-slate-700/55"
+                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-800/20 dark:hover:bg-slate-700/35"
+                      }
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">

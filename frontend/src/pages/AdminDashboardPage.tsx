@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import { apiRequest } from "@/lib/api"
 import type { AdminUser, AppStatus, PendingSubmission } from "@/types/models"
-import { ArrowRight, Gauge, Power, RefreshCcw, Trophy, Users2 } from "lucide-react"
+import { ArrowRight, Gauge, RefreshCcw, Trophy, Users2 } from "lucide-react"
 
 interface PendingSubmissionsResponse {
   submissions?: PendingSubmission[]
@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-white/12 dark:bg-slate-900/82 dark:shadow-[0_24px_70px_-36px_rgba(15,23,42,0.85)]">
         <CardHeader className="gap-4">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_22px_60px_-36px_rgba(15,23,42,0.92)]">
           <CardContent className="space-y-3 p-6">
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Total Students
@@ -159,7 +159,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_22px_60px_-36px_rgba(15,23,42,0.92)]">
           <CardContent className="space-y-3 p-6">
             <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Total XP
@@ -172,7 +172,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_22px_60px_-36px_rgba(15,23,42,0.92)]">
           <CardContent className="space-y-3 p-6">
             <Badge variant="default" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Pending Submissions
@@ -186,7 +186,7 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_24px_65px_-40px_rgba(15,23,42,0.95)]">
         <CardHeader>
           <CardTitle className="text-2xl">Submissions Table</CardTitle>
           <CardDescription>Pending queue data for fast review triage.</CardDescription>
@@ -210,8 +210,15 @@ export default function AdminDashboardPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                submissions.map((submission) => (
-                  <TableRow key={submission.id}>
+                submissions.map((submission, index) => (
+                  <TableRow
+                    key={submission.id}
+                    className={
+                      index % 2 === 0
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-800/40 dark:hover:bg-slate-700/55"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-800/20 dark:hover:bg-slate-700/35"
+                    }
+                  >
                     <TableCell className="font-medium">#{submission.id}</TableCell>
                     <TableCell>
                       <div>
@@ -232,7 +239,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/12 dark:bg-slate-900/76 dark:shadow-[0_24px_65px_-40px_rgba(15,23,42,0.95)]">
         <CardHeader>
           <CardTitle className="text-2xl">User Table</CardTitle>
           <CardDescription>Users sorted by backend data feed with role and XP visibility.</CardDescription>
@@ -255,8 +262,15 @@ export default function AdminDashboardPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
-                  <TableRow key={user.email}>
+                users.map((user, index) => (
+                  <TableRow
+                    key={user.email}
+                    className={
+                      index % 2 === 0
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-800/40 dark:hover:bg-slate-700/55"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-800/20 dark:hover:bg-slate-700/35"
+                    }
+                  >
                     <TableCell className="font-medium">{user.name}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
