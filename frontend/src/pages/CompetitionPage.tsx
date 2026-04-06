@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import Editor from "@monaco-editor/react"
+import { useTheme } from "@/components/ThemeProvider"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { apiRequest } from "@/lib/api"
 import type { Problem, Submission } from "@/types/models"
-import { Code2, RefreshCcw, Send, Sparkles, TerminalSquare } from "lucide-react"
+import { RefreshCcw, Send, Sparkles, TerminalSquare } from "lucide-react"
 
 interface ProblemsResponse {
   problems?: Problem[]
@@ -38,6 +39,7 @@ function extractSampleSection(description: string, sectionTitle: "sample input" 
 }
 
 export default function CompetitionPage() {
+  const { theme } = useTheme()
   const [problems, setProblems] = useState<Problem[]>([])
   const [problemId, setProblemId] = useState("")
   const [code, setCode] = useState("print('Hello from coding club')")
@@ -46,6 +48,15 @@ export default function CompetitionPage() {
   const [consoleLines, setConsoleLines] = useState<string[]>([
     "Console ready. Submit your solution to see status updates.",
   ])
+
+  const codePanelClassName =
+    theme === "dark"
+      ? "border-slate-800 bg-slate-950 text-slate-100"
+      : "border-slate-200 bg-slate-50 text-slate-900"
+  const consolePanelClassName =
+    theme === "dark"
+      ? "border-slate-800 bg-slate-950 text-emerald-300"
+      : "border-slate-200 bg-slate-50 text-emerald-800"
 
   function pushConsoleLine(line: string) {
     const timestamp = new Date().toLocaleTimeString()
@@ -140,7 +151,7 @@ export default function CompetitionPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/85">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -161,7 +172,7 @@ export default function CompetitionPage() {
       </Card>
 
       {message ? (
-        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft">
+        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft dark:border-white/10 dark:bg-slate-900/80">
           <Sparkles className="size-4" />
           <AlertTitle>Competition Status</AlertTitle>
           <AlertDescription>{message}</AlertDescription>
@@ -170,7 +181,7 @@ export default function CompetitionPage() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
             <CardHeader>
               <CardTitle className="text-2xl">Problem Statement</CardTitle>
               <CardDescription>Select a problem and read the full statement carefully.</CardDescription>
@@ -215,18 +226,18 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
             <CardHeader>
               <CardTitle className="text-2xl">Sample Input / Output</CardTitle>
               <CardDescription>Examples extracted from the problem statement if available.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-border/80 bg-slate-950 p-4 font-mono text-sm text-slate-100">
-                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Sample Input</p>
+              <div className={`rounded-2xl border p-4 font-mono text-sm ${codePanelClassName}`}>
+                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Sample Input</p>
                 <pre className="whitespace-pre-wrap break-words">{sampleInput ?? "No sample input provided."}</pre>
               </div>
-              <div className="rounded-2xl border border-border/80 bg-slate-950 p-4 font-mono text-sm text-emerald-300">
-                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-400">Sample Output</p>
+              <div className={`rounded-2xl border p-4 font-mono text-sm ${consolePanelClassName}`}>
+                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Sample Output</p>
                 <pre className="whitespace-pre-wrap break-words">{sampleOutput ?? "No sample output provided."}</pre>
               </div>
             </CardContent>
@@ -234,7 +245,7 @@ export default function CompetitionPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
             <CardHeader>
               <CardTitle className="text-2xl">Code Editor</CardTitle>
               <CardDescription>Write your Python solution and submit it directly.</CardDescription>
@@ -255,11 +266,11 @@ export default function CompetitionPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Python Code</label>
-                  <div className="overflow-hidden rounded-2xl border border-slate-800 shadow-inner">
+                  <div className={`overflow-hidden rounded-2xl border shadow-inner ${codePanelClassName}`}>
                     <Editor
                       height="420px"
                       language="python"
-                      theme="vs-dark"
+                      theme={theme === "dark" ? "vs-dark" : "vs"}
                       value={code}
                       onChange={(value) => setCode(value ?? "")}
                       options={{
@@ -289,7 +300,7 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
             <CardHeader className="flex-row items-center justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-2xl">
@@ -303,7 +314,7 @@ export default function CompetitionPage() {
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="min-h-[220px] rounded-2xl border border-slate-800 bg-slate-950 p-5 font-mono text-sm leading-6 text-emerald-300 shadow-inner">
+              <div className={`min-h-[220px] rounded-2xl border p-5 font-mono text-sm leading-6 shadow-inner ${consolePanelClassName}`}>
                 <pre className="whitespace-pre-wrap break-words">
                   {consoleLines.length > 0 ? consoleLines.join("\n") : "Console cleared."}
                 </pre>

@@ -35,7 +35,7 @@
   }
 
   body {
-    @apply min-h-screen antialiased bg-background text-foreground;
+    @apply min-h-screen bg-background text-foreground antialiased transition-colors duration-200;
     background-image:
       radial-gradient(circle at top left, rgba(148, 163, 184, 0.14), transparent 35%),
       radial-gradient(circle at top right, rgba(226, 232, 240, 0.8), transparent 28%),
@@ -45,8 +45,16 @@
   button {
     @apply cursor-pointer;
   }
+
   html {
     @apply font-sans;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at top left, rgba(148, 163, 184, 0.12), transparent 30%),
+      radial-gradient(circle at top right, rgba(51, 65, 85, 0.35), transparent 28%),
+      linear-gradient(180deg, #020617 0%, #0f172a 100%);
   }
 }
 

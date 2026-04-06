@@ -1,8 +1,9 @@
 import { SignOutButton, UserButton } from "@clerk/clerk-react"
-import { BarChart3, ClipboardList, Code2, LayoutDashboard, Shield, Trophy } from "lucide-react"
+import { BarChart3, ClipboardList, Code2, LayoutDashboard, Moon, Shield, Sun, Trophy } from "lucide-react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useTheme } from "@/components/ThemeProvider"
 import { cn } from "@/lib/utils"
 
 const navigationItems = [
@@ -16,10 +17,11 @@ const navigationItems = [
 export default function AppLayout() {
   const location = useLocation()
   const isAdminPage = location.pathname.startsWith("/admin")
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm">
+      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/85">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div>
@@ -34,7 +36,11 @@ export default function AppLayout() {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={toggleTheme}>
+              {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </Button>
             <UserButton />
             <SignOutButton>
               <Button variant="outline">Sign Out</Button>
@@ -68,10 +74,9 @@ export default function AppLayout() {
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft">
+      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-white/10 dark:bg-slate-900/35">
         <Outlet />
       </section>
     </div>
   )
 }
-

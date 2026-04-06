@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const publishableKey =
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || import.meta.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -18,15 +19,16 @@ function MissingClerkConfig() {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    {publishableKey ? (
-      <ClerkProvider publishableKey={publishableKey}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ClerkProvider>
-    ) : (
-      <MissingClerkConfig />
-    )}
+    <ThemeProvider>
+      {publishableKey ? (
+        <ClerkProvider publishableKey={publishableKey}>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ClerkProvider>
+      ) : (
+        <MissingClerkConfig />
+      )}
+    </ThemeProvider>
   </React.StrictMode>
 );
-

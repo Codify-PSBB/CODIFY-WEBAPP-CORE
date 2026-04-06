@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { useTheme } from "@/components/ThemeProvider"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,11 +14,21 @@ import { loadPyodideRuntime } from "@/lib/pyodide"
 import { Eraser, Play, TerminalSquare } from "lucide-react"
 
 export default function InterpreterPage() {
+  const { theme } = useTheme()
   const pyodideRef = useRef<PyodideInterface | null>(null)
   const [runtimeStatus, setRuntimeStatus] = useState("Loading Pyodide runtime...")
   const [code, setCode] = useState("print('Interpreter ready')")
   const [output, setOutput] = useState("Console output will appear here.")
   const [running, setRunning] = useState(false)
+
+  const codeAreaClassName =
+    theme === "dark"
+      ? "border-slate-800 bg-slate-950 text-slate-50"
+      : "border-slate-200 bg-slate-50 text-slate-900"
+  const consoleAreaClassName =
+    theme === "dark"
+      ? "border-slate-800 bg-slate-950 text-emerald-300"
+      : "border-slate-200 bg-slate-50 text-emerald-800"
 
   useEffect(() => {
     let active = true
@@ -88,7 +99,7 @@ export default function InterpreterPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/85">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -108,7 +119,7 @@ export default function InterpreterPage() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
           <CardHeader>
             <CardTitle className="text-2xl">Python Code Editor</CardTitle>
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
@@ -116,7 +127,7 @@ export default function InterpreterPage() {
           <CardContent className="space-y-4">
             <Textarea
               id="interpreter-code"
-              className="min-h-[420px] rounded-2xl bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-50"
+              className={`min-h-[420px] rounded-2xl border px-4 py-3 font-mono text-sm leading-6 ${codeAreaClassName}`}
               value={code}
               onChange={(event) => setCode(event.target.value)}
             />
@@ -125,7 +136,7 @@ export default function InterpreterPage() {
                 <Play className="mr-2 size-4" />
                 Run Python
               </Button>
-              <Button variant="outline" size="lg" onClick={() => setOutput("") }>
+              <Button variant="outline" size="lg" onClick={() => setOutput("")}>
                 <Eraser className="mr-2 size-4" />
                 Clear Console
               </Button>
@@ -133,7 +144,7 @@ export default function InterpreterPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <TerminalSquare className="size-5" />
@@ -142,7 +153,7 @@ export default function InterpreterPage() {
             <CardDescription>Stdout, stderr, and returned values appear here after each run.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="min-h-[420px] rounded-2xl border border-slate-800 bg-slate-950 p-5 font-mono text-sm leading-6 text-emerald-300 shadow-inner">
+            <div className={`min-h-[420px] rounded-2xl border p-5 font-mono text-sm leading-6 shadow-inner ${consoleAreaClassName}`}>
               <pre className="whitespace-pre-wrap break-words">{output}</pre>
             </div>
           </CardContent>
