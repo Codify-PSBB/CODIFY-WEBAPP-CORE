@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import { apiRequest } from "@/lib/api"
 import type { AdminUser, AppStatus, PendingSubmission } from "@/types/models"
-import { ArrowRight, Gauge, Power, RefreshCcw, Users2 } from "lucide-react"
+import { ArrowRight, Gauge, Power, RefreshCcw, Trophy, Users2 } from "lucide-react"
 
 interface PendingSubmissionsResponse {
   submissions?: PendingSubmission[]
@@ -33,12 +33,31 @@ interface ToggleResponse {
   app_status?: AppStatus
 }
 
+function formatTimestamp(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return date.toLocaleString()
+}
+
 export default function AdminDashboardPage() {
   const [submissions, setSubmissions] = useState<PendingSubmission[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
   const [appStatus, setAppStatus] = useState<AppStatus | "UNKNOWN">("UNKNOWN")
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+
+  const totalStudents = useMemo(
+    () => users.filter((user) => user.role === "member").length,
+    [users]
+  )
+  const totalXp = useMemo(
+    () => users.reduce((sum, user) => sum + user.xp, 0),
+    [users]
+  )
 
   async function loadPendingSubmissions() {
     const response = await apiRequest<PendingSubmissionsResponse>("/api/admin/submissions")
@@ -92,22 +111,35 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-6">
       <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
-        <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
+        <CardHeader className="gap-4">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
               Admin Control Room
             </p>
             <CardTitle className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Review activity, manage access, and monitor the competition.
+              Review submissions, monitor totals, and manage competition access.
             </CardTitle>
             <CardDescription className="max-w-2xl text-base text-muted-foreground">
-              The dashboard keeps toggles, user rankings, and submission backlog in one modern control surface.
+              This dashboard highlights key metrics first, then gives full table visibility for queue and users.
             </CardDescription>
           </div>
-          <Button variant="outline" size="lg" onClick={() => void refreshDashboard()} disabled={loading}>
-            <RefreshCcw className="mr-2 size-4" />
-            Refresh Dashboard
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant={appStatus === "ON" ? "default" : "secondary"} className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
+              Competition {appStatus}
+            </Badge>
+            <Button variant="outline" size="lg" onClick={() => void refreshDashboard()} disabled={loading}>
+              <RefreshCcw className="mr-2 size-4" />
+              Refresh Dashboard
+            </Button>
+            <Button size="lg" onClick={() => void toggleCompetition("ON")}>Turn ON</Button>
+            <Button variant="outline" size="lg" onClick={() => void toggleCompetition("OFF")}>Turn OFF</Button>
+            <Button asChild variant="secondary" size="lg" className="justify-between rounded-2xl">
+              <Link to="/admin/queue">
+                Open Submission Queue
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          </div>
         </CardHeader>
       </Card>
 
@@ -116,107 +148,94 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
           <CardContent className="space-y-3 p-6">
-            <Badge variant={appStatus === "ON" ? "default" : "secondary"} className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Competition {appStatus}
+            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
+              Total Students
             </Badge>
             <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Power className="size-5 text-primary" />
-              {appStatus}
+              <Users2 className="size-5 text-primary" />
+              {totalStudents}
             </div>
-            <p className="text-sm text-muted-foreground">Members are blocked from competition routes when the app is OFF.</p>
+            <p className="text-sm text-muted-foreground">Students with member role in the current dataset.</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
           <CardContent className="space-y-3 p-6">
             <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Pending Queue
+              Total XP
             </Badge>
             <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Gauge className="size-5 text-primary" />
-              {submissions.length}
+              <Trophy className="size-5 text-primary" />
+              {totalXp}
             </div>
-            <p className="text-sm text-muted-foreground">Submissions currently waiting for review.</p>
+            <p className="text-sm text-muted-foreground">Combined XP across all users shown in leaderboard records.</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
           <CardContent className="space-y-3 p-6">
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Users
+            <Badge variant="default" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
+              Pending Submissions
             </Badge>
             <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Users2 className="size-5 text-primary" />
-              {users.length}
+              <Gauge className="size-5 text-primary-foreground" />
+              {submissions.length}
             </div>
-            <p className="text-sm text-muted-foreground">Tracked members and admins in the leaderboard database.</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-2xl">Competition Toggle</CardTitle>
-            <CardDescription>Turn student access on or off while admins keep full access.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border bg-muted/40 p-4 text-sm text-muted-foreground">
-              Current status: <span className="font-medium text-foreground">{appStatus}</span>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button size="lg" onClick={() => void toggleCompetition("ON")}>Turn ON</Button>
-              <Button variant="outline" size="lg" onClick={() => void toggleCompetition("OFF")}>Turn OFF</Button>
-            </div>
-            <Button asChild variant="secondary" size="lg" className="w-full justify-between rounded-2xl">
-              <Link to="/admin/queue">
-                Open Submission Queue
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
-          <CardHeader>
-            <CardTitle className="text-2xl">Queue Snapshot</CardTitle>
-            <CardDescription>A quick preview of submissions waiting in the dedicated queue page.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Problem</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {submissions.length === 0 ? (
-                  <TableRow>
-                    <TableCell className="py-8 text-muted-foreground" colSpan={3}>
-                      No pending submissions right now.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  submissions.slice(0, 5).map((submission) => (
-                    <TableRow key={submission.id}>
-                      <TableCell className="font-medium">#{submission.id}</TableCell>
-                      <TableCell>{submission.user_name}</TableCell>
-                      <TableCell>{submission.problem_title}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <p className="text-sm text-muted-foreground">Submissions currently awaiting manual review.</p>
           </CardContent>
         </Card>
       </div>
 
       <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
         <CardHeader>
-          <CardTitle className="text-2xl">User List</CardTitle>
-          <CardDescription>Users are sorted by XP to match the competition’s leaderboard view.</CardDescription>
+          <CardTitle className="text-2xl">Submissions Table</CardTitle>
+          <CardDescription>Pending queue data for fast review triage.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Student</TableHead>
+                <TableHead>Problem</TableHead>
+                <TableHead>Submitted At</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {submissions.length === 0 ? (
+                <TableRow>
+                  <TableCell className="py-8 text-muted-foreground" colSpan={5}>
+                    No pending submissions right now.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                submissions.map((submission) => (
+                  <TableRow key={submission.id}>
+                    <TableCell className="font-medium">#{submission.id}</TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-foreground">{submission.user_name}</p>
+                        <p className="text-sm text-muted-foreground">{submission.user_email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{submission.problem_title}</TableCell>
+                    <TableCell>{formatTimestamp(submission.created_at)}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">pending</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
+        <CardHeader>
+          <CardTitle className="text-2xl">User Table</CardTitle>
+          <CardDescription>Users sorted by backend data feed with role and XP visibility.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
