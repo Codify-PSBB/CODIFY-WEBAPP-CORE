@@ -21,7 +21,7 @@ export default function AppLayout() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/85">
+      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-slate-700/80 dark:bg-slate-950/92">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div>
@@ -74,9 +74,10 @@ export default function AppLayout() {
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-white/10 dark:bg-slate-900/35">
+      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-slate-800/80 dark:bg-slate-950/82">
         <Outlet />
       </section>
     </div>
   )
 }
+
