@@ -10,7 +10,7 @@ const publishableKey =
 function MissingClerkConfig() {
   return (
     <main>
-      <h1>Coding Club Platform</h1>
+      <h1>Codify</h1>
       <p>Missing Clerk publishable key in frontend environment.</p>
     </main>
   );
@@ -29,3 +29,4 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     )}
   </React.StrictMode>
 );
+

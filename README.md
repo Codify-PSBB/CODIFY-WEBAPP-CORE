@@ -1,11 +1,11 @@
-# Coding Club Arena
+# Codify
 
 <p align="center">
-  <img src="logos/2323/4.png" alt="Coding Club Arena logo mark" width="140" />
-  <img src="logos/2323/5.png" alt="Coding Club Arena wordmark" width="320" />
+  <img src="logos/2323/4.png" alt="Codify logo mark" width="140" />
+  <img src="logos/2323/5.png" alt="Codify wordmark" width="320" />
 </p>
 
-Coding Club Arena is an internal competition platform for a school coding club. It is designed for small events, fast review cycles, and a very simple student experience.
+Codify is an internal competition platform for a school coding club. It is designed for small events, fast review cycles, and a very simple student experience.
 
 Students solve Python problems, test ideas in a browser-based interpreter, and submit solutions for manual review. Admins check the submissions, award XP, and control when the competition is open.
 
@@ -149,4 +149,5 @@ The app is built and deployed through Cloudflare tooling.
 
 ## In One Sentence
 
-Coding Club Arena is a simple school competition platform that helps students solve Python problems and helps admins review and score them without extra complexity.
+Codify is a simple school competition platform that helps students solve Python problems and helps admins review and score them without extra complexity.
+

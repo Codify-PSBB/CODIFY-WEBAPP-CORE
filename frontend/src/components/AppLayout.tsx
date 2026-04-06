@@ -24,7 +24,7 @@ export default function AppLayout() {
           <div className="flex items-center gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Site</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Coding Club Arena</h1>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Codify</h1>
             </div>
             {isAdminPage ? (
               <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em]">
@@ -74,3 +74,4 @@ export default function AppLayout() {
     </div>
   )
 }
+

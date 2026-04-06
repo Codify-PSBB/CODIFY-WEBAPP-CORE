@@ -45,7 +45,7 @@ export default function App() {
           <CardContent className="space-y-5 p-8 text-center">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Members Only</p>
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight">Coding Club Arena</h1>
+              <h1 className="text-4xl font-semibold tracking-tight">Codify</h1>
               <p className="text-base text-muted-foreground">
                 Sign in with your school account to access competitions, the interpreter, and rankings.
               </p>
@@ -76,3 +76,4 @@ export default function App() {
     </main>
   )
 }
+
