@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
+import Editor from "@monaco-editor/react"
 import { apiRequest } from "@/lib/api"
 import type { Problem, Submission } from "@/types/models"
 import { Code2, RefreshCcw, Send, Sparkles } from "lucide-react"
@@ -233,15 +233,26 @@ export default function CompetitionPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground" htmlFor="submission-code">
-                      Python Code
-                    </label>
-                    <Textarea
-                      id="submission-code"
-                      className="min-h-[320px] rounded-2xl bg-slate-950 px-4 py-3 font-mono text-sm leading-6 text-slate-50"
-                      value={code}
-                      onChange={(event) => setCode(event.target.value)}
-                    />
+                    <label className="text-sm font-medium text-foreground">Python Code</label>
+                    <div className="overflow-hidden rounded-2xl border border-slate-800 shadow-inner">
+                      <Editor
+                        height="360px"
+                        language="python"
+                        theme="vs-dark"
+                        value={code}
+                        onChange={(value) => setCode(value ?? "")}
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 14,
+                          lineNumbers: "on",
+                          autoIndent: "advanced",
+                          tabSize: 2,
+                          insertSpaces: true,
+                          scrollBeyondLastLine: false,
+                          automaticLayout: true,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
 

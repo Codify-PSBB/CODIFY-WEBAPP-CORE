@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.26.0",
     "@fontsource-variable/geist": "^5.2.8",
+    "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
