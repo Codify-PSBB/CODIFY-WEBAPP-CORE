@@ -18,22 +18,26 @@ import {
 } from "@/components/ui/table"
 import { apiRequest } from "@/lib/api"
 import type { LeaderboardEntry } from "@/types/models"
-import { Medal, RefreshCcw, Trophy } from "lucide-react"
+import { Medal, RefreshCcw } from "lucide-react"
 
 interface LeaderboardResponse {
   leaderboard?: LeaderboardEntry[]
 }
 
-function rankBadge(rank: number) {
+function topBadge(rank: number) {
   if (rank === 1) {
-    return "default"
+    return { label: "Gold", className: "bg-amber-100 text-amber-800 border-amber-200" }
   }
 
-  if (rank <= 3) {
-    return "secondary"
+  if (rank === 2) {
+    return { label: "Silver", className: "bg-slate-100 text-slate-700 border-slate-200" }
   }
 
-  return "outline"
+  if (rank === 3) {
+    return { label: "Bronze", className: "bg-orange-100 text-orange-800 border-orange-200" }
+  }
+
+  return null
 }
 
 export default function LeaderboardPage() {
@@ -71,7 +75,7 @@ export default function LeaderboardPage() {
               Leaderboard sorted by XP.
             </CardTitle>
             <CardDescription className="max-w-2xl text-base text-muted-foreground">
-              Track the strongest performers across the current competition.
+              Top 3 students are highlighted with medal badges.
             </CardDescription>
           </div>
           <Button variant="outline" size="lg" onClick={() => void loadLeaderboard()} disabled={loading}>
@@ -81,33 +85,10 @@ export default function LeaderboardPage() {
         </CardHeader>
       </Card>
 
-      {entries.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {entries.slice(0, 3).map((entry) => (
-            <Card key={`spotlight-${entry.rank}-${entry.name}`} className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
-              <CardContent className="space-y-3 p-6">
-                <Badge variant={rankBadge(entry.rank)} className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-                  Top {entry.rank}
-                </Badge>
-                <div>
-                  <p className="text-xl font-semibold tracking-tight">{entry.name}</p>
-                  <p className="text-sm text-muted-foreground">Competition ranking spotlight</p>
-                </div>
-                <div className="flex items-center gap-2 text-3xl font-semibold tracking-tight text-foreground">
-                  <Trophy className="size-5 text-primary" />
-                  {entry.xp}
-                  <span className="text-base text-muted-foreground">XP</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : null}
-
       <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft">
         <CardHeader>
-          <CardTitle className="text-2xl">Full Leaderboard</CardTitle>
-          <CardDescription>Leaderboard table uses the shadcn table component and stays readable on smaller screens.</CardDescription>
+          <CardTitle className="text-2xl">Competition Leaderboard</CardTitle>
+          <CardDescription>Columns: Rank | Student | XP</CardDescription>
         </CardHeader>
         <CardContent>
           {message ? <p className="mb-4 text-sm text-muted-foreground">{message}</p> : null}
@@ -115,7 +96,7 @@ export default function LeaderboardPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Rank</TableHead>
-                <TableHead>Name</TableHead>
+                <TableHead>Student</TableHead>
                 <TableHead className="text-right">XP</TableHead>
               </TableRow>
             </TableHeader>
@@ -127,18 +108,39 @@ export default function LeaderboardPage() {
                   </TableCell>
                 </TableRow>
               ) : (
-                entries.map((entry) => (
-                  <TableRow key={`${entry.rank}-${entry.name}`}>
-                    <TableCell>
-                      <Badge variant={rankBadge(entry.rank)} className="rounded-full px-3 py-1">
-                        <Medal className="mr-1 size-3.5" />
-                        #{entry.rank}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">{entry.name}</TableCell>
-                    <TableCell className="text-right text-lg font-semibold">{entry.xp}</TableCell>
-                  </TableRow>
-                ))
+                entries.map((entry, index) => {
+                  const medal = topBadge(entry.rank)
+                  const topRank = entry.rank <= 3
+
+                  return (
+                    <TableRow
+                      key={`${entry.rank}-${entry.name}`}
+                      className={index % 2 === 0 ? "bg-white/40" : "bg-slate-50/65"}
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={
+                              topRank
+                                ? "text-3xl font-black leading-none tracking-tight text-foreground"
+                                : "text-base font-semibold text-muted-foreground"
+                            }
+                          >
+                            {entry.rank}
+                          </span>
+                          {medal ? (
+                            <Badge className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.14em] ${medal.className}`}>
+                              <Medal className="mr-1 size-3.5" />
+                              {medal.label}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{entry.name}</TableCell>
+                      <TableCell className="text-right text-lg font-semibold tabular-nums">{entry.xp}</TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>
