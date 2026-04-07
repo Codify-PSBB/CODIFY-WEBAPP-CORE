@@ -84,12 +84,15 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
     });
   }
 
-  const match = routes.find((route) => route.path === url.pathname);
-  if (!match) {
+  const pathMatches = routes.filter((route) => route.path === url.pathname);
+  if (pathMatches.length === 0) {
     return notFoundHandler();
   }
 
-  if (request.method !== match.method) {
+  const match = pathMatches.find((route) => route.method === request.method);
+  if (!match) {
+    const allow = Array.from(new Set(pathMatches.map((route) => route.method))).join(", ");
+
     return Response.json(
       {
         status: "error",
@@ -98,7 +101,7 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
       {
         status: 405,
         headers: {
-          Allow: match.method
+          Allow: allow
         }
       }
     );
