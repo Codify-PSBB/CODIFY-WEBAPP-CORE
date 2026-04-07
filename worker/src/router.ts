@@ -1,3 +1,4 @@
+import { adminProblemsGetHandler, adminProblemsPostHandler } from "./handlers/adminProblems";
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
 import { adminToggleGetHandler, adminToggleHandler } from "./handlers/adminToggle";
@@ -37,6 +38,18 @@ const routes: Route[] = [
     path: "/api/admin/users",
     middlewares: adminOnly,
     handler: adminUsersHandler
+  },
+  {
+    method: "GET",
+    path: "/api/admin/problems",
+    middlewares: adminOnly,
+    handler: adminProblemsGetHandler
+  },
+  {
+    method: "POST",
+    path: "/api/admin/problems",
+    middlewares: adminOnly,
+    handler: adminProblemsPostHandler
   },
   { method: "GET", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleGetHandler },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },

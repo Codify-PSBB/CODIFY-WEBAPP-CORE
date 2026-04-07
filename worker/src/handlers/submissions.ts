@@ -81,12 +81,12 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
     const db = createDbClient(ctx.env.DB);
     const userId = await ensureUserId(ctx.env.DB, ctx.user);
 
-    const problem = await db.first<ProblemRow>("SELECT id FROM problems WHERE id = ?", [problemId]);
+    const problem = await db.first<ProblemRow>("SELECT id FROM problems WHERE id = ? AND active = 1", [problemId]);
     if (!problem) {
       return Response.json(
         {
           status: "error",
-          message: "Problem not found."
+          message: "Problem not found or inactive."
         },
         { status: 404 }
       );
@@ -126,3 +126,4 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
     );
   }
 };
+

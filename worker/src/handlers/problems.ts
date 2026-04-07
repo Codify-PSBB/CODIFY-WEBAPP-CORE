@@ -5,6 +5,9 @@ interface ProblemRow {
   id: number;
   title: string;
   description: string;
+  sample_input: string | null;
+  sample_output: string | null;
+  testcases: string | null;
   xp_reward: number;
   active: number;
   created_at: string;
@@ -15,7 +18,19 @@ export const problemsHandler: RouteHandler = async (ctx) => {
     const db = createDbClient(ctx.env.DB);
 
     const problems = await db.all<ProblemRow>(
-      "SELECT id, title, description, xp_reward, active, created_at FROM problems WHERE active = 1 ORDER BY created_at DESC"
+      `SELECT
+        id,
+        title,
+        description,
+        sample_input,
+        sample_output,
+        testcases,
+        xp_reward,
+        active,
+        created_at
+      FROM problems
+      WHERE active = 1
+      ORDER BY created_at DESC, id DESC`
     );
 
     return Response.json({

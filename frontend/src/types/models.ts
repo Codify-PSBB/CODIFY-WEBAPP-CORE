@@ -2,8 +2,12 @@ export interface Problem {
   id: number;
   title: string;
   description: string;
+  sample_input: string | null;
+  sample_output: string | null;
+  testcases: string | null;
   xp_reward: number;
   active: number;
+  created_at?: string;
 }
 
 export interface Submission {
@@ -41,3 +45,13 @@ export interface AdminUser {
 }
 
 export type AppStatus = "ON" | "OFF";
+
+export interface ToggleState {
+  app_status: AppStatus;
+  off_vote_count: number;
+  off_votes_required: number;
+  remaining_off_votes: number;
+  has_voted_off: boolean;
+  turned_off?: boolean;
+  message?: string;
+}

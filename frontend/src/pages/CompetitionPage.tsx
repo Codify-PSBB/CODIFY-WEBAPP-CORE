@@ -51,12 +51,16 @@ export default function CompetitionPage() {
 
   const codePanelClassName =
     theme === "dark"
-      ? "border-slate-800 bg-slate-950 text-slate-100"
+      ? "border-slate-700/80 bg-slate-950 text-slate-50"
       : "border-slate-200 bg-slate-50 text-slate-900"
   const consolePanelClassName =
     theme === "dark"
-      ? "border-slate-800 bg-slate-950 text-emerald-300"
+      ? "border-slate-700/80 bg-slate-950 text-emerald-300"
       : "border-slate-200 bg-slate-50 text-emerald-800"
+  const testcasePanelClassName =
+    theme === "dark"
+      ? "border-slate-700/80 bg-slate-950 text-sky-200"
+      : "border-slate-200 bg-slate-50 text-sky-900"
 
   function pushConsoleLine(line: string) {
     const timestamp = new Date().toLocaleTimeString()
@@ -98,11 +102,12 @@ export default function CompetitionPage() {
   )
 
   const sampleInput = selectedProblem
-    ? extractSampleSection(selectedProblem.description, "sample input")
+    ? selectedProblem.sample_input?.trim() || extractSampleSection(selectedProblem.description, "sample input")
     : null
   const sampleOutput = selectedProblem
-    ? extractSampleSection(selectedProblem.description, "sample output")
+    ? selectedProblem.sample_output?.trim() || extractSampleSection(selectedProblem.description, "sample output")
     : null
+  const testcases = selectedProblem?.testcases?.trim() || null
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -229,7 +234,7 @@ export default function CompetitionPage() {
           <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700/80 dark:bg-slate-950/92">
             <CardHeader>
               <CardTitle className="text-2xl">Sample Input / Output</CardTitle>
-              <CardDescription>Examples extracted from the problem statement if available.</CardDescription>
+              <CardDescription>Examples and testcases provided by admins for this problem.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className={`rounded-2xl border p-4 font-mono text-sm ${codePanelClassName}`}>
@@ -239,6 +244,12 @@ export default function CompetitionPage() {
               <div className={`rounded-2xl border p-4 font-mono text-sm ${consolePanelClassName}`}>
                 <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Sample Output</p>
                 <pre className="whitespace-pre-wrap break-words">{sampleOutput ?? "No sample output provided."}</pre>
+              </div>
+              <div className={`rounded-2xl border p-4 font-mono text-sm ${testcasePanelClassName}`}>
+                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Testcases</p>
+                <pre className="whitespace-pre-wrap break-words">
+                  {testcases ?? "No testcase notes were provided by admins."}
+                </pre>
               </div>
             </CardContent>
           </Card>
@@ -326,4 +337,3 @@ export default function CompetitionPage() {
     </div>
   )
 }
-
