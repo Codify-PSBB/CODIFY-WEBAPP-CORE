@@ -1,7 +1,12 @@
 export const ALLOWED_SCHOOL_EMAIL_DOMAIN = "@psbbschools.edu.in";
 
 // Hardcoded admin list as required by project docs.
-const ADMIN_EMAIL_LIST = ["admin1@psbbschools.edu.in", "admin2@psbbschools.edu.in"];
+const ADMIN_EMAIL_LIST = [
+  's220162@psbbschools.edu.in',
+  's120029@psbbschools.edu.in',
+  's120007@psbbschools.edu.in',
+  's160153@psbbschools.edu.in',
+];
 
 const ADMIN_EMAIL_SET = new Set(ADMIN_EMAIL_LIST.map((email) => email.toLowerCase()));
 
