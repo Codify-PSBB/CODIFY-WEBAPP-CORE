@@ -42,7 +42,7 @@ function parseOptionalString(value: unknown): string | null {
   }
 
   const trimmed = value.trim();
-  return trimmed.length > 0 ? value : null;
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 function parseNonNegativeInt(value: unknown): number | null {

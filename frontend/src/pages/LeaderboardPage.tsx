@@ -129,8 +129,8 @@ export default function LeaderboardPage() {
                       key={`${entry.rank}-${entry.name}`}
                       className={
                         index % 2 === 0
-                          ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/90 dark:hover:bg-slate-800/95"
-                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/88 dark:hover:bg-slate-900/95"
+                          ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/38 dark:hover:bg-sky-500/8"
+                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/30 dark:hover:bg-sky-500/10"
                       }
                     >
                       <TableCell>

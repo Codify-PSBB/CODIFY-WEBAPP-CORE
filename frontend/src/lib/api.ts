@@ -70,7 +70,7 @@ export async function apiRequest<TData>(
   if (!payload) {
     const hint = API_BASE_URL
       ? "Empty or non-JSON response from API server."
-      : "Empty or non-JSON response from /api. Check that /api/* is routed to the Worker or set VITE_API_BASE_URL.";
+      : "Empty or non-JSON response from /api. Ensure /api is proxied/routed to the Worker (Vite proxy or deployment routing), or set VITE_API_BASE_URL at build time.";
 
     throw new Error(hint);
   }

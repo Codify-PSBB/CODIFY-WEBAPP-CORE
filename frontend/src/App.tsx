@@ -1,10 +1,12 @@
-import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/clerk-react"
+import { SignedIn, SignedOut, SignInButton, useAuth, useUser } from "@clerk/clerk-react"
+import type { ReactElement } from "react"
 import { useEffect } from "react"
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { clearAuthTokenProvider, setAuthTokenProvider } from "./lib/auth"
 import SchoolEmailGuard from "./components/SchoolEmailGuard"
+import { isAdminEmail, normalizeEmail } from "./lib/schoolRules"
 import AppLayout from "./components/AppLayout"
 import AdminDashboardPage from "./pages/AdminDashboardPage"
 import CompetitionPage from "./pages/CompetitionPage"
@@ -12,6 +14,21 @@ import InterpreterPage from "./pages/InterpreterPage"
 import LeaderboardPage from "./pages/LeaderboardPage"
 import SubmissionQueuePage from "./pages/SubmissionQueuePage"
 import "./App.css"
+
+function AdminRouteGuard({ children }: { children: ReactElement }) {
+  const { user, isLoaded } = useUser()
+
+  if (!isLoaded) {
+    return null
+  }
+
+  const email = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "")
+  if (!isAdminEmail(email)) {
+    return <Navigate to="/competition" replace />
+  }
+
+  return children
+}
 
 export default function App() {
   const { getToken, isLoaded } = useAuth()
@@ -67,8 +84,8 @@ export default function App() {
               <Route path="competition" element={<CompetitionPage />} />
               <Route path="interpreter" element={<InterpreterPage />} />
               <Route path="leaderboard" element={<LeaderboardPage />} />
-              <Route path="admin" element={<AdminDashboardPage />} />
-              <Route path="admin/queue" element={<SubmissionQueuePage />} />
+              <Route path="admin" element={<AdminRouteGuard><AdminDashboardPage /></AdminRouteGuard>} />
+              <Route path="admin/queue" element={<AdminRouteGuard><SubmissionQueuePage /></AdminRouteGuard>} />
             </Route>
           </Routes>
         </SchoolEmailGuard>

@@ -439,8 +439,8 @@ export default function AdminDashboardPage() {
                     key={problem.id}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/90 dark:hover:bg-slate-800/95"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/88 dark:hover:bg-slate-900/95"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/38 dark:hover:bg-sky-500/8"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/30 dark:hover:bg-sky-500/10"
                     }
                   >
                     <TableCell className="font-medium">#{problem.id}</TableCell>
@@ -494,8 +494,8 @@ export default function AdminDashboardPage() {
                     key={submission.id}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/90 dark:hover:bg-slate-800/95"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/88 dark:hover:bg-slate-900/95"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/38 dark:hover:bg-sky-500/8"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/30 dark:hover:bg-sky-500/10"
                     }
                   >
                     <TableCell className="font-medium">#{submission.id}</TableCell>
@@ -546,8 +546,8 @@ export default function AdminDashboardPage() {
                     key={user.email}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/90 dark:hover:bg-slate-800/95"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/88 dark:hover:bg-slate-900/95"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/38 dark:hover:bg-sky-500/8"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/30 dark:hover:bg-sky-500/10"
                     }
                   >
                     <TableCell className="font-medium">{user.name}</TableCell>

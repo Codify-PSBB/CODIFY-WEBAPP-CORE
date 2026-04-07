@@ -1,27 +1,32 @@
-import { SignOutButton, UserButton } from "@clerk/clerk-react"
+import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
 import { BarChart3, ClipboardList, Code2, LayoutDashboard, Moon, Shield, Sun, Trophy } from "lucide-react"
 import { NavLink, Outlet, useLocation } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules"
 import { useTheme } from "@/components/ThemeProvider"
 import { cn } from "@/lib/utils"
 
 const navigationItems = [
-  { to: "/competition", label: "Competition", icon: Code2 },
-  { to: "/interpreter", label: "Interpreter", icon: ClipboardList },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
-  { to: "/admin", label: "Admin Dashboard", icon: LayoutDashboard },
-  { to: "/admin/queue", label: "Submission Queue", icon: BarChart3 },
+  { to: "/competition", label: "Competition", icon: Code2, adminOnly: false },
+  { to: "/interpreter", label: "Interpreter", icon: ClipboardList, adminOnly: false },
+  { to: "/leaderboard", label: "Leaderboard", icon: Trophy, adminOnly: false },
+  { to: "/admin", label: "Admin Dashboard", icon: LayoutDashboard, adminOnly: true },
+  { to: "/admin/queue", label: "Submission Queue", icon: BarChart3, adminOnly: true },
 ]
 
 export default function AppLayout() {
+  const { user } = useUser()
   const location = useLocation()
-  const isAdminPage = location.pathname.startsWith("/admin")
+  const currentEmail = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "")
+  const isAdmin = currentEmail.length > 0 && isAdminEmail(currentEmail)
+  const isAdminPage = isAdmin && location.pathname.startsWith("/admin")
   const { theme, toggleTheme } = useTheme()
+  const visibleNavigationItems = navigationItems.filter((item) => !item.adminOnly || isAdmin)
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-slate-700/80 dark:bg-slate-950/92">
+      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-sky-300/20 dark:bg-slate-900/72 dark:shadow-[0_28px_72px_-38px_rgba(2,6,23,0.95)]">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div>
@@ -49,8 +54,8 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <nav className="grid gap-3 md:grid-cols-5">
-        {navigationItems.map((item) => {
+      <nav className={cn("grid gap-3", isAdmin ? "md:grid-cols-5" : "md:grid-cols-3")}>
+        {visibleNavigationItems.map((item) => {
           const Icon = item.icon
 
           return (
@@ -74,7 +79,7 @@ export default function AppLayout() {
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-slate-800/80 dark:bg-slate-950/82">
+      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-sky-300/16 dark:bg-slate-900/58 dark:backdrop-blur-md">
         <Outlet />
       </section>
     </div>
