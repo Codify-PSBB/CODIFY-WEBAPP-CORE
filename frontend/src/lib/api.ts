@@ -11,6 +11,21 @@ interface ApiRequestOptions {
   body?: unknown;
 }
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
+
+function buildApiUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return API_BASE_URL ? `${API_BASE_URL}${normalizedPath}` : normalizedPath;
+}
+
+function trimServerText(value: string): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, 200);
+}
+
 export async function apiRequest<TData>(
   path: string,
   options: ApiRequestOptions = {}
@@ -28,22 +43,36 @@ export async function apiRequest<TData>(
     body = JSON.stringify(options.body);
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(buildApiUrl(path), {
     method: options.method ?? "GET",
     headers,
     body,
-    credentials: "include"
+    credentials: API_BASE_URL ? "omit" : "include"
   });
 
-  const payload = (await response.json().catch(() => null)) as ApiResponse<TData> | null;
+  const contentType = response.headers.get("Content-Type") ?? "";
+  const isJson = contentType.toLowerCase().includes("application/json");
+
+  const payload = isJson
+    ? ((await response.json().catch(() => null)) as ApiResponse<TData> | null)
+    : null;
+
+  const rawText = isJson ? "" : await response.text().catch(() => "");
 
   if (!response.ok) {
-    const message = payload?.message ?? `Request failed with status ${response.status}`;
+    const message =
+      payload?.message ??
+      (rawText ? `${trimServerText(rawText)} (status ${response.status})` : `Request failed with status ${response.status}`);
+
     throw new Error(message);
   }
 
   if (!payload) {
-    throw new Error("Empty response from server.");
+    const hint = API_BASE_URL
+      ? "Empty or non-JSON response from API server."
+      : "Empty or non-JSON response from /api. Check that /api/* is routed to the Worker or set VITE_API_BASE_URL.";
+
+    throw new Error(hint);
   }
 
   return payload;
