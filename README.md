@@ -150,4 +150,3 @@ The app is built and deployed through Cloudflare tooling.
 
 Codify is a simple school competition platform that helps students solve Python problems and helps admins review and score them without extra complexity.
 
----
