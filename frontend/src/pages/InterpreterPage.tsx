@@ -99,7 +99,7 @@ export default function InterpreterPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -119,7 +119,7 @@ export default function InterpreterPage() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
           <CardHeader>
             <CardTitle className="text-2xl">Python Code Editor</CardTitle>
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
@@ -144,7 +144,7 @@ export default function InterpreterPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <TerminalSquare className="size-5" />

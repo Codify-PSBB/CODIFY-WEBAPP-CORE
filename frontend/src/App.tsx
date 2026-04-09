@@ -113,7 +113,7 @@ export default function App() {
   if (!isLoaded || !isUserLoaded || statusLoading) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-[1100px] items-center p-8">
-        <Card className="w-full rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+        <Card className="w-full rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
           <CardContent className="space-y-3 p-8">
             <img
               src="/codify-logo.png"
@@ -135,7 +135,7 @@ export default function App() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-[1100px] p-8">
       <SignedOut>
-        <Card className="mx-auto mt-16 max-w-xl rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+        <Card className="mx-auto mt-16 max-w-xl rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
           <CardContent className="space-y-5 p-8 text-center">
             <img
               src="/codify-logo.png"

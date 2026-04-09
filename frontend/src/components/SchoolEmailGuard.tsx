@@ -35,7 +35,7 @@ export default function SchoolEmailGuard({ children }: PropsWithChildren) {
 
   if (invalidEmail) {
     return (
-      <Card className="mx-auto mt-12 max-w-2xl rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+      <Card className="mx-auto mt-12 max-w-2xl rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
         <CardContent className="space-y-4 p-8 text-center">
           <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
             Access Restricted

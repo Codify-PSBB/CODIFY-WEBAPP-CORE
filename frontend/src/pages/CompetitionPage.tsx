@@ -156,7 +156,7 @@ export default function CompetitionPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -177,7 +177,7 @@ export default function CompetitionPage() {
       </Card>
 
       {message ? (
-        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
           <Sparkles className="size-4" />
           <AlertTitle>Competition Status</AlertTitle>
           <AlertDescription>{message}</AlertDescription>
@@ -186,7 +186,7 @@ export default function CompetitionPage() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
             <CardHeader>
               <CardTitle className="text-2xl">Problem Statement</CardTitle>
               <CardDescription>Select a problem and read the full statement carefully.</CardDescription>
@@ -231,7 +231,7 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
             <CardHeader>
               <CardTitle className="text-2xl">Sample Input / Output</CardTitle>
               <CardDescription>Examples and testcases provided by admins for this problem.</CardDescription>
@@ -256,7 +256,7 @@ export default function CompetitionPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
             <CardHeader>
               <CardTitle className="text-2xl">Code Editor</CardTitle>
               <CardDescription>Write your Python solution and submit it directly.</CardDescription>
@@ -311,7 +311,7 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
             <CardHeader className="flex-row items-center justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-2xl">
