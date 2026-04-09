@@ -284,21 +284,21 @@ export default function SubmissionQueuePage() {
 
               <div className="space-y-6 px-6 pb-2">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-500/80 dark:bg-[#111827]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Student</p>
                       <p className="font-semibold text-foreground">{selectedSubmission.user_name}</p>
                       <p className="text-sm text-muted-foreground">{selectedSubmission.user_email}</p>
                     </CardContent>
                   </Card>
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-500/80 dark:bg-[#111827]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Problem</p>
                       <p className="font-semibold text-foreground">{selectedSubmission.problem_title}</p>
                       <p className="text-sm text-muted-foreground">Problem #{selectedSubmission.problem_id}</p>
                     </CardContent>
                   </Card>
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-500/80 dark:bg-[#111827]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Submitted</p>
                       <p className="font-semibold text-foreground">{formatTimestamp(selectedSubmission.created_at)}</p>

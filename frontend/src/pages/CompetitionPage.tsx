@@ -207,13 +207,13 @@ export default function CompetitionPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-slate-600/70 dark:bg-[#020617]">
                   No active problem cards are available yet.
                 </div>
               )}
 
               {selectedProblem ? (
-                <div className="space-y-4 rounded-2xl border border-border/80 bg-muted/30 p-5">
+                <div className="space-y-4 rounded-2xl border border-border/80 bg-muted/30 p-5 dark:border-slate-600/70 dark:bg-[#020617]">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge variant="outline">Problem #{selectedProblem.id}</Badge>
                     <Badge variant="secondary">{selectedProblem.xp_reward} XP reward</Badge>
@@ -224,7 +224,7 @@ export default function CompetitionPage() {
                   </p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground">
+                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-slate-600/70 dark:bg-[#020617]">
                   Select a problem card or enter a problem ID on the right to begin.
                 </div>
               )}
@@ -298,7 +298,7 @@ export default function CompetitionPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
                   <div className="text-sm text-muted-foreground">
                     {selectedProblem ? `Submitting for ${selectedProblem.title}` : "Enter a problem ID before sending."}
                   </div>
