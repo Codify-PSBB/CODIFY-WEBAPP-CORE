@@ -520,7 +520,8 @@ export default function AdminDashboardPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => void archiveProblem(problem.id)}
-                          disabled={Boolean(problemActionLoading)}
+                          disabled={Boolean(problemActionLoading) || appStatus === "ON"}
+                          title={appStatus === "ON" ? "Turn competition OFF before archiving." : undefined}
                         >
                           {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "archive"
                             ? "Archiving..."

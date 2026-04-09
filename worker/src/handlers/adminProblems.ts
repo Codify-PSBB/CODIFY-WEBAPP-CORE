@@ -1,6 +1,8 @@
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
 
+const APP_STATUS_KEY = "app_status";
+
 interface ProblemRow {
   id: number;
   title: string;
@@ -266,6 +268,17 @@ export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
   }
 
   try {
+    const currentStatus = (await ctx.env.APP_STATE.get(APP_STATUS_KEY))?.trim().toUpperCase() ?? "ON";
+    if (currentStatus === "ON") {
+      return Response.json(
+        {
+          status: "error",
+          message: "Competition is ON. Turn it OFF before archiving a problem."
+        },
+        { status: 409 }
+      );
+    }
+
     const db = createDbClient(ctx.env.DB);
 
     const result = await db.run("UPDATE problems SET active = 0 WHERE id = ?", [problemId]);
