@@ -15,14 +15,28 @@ const navigationItems = [
   { to: "/admin/queue", label: "Submission Queue", icon: BarChart3, adminOnly: true },
 ]
 
-export default function AppLayout() {
+interface AppLayoutProps {
+  memberLeaderboardOnly?: boolean
+}
+
+export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutProps) {
   const { user } = useUser()
   const location = useLocation()
   const currentEmail = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "")
   const isAdmin = currentEmail.length > 0 && isAdminEmail(currentEmail)
   const isAdminPage = isAdmin && location.pathname.startsWith("/admin")
   const { theme, toggleTheme } = useTheme()
-  const visibleNavigationItems = navigationItems.filter((item) => !item.adminOnly || isAdmin)
+  const visibleNavigationItems = navigationItems.filter((item) => {
+    if (isAdmin) {
+      return true
+    }
+
+    if (memberLeaderboardOnly) {
+      return item.to === "/leaderboard"
+    }
+
+    return !item.adminOnly
+  })
 
   return (
     <div className="space-y-6">
@@ -54,7 +68,12 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <nav className={cn("grid gap-3", isAdmin ? "md:grid-cols-5" : "md:grid-cols-3")}>
+      <nav
+        className={cn(
+          "grid gap-3",
+          isAdmin ? "md:grid-cols-5" : memberLeaderboardOnly ? "md:grid-cols-1" : "md:grid-cols-3"
+        )}
+      >
         {visibleNavigationItems.map((item) => {
           const Icon = item.icon
 

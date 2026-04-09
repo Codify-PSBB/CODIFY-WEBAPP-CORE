@@ -4,6 +4,7 @@ import {
   adminProblemsGetHandler,
   adminProblemsPostHandler
 } from "./handlers/adminProblems";
+import { appStatusHandler } from "./handlers/appStatus";
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
 import { adminToggleGetHandler, adminToggleHandler } from "./handlers/adminToggle";
@@ -29,6 +30,7 @@ const authAndAppOn = [requireAuth, requireAppOnForMembers];
 const adminOnly = [requireAuth, requireAdmin];
 
 const routes: Route[] = [
+  { method: "GET", path: "/api/status", middlewares: authOnly, handler: appStatusHandler },
   { method: "GET", path: "/api/leaderboard", middlewares: authOnly, handler: leaderboardHandler },
   { method: "GET", path: "/api/problems", middlewares: authAndAppOn, handler: problemsHandler },
   { method: "POST", path: "/api/submissions", middlewares: authAndAppOn, handler: submissionsHandler },
