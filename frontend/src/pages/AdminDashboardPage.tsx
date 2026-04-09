@@ -41,6 +41,13 @@ interface ToggleResponse extends Partial<ToggleState> {
 
 interface ProblemCreateResponse {
   problem?: Problem
+  message?: string
+}
+
+interface ProblemActionResponse {
+  problem?: Problem
+  deleted_problem_id?: number
+  message?: string
 }
 
 interface ProblemFormState {
@@ -83,6 +90,7 @@ export default function AdminDashboardPage() {
   const [hasVotedOff, setHasVotedOff] = useState(false)
   const [loading, setLoading] = useState(false)
   const [postingProblem, setPostingProblem] = useState(false)
+  const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" } | null>(null)
   const [message, setMessage] = useState("")
   const [problemForm, setProblemForm] = useState<ProblemFormState>(defaultProblemForm)
 
@@ -209,9 +217,10 @@ export default function AdminDashboardPage() {
 
       const createdId = response.data?.problem?.id
       setMessage(
-        createdId
-          ? `Problem #${createdId} created successfully.`
-          : "Problem created successfully."
+        response.data?.message ??
+          (createdId
+            ? `Problem #${createdId} created successfully.`
+            : "Problem created successfully.")
       )
       setProblemForm(defaultProblemForm)
       await loadProblems()
@@ -219,6 +228,52 @@ export default function AdminDashboardPage() {
       setMessage(error instanceof Error ? error.message : "Failed to create problem.")
     } finally {
       setPostingProblem(false)
+    }
+  }
+
+  async function archiveProblem(problemId: number) {
+    setProblemActionLoading({ problemId, action: "archive" })
+    setMessage("")
+
+    try {
+      const response = await apiRequest<ProblemActionResponse>("/api/admin/problems/archive", {
+        method: "POST",
+        body: { problem_id: problemId },
+      })
+
+      setMessage(response.data?.message ?? `Problem #${problemId} archived.`)
+      await loadProblems()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to archive problem.")
+    } finally {
+      setProblemActionLoading(null)
+    }
+  }
+
+  async function deleteProblem(problemId: number) {
+    const confirmed = window.confirm(
+      `Delete problem #${problemId}? This is permanent and should only be used for problems with no submissions.`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setProblemActionLoading({ problemId, action: "delete" })
+    setMessage("")
+
+    try {
+      const response = await apiRequest<ProblemActionResponse>("/api/admin/problems/delete", {
+        method: "POST",
+        body: { problem_id: problemId },
+      })
+
+      setMessage(response.data?.message ?? `Problem #${problemId} deleted.`)
+      await loadProblems()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to delete problem.")
+    } finally {
+      setProblemActionLoading(null)
     }
   }
 
@@ -319,7 +374,7 @@ export default function AdminDashboardPage() {
             Post New Competition Problem
           </CardTitle>
           <CardDescription>
-            Add a question with statement, sample input/output, optional testcases notes, and XP reward.
+            Keep exactly one live competition question at a time. Posting as active will automatically archive any currently active question.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -351,7 +406,7 @@ export default function AdminDashboardPage() {
                     checked={problemForm.active}
                     onChange={(event) => setProblemForm((current) => ({ ...current, active: event.target.checked }))}
                   />
-                  Publish Immediately
+                  Set As Active Competition Question
                 </label>
               </div>
             </div>
@@ -424,12 +479,13 @@ export default function AdminDashboardPage() {
                 <TableHead>XP</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {problems.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={5}>
+                  <TableCell className="py-8 text-muted-foreground" colSpan={6}>
                     No problems posted yet.
                   </TableCell>
                 </TableRow>
@@ -453,10 +509,37 @@ export default function AdminDashboardPage() {
                     <TableCell>{problem.xp_reward}</TableCell>
                     <TableCell>
                       <Badge variant={problem.active === 1 ? "default" : "secondary"}>
-                        {problem.active === 1 ? "Active" : "Draft"}
+                        {problem.active === 1 ? "Active" : "Archived"}
                       </Badge>
                     </TableCell>
                     <TableCell>{problem.created_at ? formatTimestamp(problem.created_at) : "-"}</TableCell>
+                    <TableCell className="text-right">
+                      {problem.active === 1 ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => void archiveProblem(problem.id)}
+                          disabled={Boolean(problemActionLoading)}
+                        >
+                          {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "archive"
+                            ? "Archiving..."
+                            : "Archive"}
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => void deleteProblem(problem.id)}
+                          disabled={Boolean(problemActionLoading)}
+                        >
+                          {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "delete"
+                            ? "Deleting..."
+                            : "Delete"}
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}

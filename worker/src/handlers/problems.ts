@@ -30,7 +30,8 @@ export const problemsHandler: RouteHandler = async (ctx) => {
         created_at
       FROM problems
       WHERE active = 1
-      ORDER BY created_at DESC, id DESC`
+      ORDER BY created_at DESC, id DESC
+      LIMIT 1`
     );
 
     return Response.json({

@@ -23,6 +23,14 @@ interface CreateProblemRequestBody {
   active?: unknown;
 }
 
+interface ProblemActionRequestBody {
+  problem_id?: unknown;
+}
+
+interface SubmissionCountRow {
+  count: number;
+}
+
 function parseNonEmptyString(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
@@ -58,6 +66,26 @@ function parseNonNegativeInt(value: unknown): number | null {
   }
 
   return null;
+}
+
+function parsePositiveInt(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    const parsed = Number(value);
+    if (Number.isInteger(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function changedRows(result: D1Result): number {
+  const meta = result.meta as { changes?: number } | undefined;
+  return meta?.changes ?? 0;
 }
 
 function parseActiveFlag(value: unknown): number | null {
@@ -161,6 +189,11 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
   try {
     const db = createDbClient(ctx.env.DB);
 
+    // Enforce a single live competition question at a time.
+    if (active === 1) {
+      await db.run("UPDATE problems SET active = 0 WHERE active = 1");
+    }
+
     await db.run(
       `INSERT INTO problems (title, description, sample_input, sample_output, testcases, xp_reward, active)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -186,7 +219,11 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
       {
         status: "success",
         data: {
-          problem: created
+          problem: created,
+          message:
+            active === 1
+              ? "Competition question posted and set as active. Any previous active question was archived."
+              : "Competition question saved as archived/inactive."
         }
       },
       { status: 201 }
@@ -196,6 +233,179 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
       {
         status: "error",
         message: "Failed to create problem."
+      },
+      { status: 500 }
+    );
+  }
+};
+
+export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
+  let body: ProblemActionRequestBody;
+
+  try {
+    body = (await ctx.request.json()) as ProblemActionRequestBody;
+  } catch {
+    return Response.json(
+      {
+        status: "error",
+        message: "Invalid JSON body."
+      },
+      { status: 400 }
+    );
+  }
+
+  const problemId = parsePositiveInt(body.problem_id);
+  if (!problemId) {
+    return Response.json(
+      {
+        status: "error",
+        message: "`problem_id` must be a positive integer."
+      },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const db = createDbClient(ctx.env.DB);
+
+    const result = await db.run("UPDATE problems SET active = 0 WHERE id = ?", [problemId]);
+    if (changedRows(result) === 0) {
+      return Response.json(
+        {
+          status: "error",
+          message: "Problem not found."
+        },
+        { status: 404 }
+      );
+    }
+
+    const problem = await db.first<ProblemRow>(
+      `SELECT
+        id,
+        title,
+        description,
+        sample_input,
+        sample_output,
+        testcases,
+        xp_reward,
+        active,
+        created_at
+      FROM problems
+      WHERE id = ?`,
+      [problemId]
+    );
+
+    return Response.json({
+      status: "success",
+      data: {
+        problem,
+        message: `Problem #${problemId} archived.`
+      }
+    });
+  } catch {
+    return Response.json(
+      {
+        status: "error",
+        message: "Failed to archive problem."
+      },
+      { status: 500 }
+    );
+  }
+};
+
+export const adminProblemsDeleteHandler: RouteHandler = async (ctx) => {
+  let body: ProblemActionRequestBody;
+
+  try {
+    body = (await ctx.request.json()) as ProblemActionRequestBody;
+  } catch {
+    return Response.json(
+      {
+        status: "error",
+        message: "Invalid JSON body."
+      },
+      { status: 400 }
+    );
+  }
+
+  const problemId = parsePositiveInt(body.problem_id);
+  if (!problemId) {
+    return Response.json(
+      {
+        status: "error",
+        message: "`problem_id` must be a positive integer."
+      },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const db = createDbClient(ctx.env.DB);
+
+    const problem = await db.first<ProblemRow>(
+      `SELECT
+        id,
+        title,
+        description,
+        sample_input,
+        sample_output,
+        testcases,
+        xp_reward,
+        active,
+        created_at
+      FROM problems
+      WHERE id = ?`,
+      [problemId]
+    );
+
+    if (!problem) {
+      return Response.json(
+        {
+          status: "error",
+          message: "Problem not found."
+        },
+        { status: 404 }
+      );
+    }
+
+    const submissionCount = await db.first<SubmissionCountRow>(
+      "SELECT COUNT(*) AS count FROM submissions WHERE problem_id = ?",
+      [problemId]
+    );
+
+    if ((submissionCount?.count ?? 0) > 0) {
+      return Response.json(
+        {
+          status: "error",
+          message: "Problem has submissions and cannot be deleted. Archive it instead."
+        },
+        { status: 409 }
+      );
+    }
+
+    const result = await db.run("DELETE FROM problems WHERE id = ?", [problemId]);
+    if (changedRows(result) === 0) {
+      return Response.json(
+        {
+          status: "error",
+          message: "Problem not found."
+        },
+        { status: 404 }
+      );
+    }
+
+    return Response.json({
+      status: "success",
+      data: {
+        deleted_problem_id: problemId,
+        message: `Problem #${problemId} deleted.`
+      }
+    });
+  } catch {
+    return Response.json(
+      {
+        status: "error",
+        message: "Failed to delete problem."
       },
       { status: 500 }
     );
