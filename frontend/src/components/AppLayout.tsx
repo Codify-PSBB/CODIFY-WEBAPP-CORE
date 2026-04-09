@@ -43,6 +43,12 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
       <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
+            <img
+              src="/codify-logo.png"
+              alt="Codify logo"
+              className="size-12 rounded-xl border border-border object-cover shadow-sm"
+              loading="eager"
+            />
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Site</p>
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">Codify</h1>
