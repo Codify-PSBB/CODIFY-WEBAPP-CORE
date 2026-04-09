@@ -77,7 +77,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-slate-700/80 dark:bg-slate-950/94 dark:shadow-[0_24px_70px_-34px_rgba(2,6,23,0.95)]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
         </CardHeader>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700/80 dark:bg-slate-950/92 dark:shadow-[0_24px_70px_-34px_rgba(2,6,23,0.95)]">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
         <CardHeader>
           <CardTitle className="text-2xl">Competition Leaderboard</CardTitle>
           <CardDescription>Columns: Rank | Student | XP</CardDescription>
@@ -129,8 +129,8 @@ export default function LeaderboardPage() {
                       key={`${entry.rank}-${entry.name}`}
                       className={
                         index % 2 === 0
-                          ? "bg-white/40 hover:bg-white/55 dark:bg-slate-900/38 dark:hover:bg-sky-500/8"
-                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-slate-950/30 dark:hover:bg-sky-500/10"
+                          ? "bg-white/40 hover:bg-white/55 dark:bg-[#1e2937] dark:hover:bg-slate-700/70"
+                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#1e2937] dark:hover:bg-slate-700/70"
                       }
                     >
                       <TableCell>

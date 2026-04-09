@@ -26,7 +26,7 @@ export default function AppLayout() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft backdrop-blur-sm dark:border-sky-300/20 dark:bg-slate-900/72 dark:shadow-[0_28px_72px_-38px_rgba(2,6,23,0.95)]">
+      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div>
@@ -34,7 +34,7 @@ export default function AppLayout() {
               <h1 className="text-3xl font-semibold tracking-tight text-foreground">Codify</h1>
             </div>
             {isAdminPage ? (
-              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em]">
+              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-violet-400/20 dark:text-violet-400 dark:border-violet-400/30">
                 <Shield className="mr-1 size-3.5" />
                 Admin
               </Badge>
@@ -46,7 +46,7 @@ export default function AppLayout() {
               {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
             </Button>
-            <UserButton />
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-violet-400" } }} />
             <SignOutButton>
               <Button variant="outline">Sign Out</Button>
             </SignOutButton>
@@ -79,7 +79,7 @@ export default function AppLayout() {
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-sky-300/16 dark:bg-slate-900/58 dark:backdrop-blur-md">
+      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-slate-700 dark:bg-[#0f172a]">
         <Outlet />
       </section>
     </div>

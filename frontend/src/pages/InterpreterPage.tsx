@@ -23,11 +23,11 @@ export default function InterpreterPage() {
 
   const codeAreaClassName =
     theme === "dark"
-      ? "border-slate-800 bg-slate-950 text-slate-50"
+      ? "border-slate-700 bg-[#1e2937] text-slate-100"
       : "border-slate-200 bg-slate-50 text-slate-900"
   const consoleAreaClassName =
     theme === "dark"
-      ? "border-slate-800 bg-slate-950 text-emerald-300"
+      ? "border-slate-700 bg-[#0f172a] text-[#4ade80]"
       : "border-slate-200 bg-slate-50 text-emerald-800"
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function InterpreterPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/85">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -119,7 +119,7 @@ export default function InterpreterPage() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
           <CardHeader>
             <CardTitle className="text-2xl">Python Code Editor</CardTitle>
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
@@ -144,7 +144,7 @@ export default function InterpreterPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-white/10 dark:bg-slate-900/85">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <TerminalSquare className="size-5" />

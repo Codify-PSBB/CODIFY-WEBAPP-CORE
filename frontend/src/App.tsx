@@ -44,7 +44,7 @@ export default function App() {
   if (!isLoaded) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-[1100px] items-center p-8">
-        <Card className="w-full rounded-[28px] border-white/70 bg-white/85 shadow-soft backdrop-blur-sm">
+        <Card className="w-full rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
           <CardContent className="space-y-3 p-8">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Authentication</p>
             <h1 className="text-3xl font-semibold tracking-tight">Loading access...</h1>
@@ -58,7 +58,7 @@ export default function App() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-[1100px] p-8">
       <SignedOut>
-        <Card className="mx-auto mt-16 max-w-xl rounded-[28px] border-white/70 bg-white/90 shadow-soft backdrop-blur-sm">
+        <Card className="mx-auto mt-16 max-w-xl rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-700 dark:bg-[#1e2937]">
           <CardContent className="space-y-5 p-8 text-center">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Members Only</p>
             <div className="space-y-2">
