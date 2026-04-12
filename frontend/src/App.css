@@ -129,7 +129,7 @@
 .dark {
   --background: #000000;
   --foreground: #ffffff;
-  --card: #0f0f0f;
+  --card: #1a1a1a;
   --card-foreground: #ffffff;
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
@@ -139,7 +139,7 @@
   --secondary-foreground: #ffffff;
   --muted: #404040;
   --muted-foreground: #9ca3af;
-  --accent: #374151;
+  --accent: #262626;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
   --border: #374151;
