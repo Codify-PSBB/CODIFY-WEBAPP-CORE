@@ -39,8 +39,8 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
   })
 
   return (
-    <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-card">
+    <div className="section-spacing">
+      <header className="card-modern">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -51,7 +51,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
             />
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Site</p>
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">Codify</h1>
+              <h1 className="heading-2 text-foreground">Codify</h1>
             </div>
             {isAdminPage ? (
               <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-violet-400/20 dark:text-violet-400 dark:border-violet-400/30">
@@ -62,13 +62,13 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" onClick={toggleTheme}>
+            <Button variant="outline" className="btn-outline" onClick={toggleTheme}>
               {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
             </Button>
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-violet-400" } }} />
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
             <SignOutButton>
-              <Button variant="outline">Sign Out</Button>
+              <Button variant="outline" className="btn-outline">Sign Out</Button>
             </SignOutButton>
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
 
       <nav
         className={cn(
-          "grid gap-3",
+          "grid gap-4",
           isAdmin ? "md:grid-cols-5" : memberLeaderboardOnly ? "md:grid-cols-1" : "md:grid-cols-3"
         )}
       >
@@ -93,7 +93,8 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
                     variant: isActive ? "default" : "outline",
                     size: "lg",
                   }),
-                  "h-14 justify-start rounded-2xl px-4 shadow-soft"
+                  "h-14 justify-start rounded-xl px-4 hover-lift",
+                  isActive ? "nav-item-active" : "nav-item"
                 )
               }
             >
@@ -104,7 +105,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-border dark:bg-card">
+      <section className="card-modern p-8">
         <Outlet />
       </section>
     </div>
