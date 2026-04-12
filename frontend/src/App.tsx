@@ -112,53 +112,51 @@ export default function App() {
 
   if (!isLoaded || !isUserLoaded || statusLoading) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-[1100px] items-center justify-center p-6 bg-[#000000]">
-        <div className="cf-card w-full max-w-md">
-          <div className="flex flex-col items-center gap-4 text-center">
+      <main className="mx-auto flex min-h-screen w-full max-w-[1100px] items-center p-8">
+        <Card className="card-modern w-full max-w-md mx-auto">
+          <CardContent className="space-y-3 p-8">
             <img
               src="/codify-logo.png"
               alt="Codify logo"
-              className="h-12 w-12 rounded-md border border-[#262626]"
+              className="h-12 w-12 rounded-xl border border-border object-cover"
               loading="eager"
             />
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-wider text-[#a3a3a3]">Authentication</p>
-              <h1 className="text-xl font-semibold text-white">Loading access...</h1>
-              <p className="text-sm text-[#737373]">
-                {statusLoading ? "Checking app status for your account." : "Preparing your dashboard and Clerk session."}
-              </p>
-            </div>
-          </div>
-        </div>
+            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Authentication</p>
+            <h1 className="text-3xl font-semibold tracking-tight">Loading access...</h1>
+            <p className="text-muted-foreground">
+              {statusLoading ? "Checking app status for your account." : "Preparing your dashboard and Clerk session."}
+            </p>
+          </CardContent>
+        </Card>
       </main>
     )
   }
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[1100px] bg-[#000000]">
+    <main className="mx-auto min-h-screen w-full max-w-[1100px] p-8">
       <SignedOut>
-        <div className="cf-card mx-auto mt-16 max-w-xl">
-          <div className="flex flex-col items-center gap-6 text-center">
+        <Card className="card-modern mx-auto mt-16 max-w-xl">
+          <CardContent className="space-y-5 p-8 text-center">
             <img
               src="/codify-logo.png"
               alt="Codify logo"
-              className="mx-auto h-16 w-16 rounded-md border border-[#262626]"
+              className="mx-auto h-16 w-16 rounded-2xl border border-border object-cover"
               loading="eager"
             />
+            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Members Only</p>
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-wider text-[#a3a3a3]">Members Only</p>
-              <h1 className="text-2xl font-semibold text-white">Codify</h1>
-              <p className="text-sm text-[#737373]">
+              <h1 className="text-4xl font-semibold tracking-tight">Codify</h1>
+              <p className="text-base text-muted-foreground">
                 Sign in with your school account to access competitions, the interpreter, and rankings.
               </p>
             </div>
             <SignInButton mode="modal">
-              <button className="cf-btn-primary w-full text-sm">
+              <Button size="lg" className="btn-primary w-full">
                 Sign In With Clerk
-              </button>
+              </Button>
             </SignInButton>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </SignedOut>
 
       <SignedIn>

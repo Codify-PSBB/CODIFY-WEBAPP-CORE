@@ -39,80 +39,75 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
   })
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Top Navigation - Minimal height, high contrast */}
-      <header className="border-b border-[#262626] bg-[#000000]">
-        <div className="flex items-center justify-between px-6 py-4">
+    <div className="section-spacing">
+      <header className="card-modern">
+        <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <img
               src="/codify-logo.png"
               alt="Codify logo"
-              className="h-8 w-8 rounded-md border border-[#262626]"
+              className="size-12 rounded-xl border border-border object-cover shadow-sm"
               loading="eager"
             />
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#a3a3a3] uppercase tracking-wider">Site</span>
-              <h1 className="text-xl font-semibold text-white">Codify</h1>
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Site</p>
+              <h1 className="heading-2 text-foreground">Codify</h1>
             </div>
             {isAdminPage ? (
-              <span className="cf-badge-primary ml-2">
-                <Shield className="mr-1 inline h-3 w-3" />
+              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-violet-400/20 dark:text-violet-400 dark:border-violet-400/30">
+                <Shield className="mr-1 size-3.5" />
                 Admin
-              </span>
+              </Badge>
             ) : null}
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              className="cf-btn-secondary text-sm"
-              onClick={toggleTheme}
-            >
-              {theme === "dark" ? <Sun className="mr-2 inline h-4 w-4" /> : <Moon className="mr-2 inline h-4 w-4" />}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" className="btn-outline" onClick={toggleTheme}>
+              {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
               {theme === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-[#ff6b00]" } }} />
+            </Button>
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
             <SignOutButton>
-              <button className="cf-btn-primary text-sm">Sign Out</button>
+              <Button variant="outline" className="btn-outline">Sign Out</Button>
             </SignOutButton>
           </div>
         </div>
       </header>
 
-      {/* Secondary Navigation - Tabs style */}
-      <nav className="border-b border-[#262626] bg-[#0a0a0a]">
-        <div className={cn(
-          "flex px-6",
-          isAdmin ? "gap-8" : memberLeaderboardOnly ? "justify-center" : "gap-8"
-        )}>
-          {visibleNavigationItems.map((item) => {
-            const Icon = item.icon
-            const isActive = location.pathname === item.to || location.pathname.startsWith(item.to)
+      <nav
+        className={cn(
+          "grid gap-4",
+          isAdmin ? "md:grid-cols-5" : memberLeaderboardOnly ? "md:grid-cols-1" : "md:grid-cols-3"
+        )}
+      >
+        {visibleNavigationItems.map((item) => {
+          const Icon = item.icon
 
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive: active }) =>
-                  cn(
-                    "flex items-center gap-2 py-4 text-sm font-medium transition-colors",
-                    active 
-                      ? "cf-nav-item-active border-b-2 border-[#ff6b00] text-white" 
-                      : "cf-nav-item"
-                  )
-                }
-              >
-                <Icon className="h-4 w-4" />
-                {item.label}
-              </NavLink>
-            )
-          })}
-        </div>
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                cn(
+                  buttonVariants({
+                    variant: isActive ? "default" : "outline",
+                    size: "lg",
+                  }),
+                  "h-14 justify-start rounded-xl px-4 hover-lift",
+                  isActive ? "nav-item-active" : "nav-item"
+                )
+              }
+            >
+              <Icon className="mr-2 size-4" />
+              {item.label}
+            </NavLink>
+          )
+        })}
       </nav>
 
-      {/* Main Content Area */}
-      <main className="px-6 pb-6">
+      <section className="card-modern p-8">
         <Outlet />
-      </main>
+      </section>
     </div>
   )
 }
