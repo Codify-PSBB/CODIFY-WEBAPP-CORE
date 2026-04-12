@@ -40,7 +40,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
 
   return (
     <div className="space-y-6">
-      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <header className="rounded-[28px] border border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-card">
         <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -104,7 +104,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
         })}
       </nav>
 
-      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-slate-500/80 dark:bg-[#020617]">
+      <section className="rounded-[28px] border border-white/70 bg-white/40 p-8 shadow-soft dark:border-border dark:bg-card">
         <Outlet />
       </section>
     </div>
