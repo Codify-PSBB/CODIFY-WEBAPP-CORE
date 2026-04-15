@@ -12,6 +12,8 @@ import { isAdminEmail, normalizeEmail } from "./lib/schoolRules"
 import AppLayout from "./components/AppLayout"
 import AdminDashboardPage from "./pages/AdminDashboardPage"
 import CompetitionPage from "./pages/CompetitionPage"
+import CompetitionEntryPage from "./pages/CompetitionEntryPage"
+import CompetitionArenaPage from "./pages/CompetitionArenaPage"
 import InterpreterPage from "./pages/InterpreterPage"
 import LeaderboardPage from "./pages/LeaderboardPage"
 import SubmissionQueuePage from "./pages/SubmissionQueuePage"
@@ -168,7 +170,15 @@ export default function App() {
                 path="competition"
                 element={
                   <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-                    <CompetitionPage />
+                    <CompetitionEntryPage />
+                  </MemberAppOnGuard>
+                }
+              />
+              <Route
+                path="competition/arena"
+                element={
+                  <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
+                    <CompetitionArenaPage />
                   </MemberAppOnGuard>
                 }
               />

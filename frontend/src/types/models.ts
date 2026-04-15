@@ -1,3 +1,10 @@
+export interface TestCase {
+  id: number;
+  input: string;
+  output: string;
+  is_sample: boolean;
+}
+
 export interface Problem {
   id: number;
   title: string;
@@ -8,6 +15,19 @@ export interface Problem {
   xp_reward: number;
   active: number;
   created_at?: string;
+  time_limit_minutes?: number;
+  test_cases?: TestCase[];
+}
+
+export interface CompetitionEntry {
+  id: number;
+  user_id: number;
+  problem_id: number;
+  start_time: string;
+  end_time: string | null;
+  time_limit_minutes: number;
+  status: "active" | "completed" | "expired";
+  remaining_seconds: number;
 }
 
 export interface Submission {

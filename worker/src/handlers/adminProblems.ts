@@ -13,6 +13,7 @@ interface ProblemRow {
   xp_reward: number;
   active: number;
   created_at: string;
+  time_limit_minutes: number | null;
 }
 
 interface CreateProblemRequestBody {
@@ -23,6 +24,15 @@ interface CreateProblemRequestBody {
   testcases?: unknown;
   xp_reward?: unknown;
   active?: unknown;
+  time_limit_minutes?: unknown;
+  test_cases?: unknown;
+}
+
+interface TestCaseInput {
+  id?: unknown;
+  input?: unknown;
+  output?: unknown;
+  is_sample?: unknown;
 }
 
 interface ProblemActionRequestBody {
@@ -187,6 +197,22 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
   const sampleInput = parseOptionalString(body.sample_input);
   const sampleOutput = parseOptionalString(body.sample_output);
   const testcases = parseOptionalString(body.testcases);
+  const timeLimitMinutes = parsePositiveInt(body.time_limit_minutes) || 10;
+
+  // Parse test cases
+  const testCasesInput = Array.isArray(body.test_cases) ? body.test_cases : [];
+  const testCases = testCasesInput
+    .filter((tc: TestCaseInput) => 
+      typeof tc.input === "string" && 
+      typeof tc.output === "string" && 
+      tc.input.trim().length > 0 && 
+      tc.output.trim().length > 0
+    )
+    .map((tc: TestCaseInput) => ({
+      input: tc.input as string,
+      output: tc.output as string,
+      is_sample: tc.is_sample === true ? 1 : 0,
+    }));
 
   try {
     const db = createDbClient(ctx.env.DB);
@@ -197,9 +223,9 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
     }
 
     await db.run(
-      `INSERT INTO problems (title, description, sample_input, sample_output, testcases, xp_reward, active)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, sampleInput, sampleOutput, testcases, xpReward, active]
+      `INSERT INTO problems (title, description, sample_input, sample_output, testcases, xp_reward, active, time_limit_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description, sampleInput, sampleOutput, testcases, xpReward, active, timeLimitMinutes]
     );
 
     const created = await db.first<ProblemRow>(
@@ -212,20 +238,48 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
         testcases,
         xp_reward,
         active,
+        time_limit_minutes,
         created_at
       FROM problems
       WHERE id = last_insert_rowid()`
     );
 
+    // Insert test cases if provided
+    if (testCases.length > 0 && created) {
+      for (const tc of testCases) {
+        await db.run(
+          `INSERT INTO test_cases (problem_id, input, output, is_sample)
+           VALUES (?, ?, ?, ?)`,
+          [created.id, tc.input, tc.output, tc.is_sample]
+        );
+      }
+    }
+
+    // Fetch created test cases
+    const createdTestCases = created 
+      ? await db.all<{ id: number; input: string; output: string; is_sample: number }>(
+          `SELECT id, input, output, is_sample FROM test_cases WHERE problem_id = ?`,
+          [created.id]
+        )
+      : [];
+
     return Response.json(
       {
         status: "success",
         data: {
-          problem: created,
+          problem: created ? {
+            ...created,
+            test_cases: createdTestCases.map(tc => ({
+              id: tc.id,
+              input: tc.input,
+              output: tc.output,
+              is_sample: tc.is_sample === 1,
+            })),
+          } : null,
           message:
             active === 1
-              ? "Competition question posted and set as active. Any previous active question was archived."
-              : "Competition question saved as archived/inactive."
+              ? `Competition question posted with ${testCases.length} test cases. Set as active.`
+              : `Competition question saved with ${testCases.length} test cases. Archived/inactive.`
         }
       },
       { status: 201 }

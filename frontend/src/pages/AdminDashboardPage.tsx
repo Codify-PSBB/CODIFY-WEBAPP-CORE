@@ -50,6 +50,13 @@ interface ProblemActionResponse {
   message?: string
 }
 
+interface TestCaseForm {
+  id: number
+  input: string
+  output: string
+  isSample: boolean
+}
+
 interface ProblemFormState {
   title: string
   description: string
@@ -58,6 +65,8 @@ interface ProblemFormState {
   testcases: string
   xpReward: string
   active: boolean
+  timeLimitMinutes: string
+  testCases: TestCaseForm[]
 }
 
 const defaultProblemForm: ProblemFormState = {
@@ -68,6 +77,8 @@ const defaultProblemForm: ProblemFormState = {
   testcases: "",
   xpReward: "10",
   active: true,
+  timeLimitMinutes: "10",
+  testCases: [],
 }
 
 function formatTimestamp(value: string) {
@@ -199,6 +210,12 @@ export default function AdminDashboardPage() {
       return
     }
 
+    const timeLimitMinutes = Number(problemForm.timeLimitMinutes)
+    if (!Number.isInteger(timeLimitMinutes) || timeLimitMinutes < 1 || timeLimitMinutes > 180) {
+      setMessage("Time limit must be between 1 and 180 minutes.")
+      return
+    }
+
     setPostingProblem(true)
 
     try {
@@ -212,6 +229,8 @@ export default function AdminDashboardPage() {
           testcases: problemForm.testcases,
           xp_reward: xpReward,
           active: problemForm.active,
+          time_limit_minutes: timeLimitMinutes,
+          test_cases: problemForm.testCases.length > 0 ? problemForm.testCases : undefined,
         },
       })
 
@@ -379,7 +398,7 @@ export default function AdminDashboardPage() {
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={(event) => void createProblem(event)}>
-            <div className="grid gap-4 md:grid-cols-[1.2fr_0.4fr_0.4fr]">
+            <div className="grid gap-4 md:grid-cols-[1.2fr_0.3fr_0.3fr_0.4fr]">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground" htmlFor="problem-title">Problem Title</label>
                 <Input
@@ -399,6 +418,19 @@ export default function AdminDashboardPage() {
                   onChange={(event) => setProblemForm((current) => ({ ...current, xpReward: event.target.value }))}
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground" htmlFor="time-limit">
+                  Time Limit (min)
+                </label>
+                <Input
+                  id="time-limit"
+                  type="number"
+                  min={1}
+                  max={180}
+                  value={problemForm.timeLimitMinutes}
+                  onChange={(event) => setProblemForm((current) => ({ ...current, timeLimitMinutes: event.target.value }))}
+                />
+              </div>
               <div className="flex items-end">
                 <label className="flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm text-foreground">
                   <input
@@ -406,7 +438,7 @@ export default function AdminDashboardPage() {
                     checked={problemForm.active}
                     onChange={(event) => setProblemForm((current) => ({ ...current, active: event.target.checked }))}
                   />
-                  Set As Active Competition Question
+                  Set As Active
                 </label>
               </div>
             </div>
@@ -454,6 +486,108 @@ export default function AdminDashboardPage() {
                 onChange={(event) => setProblemForm((current) => ({ ...current, testcases: event.target.value }))}
                 placeholder="Add hidden testcase ideas or notes for reviewers."
               />
+            </div>
+
+            {/* Test Cases Management */}
+            <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Test Cases</label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newId = Math.max(0, ...problemForm.testCases.map(tc => tc.id)) + 1
+                      setProblemForm(current => ({
+                        ...current,
+                        testCases: [...current.testCases, { id: newId, input: "", output: "", isSample: false }]
+                      }))
+                    }}
+                  >
+                    + Hidden Case
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newId = Math.max(0, ...problemForm.testCases.map(tc => tc.id)) + 1
+                      setProblemForm(current => ({
+                        ...current,
+                        testCases: [...current.testCases, { id: newId, input: "", output: "", isSample: true }]
+                      }))
+                    }}
+                  >
+                    + Sample Case
+                  </Button>
+                </div>
+              </div>
+
+              {problemForm.testCases.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No test cases added yet. Add test cases for auto-validation.</p>
+              ) : (
+                <div className="space-y-3">
+                  {problemForm.testCases.map((tc, index) => (
+                    <div key={tc.id} className="grid gap-3 md:grid-cols-[1fr_1fr_auto_auto] items-start">
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Input {index + 1}</label>
+                        <Textarea
+                          value={tc.input}
+                          onChange={(e) => {
+                            const newTestCases = [...problemForm.testCases]
+                            newTestCases[index] = { ...tc, input: e.target.value }
+                            setProblemForm(current => ({ ...current, testCases: newTestCases }))
+                          }}
+                          className="min-h-[60px] text-sm"
+                          placeholder="Test input..."
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-muted-foreground">Expected Output {index + 1}</label>
+                        <Textarea
+                          value={tc.output}
+                          onChange={(e) => {
+                            const newTestCases = [...problemForm.testCases]
+                            newTestCases[index] = { ...tc, output: e.target.value }
+                            setProblemForm(current => ({ ...current, testCases: newTestCases }))
+                          }}
+                          className="min-h-[60px] text-sm"
+                          placeholder="Expected output..."
+                        />
+                      </div>
+                      <div className="flex items-center h-[60px]">
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={tc.isSample}
+                            onChange={(e) => {
+                              const newTestCases = [...problemForm.testCases]
+                              newTestCases[index] = { ...tc, isSample: e.target.checked }
+                              setProblemForm(current => ({ ...current, testCases: newTestCases }))
+                            }}
+                          />
+                          Sample
+                        </label>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setProblemForm(current => ({
+                            ...current,
+                            testCases: current.testCases.filter((_, i) => i !== index)
+                          }))
+                        }}
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end">
