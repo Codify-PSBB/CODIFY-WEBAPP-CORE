@@ -228,14 +228,17 @@ export const competitionEnterHandler: RouteHandler = async (ctx) => {
 
     // Create competition entry
     const now = new Date().toISOString();
-    await db.run(
+    const result = await db.run(
       `INSERT INTO competition_entries (user_id, problem_id, start_time, time_limit_minutes, status)
        VALUES (?, ?, ?, ?, ?)`,
       [userId, problemId, now, timeLimitMinutes, "active"]
     );
 
+    // Get the inserted entry using the returned meta
+    const entryId = result.meta.last_row_id;
     const entry = await db.first<CompetitionEntryRow>(
-      `SELECT * FROM competition_entries WHERE id = last_insert_rowid()`
+      `SELECT * FROM competition_entries WHERE id = ?`,
+      [entryId]
     );
 
     // Get test cases
@@ -257,7 +260,7 @@ export const competitionEnterHandler: RouteHandler = async (ctx) => {
                 end_time: entry.end_time,
                 time_limit_minutes: entry.time_limit_minutes,
                 status: entry.status,
-                remaining_seconds: timeLimitMinutes * 60,
+                remaining_seconds: timeLimitMinutes * 60, // Full time available at start
               }
             : null,
           problem: {
