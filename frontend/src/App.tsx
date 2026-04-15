@@ -165,15 +165,8 @@ export default function App() {
         <SchoolEmailGuard>
           <Routes>
             <Route path="/" element={<AppLayout memberLeaderboardOnly={memberLeaderboardOnly} />}>
-              <Route index element={memberLeaderboardOnly ? <Navigate to="/leaderboard" replace /> : <CompetitionPage />} />
-              <Route
-                path="competition"
-                element={
-                  <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-                    <CompetitionEntryPage />
-                  </MemberAppOnGuard>
-                }
-              />
+              <Route index element={<Navigate to="/competition" replace />} />
+              <Route path="competition" element={<CompetitionEntryPage />} />
               <Route
                 path="competition/arena"
                 element={
