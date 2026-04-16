@@ -228,17 +228,10 @@ export const competitionEnterHandler: RouteHandler = async (ctx) => {
 
     // Create competition entry
     const now = new Date().toISOString();
-    const result = await db.run(
+    await db.run(
       `INSERT INTO competition_entries (user_id, problem_id, start_time, time_limit_minutes, status)
        VALUES (?, ?, ?, ?, ?)`,
       [userId, problemId, now, timeLimitMinutes, "active"]
-    );
-
-    // Get the inserted entry using the returned meta
-    const entryId = result.meta.last_row_id;
-    const entry = await db.first<CompetitionEntryRow>(
-      `SELECT * FROM competition_entries WHERE id = ?`,
-      [entryId]
     );
 
     // Get test cases
@@ -247,35 +240,30 @@ export const competitionEnterHandler: RouteHandler = async (ctx) => {
       [problemId]
     );
 
-    return Response.json(
-      {
-        status: "success",
-        data: {
-          entry: entry
-            ? {
-                id: entry.id,
-                user_id: entry.user_id,
-                problem_id: entry.problem_id,
-                start_time: entry.start_time,
-                end_time: entry.end_time,
-                time_limit_minutes: entry.time_limit_minutes,
-                status: entry.status,
-                remaining_seconds: timeLimitMinutes * 60, // Full time available at start
-              }
-            : null,
-          problem: {
-            ...problem,
-            test_cases: testCases.map((tc) => ({
-              id: tc.id,
-              input: tc.input,
-              output: tc.output,
-              is_sample: tc.is_sample === 1,
-            })),
-          },
+    return Response.json({
+      status: "success",
+      data: {
+        entry: {
+          id: 0, // Will be populated on status check
+          user_id: userId,
+          problem_id: problemId,
+          start_time: now,
+          end_time: null,
+          time_limit_minutes: timeLimitMinutes,
+          status: "active",
+          remaining_seconds: timeLimitMinutes * 60,
+        },
+        problem: {
+          ...problem,
+          test_cases: testCases.map((tc) => ({
+            id: tc.id,
+            input: tc.input,
+            output: tc.output,
+            is_sample: tc.is_sample === 1,
+          })),
         },
       },
-      { status: 201 }
-    );
+    }, { status: 201 });
   } catch {
     return Response.json(
       { status: "error", message: "Failed to enter competition" },
