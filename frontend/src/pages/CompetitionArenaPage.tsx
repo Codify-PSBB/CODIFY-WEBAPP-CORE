@@ -1,7 +1,7 @@
-import { FormEvent, useEffect, useState, useCallback } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import Editor from "@monaco-editor/react"
 import { useTheme } from "@/components/ThemeProvider"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,26 +12,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { apiRequest } from "@/lib/api"
-import type { Problem, CompetitionEntry, TestCase, Submission } from "@/types/models"
+import type { Problem, TestCase, Submission } from "@/types/models"
 import { 
-  Clock, 
   Play, 
   Send, 
   AlertCircle, 
-  Timer,
   ChevronDown,
   ChevronUp,
   CheckCircle,
   XCircle,
-  Terminal
+  Terminal,
+  ArrowLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface CompetitionStatusResponse {
-  has_active_entry?: boolean
-  entry?: CompetitionEntry
+interface ProblemResponse {
   problem?: Problem
 }
 
@@ -54,82 +50,54 @@ interface SubmissionResponse {
   submission?: Submission
 }
 
-function formatTimeRemaining(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
-  return `${minutes}:${secs.toString().padStart(2, "0")}`
-}
-
 export default function CompetitionArenaPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { theme } = useTheme()
-  const [entry, setEntry] = useState<CompetitionEntry | null>(null)
   const [problem, setProblem] = useState<Problem | null>(null)
   const [code, setCode] = useState("# Write your solution here\n\n")
   const [loading, setLoading] = useState(false)
   const [running, setRunning] = useState(false)
   const [message, setMessage] = useState("")
-  const [timeRemaining, setTimeRemaining] = useState(0)
   const [runResults, setRunResults] = useState<TestResult[] | null>(null)
   const [consoleOutput, setConsoleOutput] = useState<string>("")
   const [showTestCases, setShowTestCases] = useState(true)
   const [selectedTestCase, setSelectedTestCase] = useState<number>(0)
 
-  async function loadCompetitionStatus() {
+  const problemId = searchParams.get("problem_id")
+
+  async function loadProblem() {
+    if (!problemId) {
+      navigate("/competition")
+      return
+    }
+    
     try {
-      const response = await apiRequest<CompetitionStatusResponse>("/api/competition/status")
+      const response = await apiRequest<ProblemResponse>(`/api/problems?id=${problemId}`)
       
-      if (response.data?.has_active_entry && response.data.entry) {
-        setEntry(response.data.entry)
-        setTimeRemaining(response.data.entry.remaining_seconds)
-        if (response.data.problem) {
-          setProblem(response.data.problem)
-          // Set default code template if problem loaded
-          if (response.data.problem.test_cases && response.data.problem.test_cases.length > 0) {
-            const sample = response.data.problem.test_cases.find(tc => tc.is_sample)
-            if (sample) {
-              setSelectedTestCase(response.data.problem.test_cases.indexOf(sample))
-            }
+      if (response.data?.problem) {
+        setProblem(response.data.problem)
+        if (response.data.problem.test_cases && response.data.problem.test_cases.length > 0) {
+          const sample = response.data.problem.test_cases.find(tc => tc.is_sample)
+          if (sample) {
+            setSelectedTestCase(response.data.problem.test_cases.indexOf(sample))
           }
         }
       } else {
-        // No active entry, redirect to entry page
-        navigate("/competition")
+        setMessage("Problem not found")
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to load competition status."
+      const errorMessage = error instanceof Error ? error.message : "Failed to load problem."
       setMessage(errorMessage)
     }
   }
 
   useEffect(() => {
-    void loadCompetitionStatus()
-  }, [])
-
-  useEffect(() => {
-    if (timeRemaining <= 0) return
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          setMessage("Time's up! Competition has ended.")
-          return 0
-        }
-        return prev - 1
-      })
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [timeRemaining])
+    void loadProblem()
+  }, [problemId])
 
   async function runCode() {
-    if (!problem || !entry) return
+    if (!problem) return
     
     setRunning(true)
     setRunResults(null)
@@ -140,7 +108,6 @@ export default function CompetitionArenaPage() {
       const response = await apiRequest<RunCodeResponse>("/api/competition/run", {
         method: "POST",
         body: {
-          entry_id: entry.id,
           problem_id: problem.id,
           code,
         },
@@ -168,7 +135,7 @@ export default function CompetitionArenaPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!problem || !entry) return
+    if (!problem) return
 
     setLoading(true)
     setMessage("")
@@ -177,7 +144,6 @@ export default function CompetitionArenaPage() {
       const response = await apiRequest<SubmissionResponse>("/api/competition/submit", {
         method: "POST",
         body: {
-          entry_id: entry.id,
           problem_id: problem.id,
           code,
         },
@@ -185,7 +151,6 @@ export default function CompetitionArenaPage() {
 
       setMessage("Solution submitted successfully!")
       
-      // Redirect after successful submission
       setTimeout(() => {
         navigate("/competition")
       }, 2000)
@@ -206,30 +171,20 @@ export default function CompetitionArenaPage() {
 
   return (
     <div className="space-y-4">
-      {/* Timer Header */}
-      <Card className={cn(
-        "card-modern",
-        timeRemaining < 60 && "border-destructive"
-      )}>
+      {/* Problem Header */}
+      <Card className="card-modern">
         <CardHeader className="flex flex-row items-center justify-between py-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Timer className={cn(
-                "h-6 w-6",
-                timeRemaining < 60 ? "text-destructive animate-pulse" : "text-primary"
-              )} />
-              <span className="text-2xl font-bold tabular-nums">
-                {formatTimeRemaining(timeRemaining)}
-              </span>
+            <Button variant="ghost" size="sm" onClick={() => navigate("/competition")}>
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+            <div>
+              <p className="font-semibold">{problem?.title || "Loading..."}</p>
+              <p className="text-sm text-muted-foreground">Problem #{problem?.id}</p>
             </div>
-            <Badge variant={timeRemaining < 60 ? "destructive" : "default"}>
-              {timeRemaining < 60 ? "Time Critical" : "Active"}
-            </Badge>
           </div>
-          <div className="text-right">
-            <p className="font-semibold">{problem?.title || "Loading..."}</p>
-            <p className="text-sm text-muted-foreground">Problem #{problem?.id}</p>
-          </div>
+          <Badge variant="default">{problem?.xp_reward || 0} XP</Badge>
         </CardHeader>
       </Card>
 
@@ -426,7 +381,7 @@ export default function CompetitionArenaPage() {
                       type="submit"
                       size="lg"
                       className="btn-primary"
-                      disabled={loading || !code.trim() || timeRemaining <= 0}
+                      disabled={loading || !code.trim()}
                     >
                       <Send className="mr-2 h-4 w-4" />
                       {loading ? "Submitting..." : "Submit Solution"}

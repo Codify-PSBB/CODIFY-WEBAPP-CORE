@@ -79,9 +79,7 @@ const routes: Route[] = [
   { method: "GET", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleGetHandler },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },
   { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler },
-  // Competition routes
-  { method: "GET", path: "/api/competition/status", middlewares: authAndAppOn, handler: competitionStatusHandler },
-  { method: "POST", path: "/api/competition/enter", middlewares: authAndAppOn, handler: competitionEnterHandler },
+  // Competition routes (simplified - no timer/entry system)
   { method: "POST", path: "/api/competition/run", middlewares: authAndAppOn, handler: competitionRunHandler },
   { method: "POST", path: "/api/competition/submit", middlewares: authAndAppOn, handler: competitionSubmitHandler }
 ];

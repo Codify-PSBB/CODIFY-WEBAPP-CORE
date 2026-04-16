@@ -285,57 +285,18 @@ export const competitionRunHandler: RouteHandler = async (ctx) => {
     );
   }
 
-  const entryId = parsePositiveInt(body.entry_id);
   const problemId = parsePositiveInt(body.problem_id);
   const code = parseNonEmptyString(body.code);
 
-  if (!entryId || !problemId || !code) {
+  if (!problemId || !code) {
     return Response.json(
-      { status: "error", message: "entry_id, problem_id, and code are required" },
+      { status: "error", message: "problem_id and code are required" },
       { status: 400 }
     );
   }
 
   try {
     const db = createDbClient(ctx.env.DB);
-    const userId = ctx.user?.userId;
-
-    if (!userId) {
-      return Response.json(
-        { status: "error", message: "Authentication required" },
-        { status: 401 }
-      );
-    }
-
-    // Verify entry belongs to user and is active
-    const entry = await db.first<CompetitionEntryRow>(
-      `SELECT * FROM competition_entries WHERE id = ? AND user_id = ? AND status = 'active'`,
-      [entryId, userId]
-    );
-
-    if (!entry) {
-      return Response.json(
-        { status: "error", message: "No active competition entry found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if time expired
-    const startTime = new Date(entry.start_time).getTime();
-    const now = Date.now();
-    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-    const timeLimitSeconds = entry.time_limit_minutes * 60;
-
-    if (elapsedSeconds > timeLimitSeconds) {
-      await db.run(
-        `UPDATE competition_entries SET status = 'expired', end_time = ? WHERE id = ?`,
-        [new Date().toISOString(), entryId]
-      );
-      return Response.json(
-        { status: "error", message: "Competition time has expired" },
-        { status: 410 }
-      );
-    }
 
     // Get test cases (including hidden ones)
     const testCases = await db.all<TestCaseRow>(
@@ -343,11 +304,7 @@ export const competitionRunHandler: RouteHandler = async (ctx) => {
       [problemId]
     );
 
-    // For now, return the test cases for frontend to show
-    // In a full implementation, you'd run the code against test cases in a sandbox
-    // This is a simplified version that returns test cases for display
-
-    // Mock results - in production, you'd actually run the code
+    // Mock results - in production, you'd actually run the code in a sandbox
     const results = testCases.map((tc) => ({
       test_case_id: tc.id,
       input: tc.input,
@@ -386,13 +343,12 @@ export const competitionSubmitHandler: RouteHandler = async (ctx) => {
     );
   }
 
-  const entryId = parsePositiveInt(body.entry_id);
   const problemId = parsePositiveInt(body.problem_id);
   const code = parseNonEmptyString(body.code);
 
-  if (!entryId || !problemId || !code) {
+  if (!problemId || !code) {
     return Response.json(
-      { status: "error", message: "entry_id, problem_id, and code are required" },
+      { status: "error", message: "problem_id and code are required" },
       { status: 400 }
     );
   }
@@ -408,36 +364,6 @@ export const competitionSubmitHandler: RouteHandler = async (ctx) => {
       );
     }
 
-    // Verify entry belongs to user and is active
-    const entry = await db.first<CompetitionEntryRow>(
-      `SELECT * FROM competition_entries WHERE id = ? AND user_id = ? AND status = 'active'`,
-      [entryId, userId]
-    );
-
-    if (!entry) {
-      return Response.json(
-        { status: "error", message: "No active competition entry found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if time expired
-    const startTime = new Date(entry.start_time).getTime();
-    const now = Date.now();
-    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-    const timeLimitSeconds = entry.time_limit_minutes * 60;
-
-    if (elapsedSeconds > timeLimitSeconds) {
-      await db.run(
-        `UPDATE competition_entries SET status = 'expired', end_time = ? WHERE id = ?`,
-        [new Date().toISOString(), entryId]
-      );
-      return Response.json(
-        { status: "error", message: "Competition time has expired - submission rejected" },
-        { status: 410 }
-      );
-    }
-
     // Create submission
     await db.run(
       `INSERT INTO submissions (user_id, problem_id, code, status, created_at)
@@ -445,32 +371,9 @@ export const competitionSubmitHandler: RouteHandler = async (ctx) => {
       [userId, problemId, code, "pending", new Date().toISOString()]
     );
 
-    // Mark entry as completed
-    await db.run(
-      `UPDATE competition_entries SET status = 'completed', end_time = ? WHERE id = ?`,
-      [new Date().toISOString(), entryId]
-    );
-
-    const submission = await db.first<{
-      id: number;
-      user_id: number;
-      problem_id: number;
-      status: string;
-      created_at: string;
-    }>(`SELECT * FROM submissions WHERE id = last_insert_rowid()`);
-
     return Response.json({
       status: "success",
       data: {
-        submission: submission
-          ? {
-              id: submission.id,
-              user_id: submission.user_id,
-              problem_id: submission.problem_id,
-              status: submission.status,
-              created_at: submission.created_at,
-            }
-          : null,
         message: "Solution submitted successfully!",
       },
     });
