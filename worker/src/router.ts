@@ -4,12 +4,6 @@ import {
   adminProblemsGetHandler,
   adminProblemsPostHandler
 } from "./handlers/adminProblems";
-import {
-  competitionEnterHandler,
-  competitionRunHandler,
-  competitionStatusHandler,
-  competitionSubmitHandler,
-} from "./handlers/competition";
 import { appStatusHandler } from "./handlers/appStatus";
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
@@ -78,10 +72,7 @@ const routes: Route[] = [
   },
   { method: "GET", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleGetHandler },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },
-  { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler },
-  // Competition routes (simplified - no timer/entry system)
-  { method: "POST", path: "/api/competition/run", middlewares: authAndAppOn, handler: competitionRunHandler },
-  { method: "POST", path: "/api/competition/submit", middlewares: authAndAppOn, handler: competitionSubmitHandler }
+  { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler }
 ];
 
 async function runMiddlewares(ctx: RequestContext, middlewares: Middleware[]): Promise<RequestContext | Response> {
