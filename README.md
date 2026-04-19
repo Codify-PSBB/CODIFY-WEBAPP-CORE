@@ -1,7 +1,7 @@
 # Codify
 
 <p align="center">
-  <img src="logos/2323/5.png" alt="Codify wordmark" width="320" />
+  <img src="logos/5.png" alt="Codify wordmark" width="320" />
 </p>
 
 Codify is an internal competition platform for a school coding club. It is designed for small events, fast review cycles, and a very simple student experience.
