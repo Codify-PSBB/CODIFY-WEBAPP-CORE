@@ -177,9 +177,9 @@ export default function CompetitionPage() {
       
       const allPassed = results.every(r => r)
       if (allPassed) {
-        pushConsoleLine("All tests passed! You can now submit your solution.")
+        pushConsoleLine("All example tests passed!")
       } else {
-        pushConsoleLine("Some tests failed. Fix your code before submitting.")
+        pushConsoleLine("Some example tests failed. These are just examples - you can still submit your solution.")
       }
     } catch (error) {
       pushConsoleLine(`ERROR: Failed to run tests - ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -207,22 +207,7 @@ export default function CompetitionPage() {
       return
     }
 
-    // Check if all tests have passed
-    if (publicTestCases.length > 0) {
-      if (testResults.length === 0) {
-        const validationMessage = "Please run tests first before submitting."
-        setMessage(validationMessage)
-        pushConsoleLine(`ERROR: ${validationMessage}`)
-        return
-      }
-      
-      if (!testResults.every(r => r)) {
-        const validationMessage = "All tests must pass before you can submit."
-        setMessage(validationMessage)
-        pushConsoleLine(`ERROR: ${validationMessage}`)
-        return
-      }
-    }
+    // Tests are optional examples - allow submission regardless of results
 
     setLoading(true)
     try {
@@ -336,8 +321,8 @@ export default function CompetitionPage() {
               {publicTestCases.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-semibold text-foreground">Public Test Cases</h4>
-                    <span className="text-xs text-muted-foreground">Run tests to validate your solution</span>
+                    <h4 className="text-sm font-semibold text-foreground">Example Test Cases</h4>
+                    <span className="text-xs text-muted-foreground">Reference examples to help you understand the problem</span>
                   </div>
                   {publicTestCases.map((testCase, index) => (
                     <div key={index} className="grid gap-3 md:grid-cols-2">
@@ -414,7 +399,7 @@ export default function CompetitionPage() {
                   {publicTestCases.length > 0 && (
                     <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
                       <div className="text-sm text-muted-foreground">
-                        Test your code against public test cases before submitting
+                        Test your code against example test cases (optional)
                       </div>
                       <Button 
                         size="lg" 
@@ -456,15 +441,10 @@ export default function CompetitionPage() {
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
                     <div className="text-sm text-muted-foreground">
                       {selectedProblem ? `Submitting for ${selectedProblem.title}` : "Enter a problem ID before sending."}
-                      {publicTestCases.length > 0 && testResults.length > 0 && (
-                        <div className={`mt-1 text-xs ${testResults.every(r => r) ? 'text-green-600' : 'text-red-600'}`}>
-                          {testResults.every(r => r) ? 'All tests passed - Ready to submit!' : 'Some tests failed - Fix code before submitting'}
-                        </div>
-                      )}
                     </div>
                     <Button 
                       size="lg" 
-                      disabled={loading || (publicTestCases.length > 0 && (!testResults.length || !testResults.every(r => r)))}
+                      disabled={loading}
                     >
                       <Send className="mr-2 size-4" />
                       Submit Solution
