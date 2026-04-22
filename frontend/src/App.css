@@ -248,57 +248,58 @@
 }
 
 .dark {
-  /* Pure Black/Gray System - No Blue Tint */
+  /* Pure Black Background - No Blue Tint */
   --background: #000000;
   --foreground: #ffffff;
-  --card: #141414;
+  /* Cards same color as background */
+  --card: #000000;
   --card-foreground: #ffffff;
-  --popover: #1a1a1a;
+  --popover: #000000;
   --popover-foreground: #ffffff;
   
-  /* High Contrast Accents - Orange/Yellow */
-  --primary: #f5a623;
+  /* High Contrast Primary - Pure White */
+  --primary: #ffffff;
   --primary-foreground: #000000;
-  --secondary: #262626;
+  --secondary: #1a1a1a;
   --secondary-foreground: #ffffff;
-  --muted: #404040;
+  --muted: #262626;
   --muted-foreground: #a3a3a3;
-  --accent: #f5a623;
+  --accent: #ffffff;
   --accent-foreground: #000000;
   
-  /* Status Colors */
-  --destructive: #ef4444;
-  --success: #22c55e;
-  --warning: #f5a623;
+  /* Status Colors - No Blue */
+  --destructive: #ff4444;
+  --success: #00c853;
+  --warning: #ffab00;
   
-  /* Interactive Elements - Pure Gray */
+  /* Interactive Elements - Pure Gray Scale */
   --border: #333333;
-  --input: #262626;
-  --ring: #f5a623;
+  --input: #1a1a1a;
+  --ring: #ffffff;
   
-  /* Chart Colors - Warm Tones */
-  --chart-1: #f5a623;
-  --chart-2: #f97316;
-  --chart-3: #eab308;
-  --chart-4: #ec4899;
-  --chart-5: #22c55e;
+  /* Chart Colors - No Blue */
+  --chart-1: #ff6b6b;
+  --chart-2: #ffa726;
+  --chart-3: #ffca28;
+  --chart-4: #66bb6a;
+  --chart-5: #ffffff;
   
-  /* Sidebar */
-  --sidebar: #0a0a0a;
+  /* Sidebar - Pure Black */
+  --sidebar: #000000;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #f5a623;
+  --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #262626;
+  --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #333333;
-  --sidebar-ring: #f5a623;
+  --sidebar-ring: #ffffff;
   
   /* High Contrast Shadows */
-  --shadow-soft: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-soft: 0 10px 15px -3px rgba(255, 255, 255, 0.1), 0 4px 6px -2px rgba(255, 255, 255, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(255, 255, 255, 0.15), 0 10px 10px -5px rgba(255, 255, 255, 0.1);
   
-  /* Glassmorphism - Neutral */
-  --glass-bg: rgba(20, 20, 20, 0.9);
-  --glass-border: rgba(51, 51, 51, 0.5);
+  /* Glassmorphism - Dark */
+  --glass-bg: rgba(0, 0, 0, 0.95);
+  --glass-border: rgba(51, 51, 51, 0.8);
 }
 

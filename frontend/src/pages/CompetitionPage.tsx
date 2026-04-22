@@ -237,7 +237,7 @@ export default function CompetitionPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -258,7 +258,7 @@ export default function CompetitionPage() {
       </Card>
 
       {message ? (
-        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+        <Alert className="rounded-2xl border-white/70 bg-white/80 shadow-soft dark:border-border dark:bg-background">
           <Sparkles className="size-4" />
           <AlertTitle>Competition Status</AlertTitle>
           <AlertDescription>{message}</AlertDescription>
@@ -267,7 +267,7 @@ export default function CompetitionPage() {
 
       <div className="grid gap-6 xl:grid-cols-2">
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
             <CardHeader>
               <CardTitle className="text-2xl">Problem Statement</CardTitle>
               <CardDescription>Select a problem and read the full statement carefully.</CardDescription>
@@ -288,13 +288,13 @@ export default function CompetitionPage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-slate-600/70 dark:bg-[#020617]">
+                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-border dark:bg-muted">
                   No active problem cards are available yet.
                 </div>
               )}
 
               {selectedProblem ? (
-                <div className="space-y-4 rounded-2xl border border-border/80 bg-muted/30 p-5 dark:border-slate-600/70 dark:bg-[#020617]">
+                <div className="space-y-4 rounded-2xl border border-border/80 bg-muted/30 p-5 dark:border-border dark:bg-muted">
                   <div className="flex flex-wrap items-center gap-3">
                     <Badge variant="outline">Problem #{selectedProblem.id}</Badge>
                     <Badge variant="secondary">{selectedProblem.xp_reward} XP reward</Badge>
@@ -305,14 +305,14 @@ export default function CompetitionPage() {
                   </p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-slate-600/70 dark:bg-[#020617]">
+                <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-muted-foreground dark:border-border dark:bg-muted">
                   Select a problem card or enter a problem ID on the right to begin.
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
             <CardHeader>
               <CardTitle className="text-2xl">Sample Input / Output</CardTitle>
               <CardDescription>Examples and testcases provided by admins for this problem.</CardDescription>
@@ -353,7 +353,7 @@ export default function CompetitionPage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
             <CardHeader>
               <CardTitle className="text-2xl">Code Editor</CardTitle>
               <CardDescription>Write your Python solution and submit it directly.</CardDescription>
@@ -397,7 +397,7 @@ export default function CompetitionPage() {
 
                 <div className="space-y-4">
                   {publicTestCases.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-border dark:bg-muted">
                       <div className="text-sm text-muted-foreground">
                         Test your code against example test cases (optional)
                       </div>
@@ -414,7 +414,7 @@ export default function CompetitionPage() {
                   )}
 
                   {testResults.length > 0 && (
-                    <div className="rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                    <div className="rounded-2xl border bg-muted/40 p-4 dark:border-border dark:bg-muted">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-sm font-medium">Test Results:</span>
                         <span className={`text-sm font-semibold ${testResults.every(r => r) ? 'text-green-600' : 'text-red-600'}`}>
@@ -438,7 +438,7 @@ export default function CompetitionPage() {
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-border dark:bg-muted">
                     <div className="text-sm text-muted-foreground">
                       {selectedProblem ? `Submitting for ${selectedProblem.title}` : "Enter a problem ID before sending."}
                     </div>
@@ -455,7 +455,7 @@ export default function CompetitionPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
             <CardHeader className="flex-row items-center justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-2xl">

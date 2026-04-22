@@ -123,7 +123,7 @@ export default function SubmissionQueuePage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -144,13 +144,13 @@ export default function SubmissionQueuePage() {
       </Card>
 
       {message ? (
-        <Card className="rounded-[24px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+        <Card className="rounded-[24px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
           <CardContent className="p-4 text-sm text-muted-foreground">{message}</CardContent>
         </Card>
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
           <CardContent className="space-y-3 p-6">
             <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Pending Items
@@ -163,7 +163,7 @@ export default function SubmissionQueuePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
           <CardContent className="space-y-3 p-6">
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Filtered View
@@ -176,7 +176,7 @@ export default function SubmissionQueuePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
           <CardContent className="space-y-3 p-6">
             <Badge variant="default" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Review Mode
@@ -190,7 +190,7 @@ export default function SubmissionQueuePage() {
         </Card>
       </div>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <CardTitle className="text-2xl">Pending Submission Table</CardTitle>
@@ -228,8 +228,8 @@ export default function SubmissionQueuePage() {
                     key={submission.id}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-[#111827] dark:hover:bg-slate-600/35"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#111827] dark:hover:bg-slate-600/35"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
                     }
                   >
                     <TableCell className="font-medium">#{submission.id}</TableCell>
@@ -270,7 +270,7 @@ export default function SubmissionQueuePage() {
           }
         }}
       >
-        <DialogContent className="max-w-4xl rounded-[28px] border-white/70 bg-white/95 p-0 shadow-soft sm:max-w-4xl dark:border-slate-500/80 dark:bg-[#111827]">
+        <DialogContent className="max-w-4xl rounded-[28px] border-white/70 bg-white/95 p-0 shadow-soft sm:max-w-4xl dark:border-border dark:bg-background">
           {selectedSubmission ? (
             <>
               <DialogHeader className="space-y-3 px-6 pt-6">
@@ -284,21 +284,21 @@ export default function SubmissionQueuePage() {
 
               <div className="space-y-6 px-6 pb-2">
                 <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-border dark:bg-muted">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Student</p>
                       <p className="font-semibold text-foreground">{selectedSubmission.user_name}</p>
                       <p className="text-sm text-muted-foreground">{selectedSubmission.user_email}</p>
                     </CardContent>
                   </Card>
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-border dark:bg-muted">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Problem</p>
                       <p className="font-semibold text-foreground">{selectedSubmission.problem_title}</p>
                       <p className="text-sm text-muted-foreground">Problem #{selectedSubmission.problem_id}</p>
                     </CardContent>
                   </Card>
-                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-slate-600/70 dark:bg-[#020617]">
+                  <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-border dark:bg-muted">
                     <CardContent className="space-y-2 p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Submitted</p>
                       <p className="font-semibold text-foreground">{formatTimestamp(selectedSubmission.created_at)}</p>

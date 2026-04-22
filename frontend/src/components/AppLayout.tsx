@@ -62,7 +62,7 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
               <h1 className="heading-2 text-foreground">Codify</h1>
             </div>
             {isAdminPage ? (
-              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-violet-400/20 dark:text-violet-400 dark:border-violet-400/30">
+              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-white/10 dark:text-white dark:border-white/20">
                 <Shield className="mr-1 size-3.5" />
                 Admin
               </Badge>

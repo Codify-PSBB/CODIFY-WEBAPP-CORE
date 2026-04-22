@@ -310,7 +310,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background ">
         <CardHeader className="gap-4">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -371,7 +371,7 @@ export default function AdminDashboardPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
           <CardContent className="space-y-3 p-6">
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Total Students
@@ -384,7 +384,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
           <CardContent className="space-y-3 p-6">
             <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Total XP
@@ -397,7 +397,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
           <CardContent className="space-y-3 p-6">
             <Badge variant="default" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
               Pending Submissions
@@ -411,7 +411,7 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
             <FilePlus2 className="size-5" />
@@ -565,7 +565,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
         <CardHeader>
           <CardTitle className="text-2xl">Competition Problems</CardTitle>
           <CardDescription>All posted competition questions with publish status.</CardDescription>
@@ -596,8 +596,8 @@ export default function AdminDashboardPage() {
                     key={problem.id}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-[#111827] dark:hover:bg-slate-600/35"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#111827] dark:hover:bg-slate-600/35"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
                     }
                   >
                     <TableCell className="font-medium">#{problem.id}</TableCell>
@@ -669,7 +669,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
         <CardHeader>
           <CardTitle className="text-2xl">Submissions Table</CardTitle>
           <CardDescription>Pending queue data for fast review triage.</CardDescription>
@@ -698,8 +698,8 @@ export default function AdminDashboardPage() {
                     key={submission.id}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-[#111827] dark:hover:bg-slate-600/35"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#111827] dark:hover:bg-slate-600/35"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
                     }
                   >
                     <TableCell className="font-medium">#{submission.id}</TableCell>
@@ -722,7 +722,7 @@ export default function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
         <CardHeader>
           <CardTitle className="text-2xl">User Table</CardTitle>
           <CardDescription>Users sorted by backend data feed with role and XP visibility.</CardDescription>
@@ -750,8 +750,8 @@ export default function AdminDashboardPage() {
                     key={user.email}
                     className={
                       index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-[#111827] dark:hover:bg-slate-600/35"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#111827] dark:hover:bg-slate-600/35"
+                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
+                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
                     }
                   >
                     <TableCell className="font-medium">{user.name}</TableCell>

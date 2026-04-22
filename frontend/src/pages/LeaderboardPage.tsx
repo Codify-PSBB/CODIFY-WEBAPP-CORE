@@ -37,7 +37,7 @@ function topBadge(rank: number) {
     return {
       label: "Silver",
       className:
-        "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-400/22 dark:text-slate-100 dark:border-slate-300/60",
+        "bg-slate-100 text-slate-700 border-slate-200 dark:bg-white/10 dark:text-white dark:border-white/20",
     }
   }
 
@@ -77,7 +77,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background">
         <CardHeader className="gap-4 md:flex-row md:items-end md:justify-between">
           <div className="space-y-2">
             <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
@@ -97,7 +97,7 @@ export default function LeaderboardPage() {
         </CardHeader>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827]">
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
         <CardHeader>
           <CardTitle className="text-2xl">Competition Leaderboard</CardTitle>
           <CardDescription>Columns: Rank | Student | XP</CardDescription>
@@ -129,8 +129,8 @@ export default function LeaderboardPage() {
                       key={`${entry.rank}-${entry.name}`}
                       className={
                         index % 2 === 0
-                          ? "bg-white/40 hover:bg-white/55 dark:bg-[#111827] dark:hover:bg-slate-600/35"
-                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-[#111827] dark:hover:bg-slate-600/35"
+                          ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
+                          : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
                       }
                     >
                       <TableCell>
