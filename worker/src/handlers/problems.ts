@@ -5,8 +5,12 @@ interface ProblemRow {
   id: number;
   title: string;
   description: string;
-  sample_input: string | null;
-  sample_output: string | null;
+  public_testcase_1_input: string | null;
+  public_testcase_1_output: string | null;
+  public_testcase_2_input: string | null;
+  public_testcase_2_output: string | null;
+  public_testcase_3_input: string | null;
+  public_testcase_3_output: string | null;
   testcases: string | null;
   xp_reward: number;
   active: number;
@@ -22,8 +26,12 @@ export const problemsHandler: RouteHandler = async (ctx) => {
         id,
         title,
         description,
-        sample_input,
-        sample_output,
+        public_testcase_1_input,
+        public_testcase_1_output,
+        public_testcase_2_input,
+        public_testcase_2_output,
+        public_testcase_3_input,
+        public_testcase_3_output,
         testcases,
         xp_reward,
         active,

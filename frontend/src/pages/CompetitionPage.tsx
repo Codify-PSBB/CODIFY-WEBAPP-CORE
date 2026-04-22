@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { apiRequest } from "@/lib/api"
 import type { Problem, Submission } from "@/types/models"
-import { RefreshCcw, Send, Sparkles, TerminalSquare } from "lucide-react"
+import { Play, RefreshCcw, Send, Sparkles, TerminalSquare } from "lucide-react"
 
 interface ProblemsResponse {
   problems?: Problem[]
@@ -48,6 +48,8 @@ export default function CompetitionPage() {
   const [consoleLines, setConsoleLines] = useState<string[]>([
     "Console ready. Submit your solution to see status updates.",
   ])
+  const [testResults, setTestResults] = useState<boolean[]>([])
+  const [isRunningTests, setIsRunningTests] = useState(false)
 
   const codePanelClassName =
     theme === "dark"
@@ -101,13 +103,90 @@ export default function CompetitionPage() {
     [problemId, problems]
   )
 
-  const sampleInput = selectedProblem
-    ? selectedProblem.sample_input?.trim() || extractSampleSection(selectedProblem.description, "sample input")
-    : null
-  const sampleOutput = selectedProblem
-    ? selectedProblem.sample_output?.trim() || extractSampleSection(selectedProblem.description, "sample output")
-    : null
+  // Extract public test cases
+  const publicTestCases = selectedProblem ? [
+    {
+      input: selectedProblem.public_testcase_1_input?.trim(),
+      output: selectedProblem.public_testcase_1_output?.trim()
+    },
+    {
+      input: selectedProblem.public_testcase_2_input?.trim(),
+      output: selectedProblem.public_testcase_2_output?.trim()
+    },
+    {
+      input: selectedProblem.public_testcase_3_input?.trim(),
+      output: selectedProblem.public_testcase_3_output?.trim()
+    }
+  ].filter(tc => tc.input && tc.output) : []
+
   const testcases = selectedProblem?.testcases?.trim() || null
+
+  async function runTests() {
+    if (!selectedProblem || publicTestCases.length === 0) {
+      pushConsoleLine("ERROR: No public test cases available for this problem")
+      return
+    }
+
+    setIsRunningTests(true)
+    setTestResults([])
+    pushConsoleLine("Running tests against public test cases...")
+
+    try {
+      // Load Pyodide for testing
+      const { loadPyodideRuntime } = await import("@/lib/pyodide")
+      const runtime = await loadPyodideRuntime()
+
+      const results: boolean[] = []
+
+      for (let i = 0; i < publicTestCases.length; i++) {
+        const testCase = publicTestCases[i]
+        pushConsoleLine(`Running Test Case ${i + 1}...`)
+
+        try {
+          // Capture output
+          const outputLines: string[] = []
+          runtime.setStdout({
+            batched: (text: string) => {
+              outputLines.push(text)
+            },
+          })
+
+          // Run the code with test input
+          const inputCode = code + `\n\n# Test input simulation\nimport sys\nfrom io import StringIO\nsys.stdin = StringIO(${JSON.stringify(testCase.input)})\n`
+          
+          await runtime.runPythonAsync(inputCode)
+          
+          const output = outputLines.join("").trim()
+          const expectedOutput = testCase.output?.trim()
+          
+          const passed = output === expectedOutput
+          results.push(passed)
+          
+          pushConsoleLine(`Test Case ${i + 1}: ${passed ? 'PASSED' : 'FAILED'}`)
+          if (!passed) {
+            pushConsoleLine(`  Expected: "${expectedOutput}"`)
+            pushConsoleLine(`  Got: "${output}"`)
+          }
+        } catch (error) {
+          results.push(false)
+          pushConsoleLine(`Test Case ${i + 1}: ERROR - ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
+
+      setTestResults(results)
+      
+      const allPassed = results.every(r => r)
+      if (allPassed) {
+        pushConsoleLine("All tests passed! You can now submit your solution.")
+      } else {
+        pushConsoleLine("Some tests failed. Fix your code before submitting.")
+      }
+    } catch (error) {
+      pushConsoleLine(`ERROR: Failed to run tests - ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsRunningTests(false)
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -126,6 +205,23 @@ export default function CompetitionPage() {
       setMessage(validationMessage)
       pushConsoleLine(`ERROR: ${validationMessage}`)
       return
+    }
+
+    // Check if all tests have passed
+    if (publicTestCases.length > 0) {
+      if (testResults.length === 0) {
+        const validationMessage = "Please run tests first before submitting."
+        setMessage(validationMessage)
+        pushConsoleLine(`ERROR: ${validationMessage}`)
+        return
+      }
+      
+      if (!testResults.every(r => r)) {
+        const validationMessage = "All tests must pass before you can submit."
+        setMessage(validationMessage)
+        pushConsoleLine(`ERROR: ${validationMessage}`)
+        return
+      }
     }
 
     setLoading(true)
@@ -237,14 +333,30 @@ export default function CompetitionPage() {
               <CardDescription>Examples and testcases provided by admins for this problem.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className={`rounded-2xl border p-4 font-mono text-sm ${codePanelClassName}`}>
-                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Sample Input</p>
-                <pre className="whitespace-pre-wrap break-words">{sampleInput ?? "No sample input provided."}</pre>
-              </div>
-              <div className={`rounded-2xl border p-4 font-mono text-sm ${consolePanelClassName}`}>
-                <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Sample Output</p>
-                <pre className="whitespace-pre-wrap break-words">{sampleOutput ?? "No sample output provided."}</pre>
-              </div>
+              {publicTestCases.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-foreground">Public Test Cases</h4>
+                    <span className="text-xs text-muted-foreground">Run tests to validate your solution</span>
+                  </div>
+                  {publicTestCases.map((testCase, index) => (
+                    <div key={index} className="grid gap-3 md:grid-cols-2">
+                      <div className={`rounded-2xl border p-3 font-mono text-sm ${codePanelClassName}`}>
+                        <p className="mb-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                          Test Case {index + 1} Input
+                        </p>
+                        <pre className="whitespace-pre-wrap break-words">{testCase.input}</pre>
+                      </div>
+                      <div className={`rounded-2xl border p-3 font-mono text-sm ${consolePanelClassName}`}>
+                        <p className="mb-1 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                          Test Case {index + 1} Output
+                        </p>
+                        <pre className="whitespace-pre-wrap break-words">{testCase.output}</pre>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className={`rounded-2xl border p-4 font-mono text-sm ${testcasePanelClassName}`}>
                 <p className="mb-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">Testcases</p>
                 <pre className="whitespace-pre-wrap break-words">
@@ -298,14 +410,66 @@ export default function CompetitionPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
-                  <div className="text-sm text-muted-foreground">
-                    {selectedProblem ? `Submitting for ${selectedProblem.title}` : "Enter a problem ID before sending."}
+                <div className="space-y-4">
+                  {publicTestCases.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                      <div className="text-sm text-muted-foreground">
+                        Test your code against public test cases before submitting
+                      </div>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        onClick={() => void runTests()} 
+                        disabled={isRunningTests || !selectedProblem}
+                      >
+                        <Play className="mr-2 size-4" />
+                        {isRunningTests ? "Running Tests..." : "Run Tests"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {testResults.length > 0 && (
+                    <div className="rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium">Test Results:</span>
+                        <span className={`text-sm font-semibold ${testResults.every(r => r) ? 'text-green-600' : 'text-red-600'}`}>
+                          {testResults.filter(r => r).length}/{testResults.length} Passed
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {testResults.map((passed, index) => (
+                          <div
+                            key={index}
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              passed 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                            }`}
+                          >
+                            Test {index + 1}: {passed ? 'PASS' : 'FAIL'}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-muted/40 p-4 dark:border-slate-600/70 dark:bg-[#020617]">
+                    <div className="text-sm text-muted-foreground">
+                      {selectedProblem ? `Submitting for ${selectedProblem.title}` : "Enter a problem ID before sending."}
+                      {publicTestCases.length > 0 && testResults.length > 0 && (
+                        <div className={`mt-1 text-xs ${testResults.every(r => r) ? 'text-green-600' : 'text-red-600'}`}>
+                          {testResults.every(r => r) ? 'All tests passed - Ready to submit!' : 'Some tests failed - Fix code before submitting'}
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      size="lg" 
+                      disabled={loading || (publicTestCases.length > 0 && (!testResults.length || !testResults.every(r => r)))}
+                    >
+                      <Send className="mr-2 size-4" />
+                      Submit Solution
+                    </Button>
                   </div>
-                  <Button size="lg" disabled={loading}>
-                    <Send className="mr-2 size-4" />
-                    Submit Solution
-                  </Button>
                 </div>
               </form>
             </CardContent>

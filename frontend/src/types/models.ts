@@ -2,9 +2,13 @@ export interface Problem {
   id: number;
   title: string;
   description: string;
-  sample_input: string | null;
-  sample_output: string | null;
-  testcases: string | null;
+  public_testcase_1_input: string | null;
+  public_testcase_1_output: string | null;
+  public_testcase_2_input: string | null;
+  public_testcase_2_output: string | null;
+  public_testcase_3_input: string | null;
+  public_testcase_3_output: string | null;
+  testcases: string | null; // Hidden testcases notes for reviewers
   xp_reward: number;
   active: number;
   created_at?: string;

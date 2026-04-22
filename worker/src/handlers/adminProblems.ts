@@ -7,8 +7,12 @@ interface ProblemRow {
   id: number;
   title: string;
   description: string;
-  sample_input: string | null;
-  sample_output: string | null;
+  public_testcase_1_input: string | null;
+  public_testcase_1_output: string | null;
+  public_testcase_2_input: string | null;
+  public_testcase_2_output: string | null;
+  public_testcase_3_input: string | null;
+  public_testcase_3_output: string | null;
   testcases: string | null;
   xp_reward: number;
   active: number;
@@ -18,8 +22,12 @@ interface ProblemRow {
 interface CreateProblemRequestBody {
   title?: unknown;
   description?: unknown;
-  sample_input?: unknown;
-  sample_output?: unknown;
+  public_testcase_1_input?: unknown;
+  public_testcase_1_output?: unknown;
+  public_testcase_2_input?: unknown;
+  public_testcase_2_output?: unknown;
+  public_testcase_3_input?: unknown;
+  public_testcase_3_output?: unknown;
   testcases?: unknown;
   xp_reward?: unknown;
   active?: unknown;
@@ -126,8 +134,12 @@ export const adminProblemsGetHandler: RouteHandler = async (ctx) => {
         id,
         title,
         description,
-        sample_input,
-        sample_output,
+        public_testcase_1_input,
+        public_testcase_1_output,
+        public_testcase_2_input,
+        public_testcase_2_output,
+        public_testcase_3_input,
+        public_testcase_3_output,
         testcases,
         xp_reward,
         active,
@@ -184,8 +196,12 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
     );
   }
 
-  const sampleInput = parseOptionalString(body.sample_input);
-  const sampleOutput = parseOptionalString(body.sample_output);
+  const publicTestcase1Input = parseOptionalString(body.public_testcase_1_input);
+  const publicTestcase1Output = parseOptionalString(body.public_testcase_1_output);
+  const publicTestcase2Input = parseOptionalString(body.public_testcase_2_input);
+  const publicTestcase2Output = parseOptionalString(body.public_testcase_2_output);
+  const publicTestcase3Input = parseOptionalString(body.public_testcase_3_input);
+  const publicTestcase3Output = parseOptionalString(body.public_testcase_3_output);
   const testcases = parseOptionalString(body.testcases);
 
   try {
@@ -197,9 +213,9 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
     }
 
     await db.run(
-      `INSERT INTO problems (title, description, sample_input, sample_output, testcases, xp_reward, active)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, description, sampleInput, sampleOutput, testcases, xpReward, active]
+      `INSERT INTO problems (title, description, public_testcase_1_input, public_testcase_1_output, public_testcase_2_input, public_testcase_2_output, public_testcase_3_input, public_testcase_3_output, testcases, xp_reward, active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, description, publicTestcase1Input, publicTestcase1Output, publicTestcase2Input, publicTestcase2Output, publicTestcase3Input, publicTestcase3Output, testcases, xpReward, active]
     );
 
     const created = await db.first<ProblemRow>(
@@ -207,8 +223,12 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
         id,
         title,
         description,
-        sample_input,
-        sample_output,
+        public_testcase_1_input,
+        public_testcase_1_output,
+        public_testcase_2_input,
+        public_testcase_2_output,
+        public_testcase_3_input,
+        public_testcase_3_output,
         testcases,
         xp_reward,
         active,
@@ -297,8 +317,12 @@ export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
         id,
         title,
         description,
-        sample_input,
-        sample_output,
+        public_testcase_1_input,
+        public_testcase_1_output,
+        public_testcase_2_input,
+        public_testcase_2_output,
+        public_testcase_3_input,
+        public_testcase_3_output,
         testcases,
         xp_reward,
         active,
@@ -360,8 +384,12 @@ export const adminProblemsDeleteHandler: RouteHandler = async (ctx) => {
         id,
         title,
         description,
-        sample_input,
-        sample_output,
+        public_testcase_1_input,
+        public_testcase_1_output,
+        public_testcase_2_input,
+        public_testcase_2_output,
+        public_testcase_3_input,
+        public_testcase_3_output,
         testcases,
         xp_reward,
         active,

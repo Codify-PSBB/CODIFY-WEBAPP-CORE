@@ -53,8 +53,12 @@ interface ProblemActionResponse {
 interface ProblemFormState {
   title: string
   description: string
-  sampleInput: string
-  sampleOutput: string
+  publicTestcase1Input: string
+  publicTestcase1Output: string
+  publicTestcase2Input: string
+  publicTestcase2Output: string
+  publicTestcase3Input: string
+  publicTestcase3Output: string
   testcases: string
   xpReward: string
   active: boolean
@@ -63,10 +67,14 @@ interface ProblemFormState {
 const defaultProblemForm: ProblemFormState = {
   title: "",
   description: "",
-  sampleInput: "",
-  sampleOutput: "",
+  publicTestcase1Input: "",
+  publicTestcase1Output: "",
+  publicTestcase2Input: "",
+  publicTestcase2Output: "",
+  publicTestcase3Input: "",
+  publicTestcase3Output: "",
   testcases: "",
-  xpReward: "10",
+  xpReward: "50",
   active: true,
 }
 
@@ -207,8 +215,12 @@ export default function AdminDashboardPage() {
         body: {
           title: problemForm.title,
           description: problemForm.description,
-          sample_input: problemForm.sampleInput,
-          sample_output: problemForm.sampleOutput,
+          public_testcase_1_input: problemForm.publicTestcase1Input,
+          public_testcase_1_output: problemForm.publicTestcase1Output,
+          public_testcase_2_input: problemForm.publicTestcase2Input,
+          public_testcase_2_output: problemForm.publicTestcase2Output,
+          public_testcase_3_input: problemForm.publicTestcase3Input,
+          public_testcase_3_output: problemForm.publicTestcase3Output,
           testcases: problemForm.testcases,
           xp_reward: xpReward,
           active: problemForm.active,
@@ -422,26 +434,82 @@ export default function AdminDashboardPage() {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" htmlFor="sample-input">Sample Input</label>
-                <Textarea
-                  id="sample-input"
-                  className="min-h-28"
-                  value={problemForm.sampleInput}
-                  onChange={(event) => setProblemForm((current) => ({ ...current, sampleInput: event.target.value }))}
-                  placeholder="e.g. 3 5"
-                />
+                <h4 className="text-sm font-semibold text-foreground">Public Test Cases (Visible to Students)</h4>
+                <p className="text-xs text-muted-foreground">Students will test their code against these cases before submission</p>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" htmlFor="sample-output">Sample Output</label>
-                <Textarea
-                  id="sample-output"
-                  className="min-h-28"
-                  value={problemForm.sampleOutput}
-                  onChange={(event) => setProblemForm((current) => ({ ...current, sampleOutput: event.target.value }))}
-                  placeholder="e.g. 8"
-                />
+              
+              {/* Test Case 1 */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-1-input">Test Case 1 Input</label>
+                  <Textarea
+                    id="testcase-1-input"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase1Input}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase1Input: event.target.value }))}
+                    placeholder="e.g. 3 5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-1-output">Test Case 1 Output</label>
+                  <Textarea
+                    id="testcase-1-output"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase1Output}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase1Output: event.target.value }))}
+                    placeholder="e.g. 8"
+                  />
+                </div>
+              </div>
+
+              {/* Test Case 2 */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-2-input">Test Case 2 Input</label>
+                  <Textarea
+                    id="testcase-2-input"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase2Input}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase2Input: event.target.value }))}
+                    placeholder="e.g. 10 20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-2-output">Test Case 2 Output</label>
+                  <Textarea
+                    id="testcase-2-output"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase2Output}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase2Output: event.target.value }))}
+                    placeholder="e.g. 30"
+                  />
+                </div>
+              </div>
+
+              {/* Test Case 3 */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-3-input">Test Case 3 Input</label>
+                  <Textarea
+                    id="testcase-3-input"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase3Input}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase3Input: event.target.value }))}
+                    placeholder="e.g. 1 2 3"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-3-output">Test Case 3 Output</label>
+                  <Textarea
+                    id="testcase-3-output"
+                    className="min-h-24"
+                    value={problemForm.publicTestcase3Output}
+                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase3Output: event.target.value }))}
+                    placeholder="e.g. 6"
+                  />
+                </div>
               </div>
             </div>
 
