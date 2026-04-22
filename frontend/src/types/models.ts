@@ -12,6 +12,7 @@ export interface Problem {
   xp_reward: number;
   active: number;
   created_at?: string;
+  submission_count?: number;
 }
 
 export interface Submission {

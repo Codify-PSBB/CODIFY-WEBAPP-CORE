@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { apiRequest } from "@/lib/api"
 import type { AdminUser, AppStatus, PendingSubmission, Problem, ToggleState } from "@/types/models"
-import { ArrowRight, FilePlus2, Gauge, RefreshCcw, Trophy, Users2 } from "lucide-react"
+import { ArrowRight, FilePlus2, Gauge, RefreshCcw, Trophy, Users2, AlertTriangle } from "lucide-react"
 
 interface PendingSubmissionsResponse {
   submissions?: PendingSubmission[]
@@ -275,15 +275,34 @@ export default function AdminDashboardPage() {
     setMessage("")
 
     try {
+      console.log(`Attempting to delete problem #${problemId}`)
       const response = await apiRequest<ProblemActionResponse>("/api/admin/problems/delete", {
         method: "POST",
         body: { problem_id: problemId },
       })
 
-      setMessage(response.data?.message ?? `Problem #${problemId} deleted.`)
+      console.log('Delete response:', response)
+      
+      if (response.data?.message) {
+        setMessage(response.data.message)
+      } else {
+        setMessage(`Problem #${problemId} deleted.`)
+      }
+      
       await loadProblems()
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to delete problem.")
+      console.error('Delete error:', error)
+      
+      if (error instanceof Error) {
+        // Check for 409 conflict (submissions exist)
+        if ((error as any).status === 409 || error.message.includes('submissions')) {
+          setMessage(`Cannot delete: ${error.message}`)
+        } else {
+          setMessage(`Delete failed: ${error.message}`)
+        }
+      } else {
+        setMessage("Failed to delete problem.")
+      }
     } finally {
       setProblemActionLoading(null)
     }
@@ -545,6 +564,7 @@ export default function AdminDashboardPage() {
                 <TableHead>ID</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>XP</TableHead>
+                <TableHead>Submissions</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -553,7 +573,7 @@ export default function AdminDashboardPage() {
             <TableBody>
               {problems.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={6}>
+                  <TableCell className="py-8 text-muted-foreground" colSpan={7}>
                     No problems posted yet.
                   </TableCell>
                 </TableRow>
@@ -576,6 +596,16 @@ export default function AdminDashboardPage() {
                     </TableCell>
                     <TableCell>{problem.xp_reward}</TableCell>
                     <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>{problem.submission_count ?? 0}</span>
+                        {problem.submission_count && problem.submission_count > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {problem.submission_count}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Badge variant={problem.active === 1 ? "default" : "secondary"}>
                         {problem.active === 1 ? "Active" : "Archived"}
                       </Badge>
@@ -596,17 +626,26 @@ export default function AdminDashboardPage() {
                             : "Archive"}
                         </Button>
                       ) : (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => void deleteProblem(problem.id)}
-                          disabled={Boolean(problemActionLoading)}
-                        >
-                          {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "delete"
-                            ? "Deleting..."
-                            : "Delete"}
-                        </Button>
+                        <div className="flex items-center gap-2 justify-end">
+                          {(problem.submission_count ?? 0) > 0 && (
+                            <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+                              <AlertTriangle className="size-3" />
+                              <span>Has submissions</span>
+                            </div>
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => void deleteProblem(problem.id)}
+                            disabled={Boolean(problemActionLoading) || ((problem.submission_count ?? 0) > 0)}
+                            title={(problem.submission_count ?? 0) > 0 ? "Cannot delete problems with submissions" : undefined}
+                          >
+                            {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "delete"
+                              ? "Deleting..."
+                              : "Delete"}
+                          </Button>
+                        </div>
                       )}
                     </TableCell>
                   </TableRow>

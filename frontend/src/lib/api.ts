@@ -75,7 +75,10 @@ export async function apiRequest<TData>(
       payload?.message ??
       (rawText ? `${trimServerText(rawText)} (status ${response.status})` : `Request failed with status ${response.status} for ${requestUrl}`);
 
-    throw new Error(message);
+    // Include status code in error for better handling
+    const error = new Error(message);
+    (error as any).status = response.status;
+    throw error;
   }
 
   if (!payload) {

@@ -17,6 +17,7 @@ interface ProblemRow {
   xp_reward: number;
   active: number;
   created_at: string;
+  submission_count?: number;
 }
 
 interface CreateProblemRequestBody {
@@ -131,21 +132,22 @@ export const adminProblemsGetHandler: RouteHandler = async (ctx) => {
 
     const problems = await db.all<ProblemRow>(
       `SELECT
-        id,
-        title,
-        description,
-        public_testcase_1_input,
-        public_testcase_1_output,
-        public_testcase_2_input,
-        public_testcase_2_output,
-        public_testcase_3_input,
-        public_testcase_3_output,
-        testcases,
-        xp_reward,
-        active,
-        created_at
-      FROM problems
-      ORDER BY created_at DESC, id DESC`
+        p.id,
+        p.title,
+        p.description,
+        p.public_testcase_1_input,
+        p.public_testcase_1_output,
+        p.public_testcase_2_input,
+        p.public_testcase_2_output,
+        p.public_testcase_3_input,
+        p.public_testcase_3_output,
+        p.testcases,
+        p.xp_reward,
+        p.active,
+        p.created_at,
+        (SELECT COUNT(*) FROM submissions s WHERE s.problem_id = p.id) as submission_count
+      FROM problems p
+      ORDER BY p.created_at DESC, p.id DESC`
     );
 
     return Response.json({
@@ -414,11 +416,13 @@ export const adminProblemsDeleteHandler: RouteHandler = async (ctx) => {
       [problemId]
     );
 
+    console.log(`Delete attempt for problem ${problemId}: submission count = ${submissionCount?.count ?? 0}`);
+
     if ((submissionCount?.count ?? 0) > 0) {
       return Response.json(
         {
           status: "error",
-          message: "Problem has submissions and cannot be deleted. Archive it instead."
+          message: `Problem has ${submissionCount?.count ?? 0} submissions and cannot be deleted. Archive it instead.`
         },
         { status: 409 }
       );
