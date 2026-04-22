@@ -355,7 +355,20 @@ export default function AdminDashboardPage() {
         </CardHeader>
       </Card>
 
-      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+      {message && (
+        <div className={`rounded-2xl border p-4 text-sm ${
+          message.includes('Cannot delete') || message.includes('Failed') || message.includes('error')
+            ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
+            : 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
+        }`}>
+          <div className="flex items-center gap-2">
+            {(message.includes('Cannot delete') || message.includes('Failed') || message.includes('error')) && (
+              <AlertTriangle className="size-4 shrink-0" />
+            )}
+            <span>{message}</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-slate-500/80 dark:bg-[#111827] ">
