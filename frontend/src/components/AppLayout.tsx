@@ -28,6 +28,10 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
   const { theme, toggleTheme } = useTheme()
   const visibleNavigationItems = navigationItems.filter((item) => {
     if (isAdmin) {
+      // Log admin navigation visibility for audit
+      if (item.adminOnly) {
+        console.log(`SECURITY: Admin navigation item visible: ${item.to} to ${currentEmail}`)
+      }
       return true
     }
 
@@ -35,6 +39,10 @@ export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutPr
       return item.to === "/leaderboard"
     }
 
+    // Double-check admin-only items are filtered out for non-admins
+    if (item.adminOnly) {
+      console.warn(`SECURITY: Admin-only item filtered for non-admin: ${item.to} to ${currentEmail}`)
+    }
     return !item.adminOnly
   })
 

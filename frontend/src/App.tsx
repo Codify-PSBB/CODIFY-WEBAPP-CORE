@@ -37,9 +37,16 @@ function AdminRouteGuard({ children }: { children: ReactElement }) {
   }
 
   const email = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "")
+  
+  // Double verification of admin status
   if (!isAdminEmail(email)) {
+    // Log unauthorized access attempt
+    console.warn(`SECURITY: Non-admin attempted admin access: ${email}`)
     return <Navigate to="/competition" replace />
   }
+
+  // Log successful admin access for audit
+  console.log(`SECURITY: Admin access granted to: ${email}`)
 
   return children
 }

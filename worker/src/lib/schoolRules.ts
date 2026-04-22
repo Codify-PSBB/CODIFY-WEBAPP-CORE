@@ -1,7 +1,7 @@
 export const ALLOWED_SCHOOL_EMAIL_DOMAIN = "@psbbschools.edu.in";
 
 // Hardcoded admin list as required by project docs.
-const ADMIN_EMAIL_LIST = [
+export const ADMIN_EMAIL_LIST = [
   's220162@psbbschools.edu.in',
   's120029@psbbschools.edu.in',
   's120007@psbbschools.edu.in',

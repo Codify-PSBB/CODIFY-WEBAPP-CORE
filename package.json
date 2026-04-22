@@ -11,6 +11,8 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:worker": "npm --prefix worker run dev",
     "build": "npm run build --workspaces --if-present && node scripts/sync-frontend-dist.mjs",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "verify-admin-security": "node scripts/verify-admin-security.js",
+    "security-check": "npm run verify-admin-security"
   }
 }
