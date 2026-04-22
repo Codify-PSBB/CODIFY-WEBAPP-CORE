@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import Editor from "@monaco-editor/react"
 import { useTheme } from "@/components/ThemeProvider"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import { loadPyodideRuntime } from "@/lib/pyodide"
 import { Eraser, Play, TerminalSquare } from "lucide-react"
 
@@ -21,10 +21,6 @@ export default function InterpreterPage() {
   const [output, setOutput] = useState("Console output will appear here.")
   const [running, setRunning] = useState(false)
 
-  const codeAreaClassName =
-    theme === "dark"
-      ? "border-slate-700 bg-[#1e2937] text-slate-100"
-      : "border-slate-200 bg-slate-50 text-slate-900"
   const consoleAreaClassName =
     theme === "dark"
       ? "border-slate-700 bg-[#0f172a] text-[#4ade80]"
@@ -125,12 +121,26 @@ export default function InterpreterPage() {
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Textarea
-              id="interpreter-code"
-              className={`min-h-[420px] rounded-2xl border px-4 py-3 font-mono text-sm leading-6 ${codeAreaClassName}`}
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-            />
+            <div className={`overflow-hidden rounded-2xl border shadow-inner ${theme === "dark" ? "border-slate-700" : "border-slate-200"}`}>
+              <Editor
+                height="420px"
+                language="python"
+                theme={theme === "dark" ? "vs-dark" : "vs"}
+                value={code}
+                onChange={(value) => setCode(value ?? "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: "on",
+                  autoIndent: "advanced",
+                  tabSize: 4,
+                  insertSpaces: true,
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  wordWrap: "on",
+                }}
+              />
+            </div>
             <div className="flex flex-wrap gap-3">
               <Button size="lg" onClick={() => void runCode()} disabled={running}>
                 <Play className="mr-2 size-4" />
