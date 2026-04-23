@@ -145,8 +145,12 @@ export const adminProblemsGetHandler: RouteHandler = async (ctx) => {
         p.xp_reward,
         p.active,
         p.created_at,
-        (SELECT COUNT(*) FROM submissions s WHERE s.problem_id = p.id) as submission_count
+        COUNT(s.id) as submission_count
       FROM problems p
+      LEFT JOIN submissions s ON s.problem_id = p.id
+      GROUP BY p.id, p.title, p.description, p.public_testcase_1_input, p.public_testcase_1_output,
+               p.public_testcase_2_input, p.public_testcase_2_output, p.public_testcase_3_input,
+               p.public_testcase_3_output, p.testcases, p.xp_reward, p.active, p.created_at
       ORDER BY p.created_at DESC, p.id DESC`
     );
 
