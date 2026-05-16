@@ -79,9 +79,11 @@ export default function InterpreterPage() {
     })
 
     try {
-      const namespace = runtime.globals.get("dict")()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rt = runtime as any
+      const namespace = rt.globals.get("dict")()
       try {
-        const result = await runtime.runPythonAsync(code, { globals: namespace })
+        const result = await rt.runPythonAsync(code, { globals: namespace })
         if (result !== undefined && result !== null) {
           lines.push(String(result))
         }
