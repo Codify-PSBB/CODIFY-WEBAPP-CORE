@@ -79,9 +79,14 @@ export default function InterpreterPage() {
     })
 
     try {
-      const result = await runtime.runPythonAsync(code)
-      if (result !== undefined && result !== null) {
-        lines.push(String(result))
+      const namespace = runtime.globals.get("dict")()
+      try {
+        const result = await runtime.runPythonAsync(code, { globals: namespace })
+        if (result !== undefined && result !== null) {
+          lines.push(String(result))
+        }
+      } finally {
+        namespace.destroy()
       }
     } catch (error) {
       const text = error instanceof Error ? error.message : "Python execution failed."

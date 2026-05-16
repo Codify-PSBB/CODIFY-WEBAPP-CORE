@@ -151,10 +151,15 @@ export default function CompetitionPage() {
             },
           })
 
-          // Run the code with test input
+          // Run the code with test input in an isolated namespace
           const inputCode = code + `\n\n# Test input simulation\nimport sys\nfrom io import StringIO\nsys.stdin = StringIO(${JSON.stringify(testCase.input)})\n`
           
-          await runtime.runPythonAsync(inputCode)
+          const namespace = runtime.globals.get("dict")()
+          try {
+            await runtime.runPythonAsync(inputCode, { globals: namespace })
+          } finally {
+            namespace.destroy()
+          }
           
           const output = outputLines.join("").trim()
           const expectedOutput = testCase.output?.trim()
