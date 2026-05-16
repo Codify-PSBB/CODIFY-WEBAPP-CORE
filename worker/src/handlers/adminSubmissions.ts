@@ -1,10 +1,11 @@
+import { createClerkClient } from "@clerk/backend";
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
 
 interface PendingSubmissionRow {
   id: number;
   user_id: number;
-  user_name: string;
+  clerk_user_id: string | null;
   user_email: string;
   problem_id: number;
   problem_title: string;
@@ -12,6 +13,21 @@ interface PendingSubmissionRow {
   status: "pending";
   created_at: string;
   reviewed_by: number | null;
+}
+
+interface PendingSubmissionResponseRow extends PendingSubmissionRow {
+  user_name: string;
+}
+
+function deriveFallbackName(email: string): string {
+  const localPart = email.split("@")[0] ?? "student";
+  const spaced = localPart.replace(/[._-]+/g, " ").trim();
+  if (!spaced) return "Student";
+  return spaced
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
 }
 
 export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
@@ -22,7 +38,7 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
       `SELECT
         s.id,
         s.user_id,
-        u.name AS user_name,
+        u.clerk_user_id AS clerk_user_id,
         u.email AS user_email,
         s.problem_id,
         p.title AS problem_title,
@@ -37,17 +53,62 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
       ORDER BY s.created_at ASC`
     );
 
+    const clerkSecretKey = ctx.env.CLERK_SECRET_KEY;
+    const clerkClient = clerkSecretKey ? createClerkClient({ secretKey: clerkSecretKey }) : null;
+
+    const clerkUserIds = Array.from(
+      new Set(submissions.map((s) => (s.clerk_user_id ?? "").trim()).filter(Boolean))
+    );
+
+    const clerkNameById = new Map<string, string>();
+
+    if (clerkClient && clerkUserIds.length > 0) {
+      await Promise.all(
+        clerkUserIds.map(async (id) => {
+          try {
+            const user = await clerkClient.users.getUser(id);
+
+            const resolvedFullName =
+              (user.fullName ??
+                [user.firstName, user.lastName]
+                  .filter(Boolean)
+                  .join(" ")
+                  .trim()) ||
+              deriveFallbackName(user.emailAddresses[0]?.emailAddress ?? "");
+
+            const fullName = resolvedFullName;
+
+            if (fullName) clerkNameById.set(id, fullName);
+          } catch {
+            // ignore individual failures, we will fallback
+          }
+        })
+      );
+    }
+
+    const responseSubmissions: PendingSubmissionResponseRow[] = submissions.map((s) => {
+      const clerkId = s.clerk_user_id ?? "";
+      const resolvedName =
+        (clerkId ? clerkNameById.get(clerkId) : null) ?? deriveFallbackName(s.user_email);
+
+      return {
+        ...s,
+        user_name: resolvedName
+      };
+    });
+
     return Response.json({
       status: "success",
       data: {
-        submissions
+        submissions: responseSubmissions
       }
     });
-  } catch {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return Response.json(
       {
         status: "error",
-        message: "Failed to fetch pending submissions."
+        message: `Failed to fetch pending submissions: ${errorMessage}`
       },
       { status: 500 }
     );

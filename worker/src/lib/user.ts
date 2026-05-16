@@ -25,16 +25,19 @@ export async function ensureUserId(db: D1Database, user: AuthenticatedUser): Pro
   const existing = await client.first<UserRow>("SELECT id FROM users WHERE email = ?", [user.email]);
   if (existing) {
     // Keep DB role aligned with auth role resolution.
-    await client.run("UPDATE users SET role = ? WHERE id = ?", [user.role, existing.id]);
+    // Also persist clerk_user_id once we can (schema migration adds this column).
+    await client.run(
+      "UPDATE users SET role = ?, clerk_user_id = COALESCE(clerk_user_id, ?) WHERE id = ?",
+      [user.role, user.userId, existing.id]
+    );
     return existing.id;
   }
 
   const name = deriveNameFromEmail(user.email);
-  await client.run("INSERT INTO users (name, email, role, xp) VALUES (?, ?, ?, 0)", [
-    name,
-    user.email,
-    user.role
-  ]);
+  await client.run(
+    "INSERT INTO users (name, email, role, xp, clerk_user_id) VALUES (?, ?, ?, 0, ?)",
+    [name, user.email, user.role, user.userId]
+  );
 
   const created = await client.first<UserRow>("SELECT id FROM users WHERE email = ?", [user.email]);
   if (!created) {
