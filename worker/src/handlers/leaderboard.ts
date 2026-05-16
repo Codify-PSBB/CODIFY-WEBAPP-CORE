@@ -1,5 +1,6 @@
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
+
 interface LeaderboardUserRow {
   xp: number;
   clerk_user_id: string | null;
@@ -25,20 +26,65 @@ function deriveFallbackName(email: string): string {
     .join(" ");
 }
 
+/** Returns the raw school roll number (e.g. "s220162") from an email */
+function deriveStudentId(email: string): string {
+  return (email.split("@")[0] ?? email).toLowerCase();
+}
+
+/** True if the stored name is just the email-derived placeholder */
+function isPlaceholderName(name: string, email: string): boolean {
+  return name.toLowerCase() === deriveStudentId(email);
+}
+
 export const leaderboardHandler: RouteHandler = async (ctx) => {
   try {
     const db = createDbClient(ctx.env.DB);
 
-    // Keep ranking by XP, but display Clerk full names.
     const rows = await db.all<LeaderboardUserRow>(
       "SELECT xp, clerk_user_id, name, email FROM users ORDER BY xp DESC, email ASC"
     );
 
+    // Single batch Clerk lookup — 1 API call total regardless of user count.
+    // Only queries Clerk for users whose DB name is still a placeholder.
+    const clerkNameByEmail = new Map<string, string>();
+    const secretKey = ctx.env.CLERK_SECRET_KEY;
+
+    if (secretKey && rows.length > 0) {
+      const emailsNeedingLookup = rows
+        .filter((r) => isPlaceholderName(r.name, r.email))
+        .map((r) => r.email);
+
+      if (emailsNeedingLookup.length > 0) {
+        try {
+          const { createClerkClient } = await import("@clerk/backend");
+          const clerk = createClerkClient({ secretKey });
+          const { data: clerkUsers } = await clerk.users.getUserList({ emailAddress: emailsNeedingLookup });
+
+          for (const u of clerkUsers) {
+            const fullName =
+              (u.fullName ?? [u.firstName, u.lastName].filter(Boolean).join(" ").trim()) || null;
+            if (fullName) {
+              for (const addr of u.emailAddresses) {
+                clerkNameByEmail.set(addr.emailAddress.toLowerCase(), fullName);
+              }
+            }
+          }
+        } catch {
+          // Clerk unavailable — fall back to DB names gracefully
+        }
+      }
+    }
+
     const leaderboard: LeaderboardEntry[] = rows.map((row, index) => {
+      const email = row.email.toLowerCase();
+      const resolvedName =
+        clerkNameByEmail.get(email) ??
+        (isPlaceholderName(row.name, row.email) ? deriveFallbackName(row.email) : row.name);
+
       return {
         rank: index + 1,
-        name: row.name,
-        student_id: deriveFallbackName(row.email).toUpperCase(),
+        name: resolvedName,
+        student_id: deriveStudentId(row.email),
         xp: row.xp
       };
     });
