@@ -81,6 +81,24 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
     const db = createDbClient(ctx.env.DB);
     const userId = await ensureUserId(ctx.env.DB, ctx.user, ctx.env.CLERK_SECRET_KEY);
 
+    const lastSubmission = await db.first<{ created_at: string }>(
+      "SELECT created_at FROM submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+      [userId]
+    );
+
+    if (lastSubmission) {
+      const lastTime = new Date(lastSubmission.created_at + "Z").getTime();
+      if (Date.now() - lastTime < 10000) {
+        return Response.json(
+          {
+            status: "error",
+            message: "Please wait 10 seconds before submitting again."
+          },
+          { status: 429 }
+        );
+      }
+    }
+
     const problem = await db.first<ProblemRow>("SELECT id FROM problems WHERE id = ? AND active = 1", [problemId]);
     if (!problem) {
       return Response.json(
@@ -92,13 +110,9 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
       );
     }
 
-    await db.run(
-      "INSERT INTO submissions (user_id, problem_id, code, status, created_at) VALUES (?, ?, ?, 'pending', CURRENT_TIMESTAMP)",
-      [userId, problemId, code]
-    );
-
     const inserted = await db.first<InsertedSubmissionRow>(
-      "SELECT id, created_at FROM submissions WHERE id = last_insert_rowid()"
+      "INSERT INTO submissions (user_id, problem_id, code, status, created_at) VALUES (?, ?, ?, 'pending', CURRENT_TIMESTAMP) RETURNING id, created_at",
+      [userId, problemId, code]
     );
 
     return Response.json(
