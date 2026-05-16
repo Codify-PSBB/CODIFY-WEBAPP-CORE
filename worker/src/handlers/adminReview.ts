@@ -98,7 +98,7 @@ export const adminReviewHandler: RouteHandler = async (ctx) => {
 
   try {
     const db = createDbClient(ctx.env.DB);
-    const reviewerUserId = await ensureUserId(ctx.env.DB, ctx.user);
+    const reviewerUserId = await ensureUserId(ctx.env.DB, ctx.user, ctx.env.CLERK_SECRET_KEY);
 
     const submission = await db.first<SubmissionWithProblem>(
       `SELECT

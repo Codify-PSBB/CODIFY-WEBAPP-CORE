@@ -79,7 +79,7 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
 
   try {
     const db = createDbClient(ctx.env.DB);
-    const userId = await ensureUserId(ctx.env.DB, ctx.user);
+    const userId = await ensureUserId(ctx.env.DB, ctx.user, ctx.env.CLERK_SECRET_KEY);
 
     const problem = await db.first<ProblemRow>("SELECT id FROM problems WHERE id = ? AND active = 1", [problemId]);
     if (!problem) {

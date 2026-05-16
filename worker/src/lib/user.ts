@@ -1,8 +1,10 @@
+import { createClerkClient } from "@clerk/backend";
 import { createDbClient } from "../lib/db";
 import type { AuthenticatedUser } from "../types";
 
 interface UserRow {
   id: number;
+  name: string;
 }
 
 function deriveNameFromEmail(email: string): string {
@@ -19,21 +21,41 @@ function deriveNameFromEmail(email: string): string {
     .join(" ");
 }
 
-export async function ensureUserId(db: D1Database, user: AuthenticatedUser): Promise<number> {
+export async function ensureUserId(
+  db: D1Database,
+  user: AuthenticatedUser,
+  clerkSecretKey?: string
+): Promise<number> {
   const client = createDbClient(db);
 
-  const existing = await client.first<UserRow>("SELECT id FROM users WHERE email = ?", [user.email]);
+  let realName: string | null = null;
+
+  if (clerkSecretKey) {
+    try {
+      const clerkClient = createClerkClient({ secretKey: clerkSecretKey });
+      const clerkUser = await clerkClient.users.getUser(user.userId);
+      realName =
+        (clerkUser.fullName ??
+          [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ").trim()) ||
+        null;
+    } catch {
+      // ignore
+    }
+  }
+
+  const existing = await client.first<UserRow>("SELECT id, name FROM users WHERE email = ?", [user.email]);
   if (existing) {
-    // Keep DB role aligned with auth role resolution.
-    // Also persist clerk_user_id once we can (schema migration adds this column).
+    const isPlaceholder = existing.name === deriveNameFromEmail(user.email);
+    const newName = isPlaceholder && realName ? realName : existing.name;
+
     await client.run(
-      "UPDATE users SET role = ?, clerk_user_id = COALESCE(clerk_user_id, ?) WHERE id = ?",
-      [user.role, user.userId, existing.id]
+      "UPDATE users SET role = ?, clerk_user_id = COALESCE(clerk_user_id, ?), name = ? WHERE id = ?",
+      [user.role, user.userId, newName, existing.id]
     );
     return existing.id;
   }
 
-  const name = deriveNameFromEmail(user.email);
+  const name = realName ?? deriveNameFromEmail(user.email);
   await client.run(
     "INSERT INTO users (name, email, role, xp, clerk_user_id) VALUES (?, ?, ?, 0, ?)",
     [name, user.email, user.role, user.userId]

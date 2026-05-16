@@ -1,12 +1,11 @@
-import { createClerkClient } from "@clerk/backend";
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
 
 interface PendingSubmissionRow {
   id: number;
   user_id: number;
-  clerk_user_id: string | null;
   user_email: string;
+  user_name: string;
   problem_id: number;
   problem_title: string;
   code: string;
@@ -38,7 +37,7 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
       `SELECT
         s.id,
         s.user_id,
-        u.clerk_user_id AS clerk_user_id,
+        u.name AS user_name,
         u.email AS user_email,
         s.problem_id,
         p.title AS problem_title,
@@ -53,76 +52,9 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
       ORDER BY s.created_at ASC`
     );
 
-    const clerkSecretKey = ctx.env.CLERK_SECRET_KEY;
-    const clerkClient = clerkSecretKey ? createClerkClient({ secretKey: clerkSecretKey }) : null;
-
-    const clerkUserIds = Array.from(
-      new Set(submissions.map((s) => (s.clerk_user_id ?? "").trim()).filter(Boolean))
-    );
-
-    const clerkNameById = new Map<string, string>();
-    const clerkNameByEmail = new Map<string, string>();
-
-    if (clerkClient) {
-      if (clerkUserIds.length > 0) {
-        await Promise.all(
-          clerkUserIds.map(async (id) => {
-            try {
-              const user = await clerkClient.users.getUser(id);
-              const resolvedFullName =
-                (user.fullName ??
-                  [user.firstName, user.lastName]
-                    .filter(Boolean)
-                    .join(" ")
-                    .trim()) ||
-                deriveFallbackName(user.emailAddresses[0]?.emailAddress ?? "");
-
-              if (resolvedFullName) clerkNameById.set(id, resolvedFullName);
-            } catch {
-              // ignore individual failures
-            }
-          })
-        );
-      }
-
-      const missingEmails = Array.from(
-        new Set(submissions.filter((s) => !(s.clerk_user_id ?? "").trim()).map((s) => s.user_email))
-      );
-
-      if (missingEmails.length > 0) {
-        try {
-          const { data: users } = await clerkClient.users.getUserList({ emailAddress: missingEmails });
-          for (const user of users) {
-            const resolvedFullName =
-              (user.fullName ??
-                [user.firstName, user.lastName]
-                  .filter(Boolean)
-                  .join(" ")
-                  .trim()) ||
-              deriveFallbackName(user.emailAddresses[0]?.emailAddress ?? "");
-
-            if (resolvedFullName) {
-              for (const email of user.emailAddresses) {
-                clerkNameByEmail.set(email.emailAddress, resolvedFullName);
-              }
-            }
-          }
-        } catch {
-          // ignore fallback
-        }
-      }
-    }
-
     const responseSubmissions: PendingSubmissionResponseRow[] = submissions.map((s) => {
-      const clerkId = s.clerk_user_id ?? "";
-      const resolvedName =
-        (clerkId ? clerkNameById.get(clerkId) : null) ??
-        clerkNameByEmail.get(s.user_email) ??
-        deriveFallbackName(s.user_email);
-
       return {
-        ...s,
-        user_name: resolvedName
+        ...s
       };
     });
 
