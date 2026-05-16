@@ -10,7 +10,6 @@ function buildCorsHeaders(request: Request): Headers {
 
   if (origin) {
     headers.set("Access-Control-Allow-Origin", origin);
-    headers.set("Access-Control-Allow-Credentials", "true");
     headers.append("Vary", "Origin");
   } else {
     headers.set("Access-Control-Allow-Origin", "*");
