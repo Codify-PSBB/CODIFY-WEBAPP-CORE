@@ -152,7 +152,12 @@ export default function LeaderboardPage() {
                           ) : null}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{entry.name}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{entry.name}</span>
+                          <span className="text-xs text-muted-foreground font-mono">{entry.student_id}</span>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right text-lg font-semibold tabular-nums">{entry.xp}</TableCell>
                     </TableRow>
                   )

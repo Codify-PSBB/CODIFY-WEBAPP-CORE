@@ -39,6 +39,7 @@ export interface PendingSubmission {
 export interface LeaderboardEntry {
   rank: number;
   name: string;
+  student_id: string;
   xp: number;
 }
 

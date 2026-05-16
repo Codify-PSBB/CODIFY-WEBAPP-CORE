@@ -11,6 +11,7 @@ interface LeaderboardUserRow {
 interface LeaderboardEntry {
   rank: number;
   name: string;
+  student_id: string;
   xp: number;
 }
 
@@ -104,6 +105,7 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
       return {
         rank: index + 1,
         name: resolvedName,
+        student_id: deriveFallbackName(row.email).toUpperCase(),
         xp: row.xp
       };
     });
