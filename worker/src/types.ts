@@ -11,6 +11,7 @@ export interface Env {
   DB: D1Database;
   APP_STATE: KVNamespace;
   CLERK_SECRET_KEY: string;
+  JWT_SECRET: string;
 }
 
 export interface RequestContext {

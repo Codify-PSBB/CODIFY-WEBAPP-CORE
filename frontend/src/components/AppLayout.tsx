@@ -1,122 +1,103 @@
-import { SignOutButton, UserButton, useUser } from "@clerk/clerk-react"
-import { BarChart3, ClipboardList, Code2, LayoutDashboard, Moon, Shield, Sun, Trophy } from "lucide-react"
-import { NavLink, Outlet, useLocation } from "react-router-dom"
-import { Badge } from "@/components/ui/badge"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules"
-import { useTheme } from "@/components/ThemeProvider"
-import { cn } from "@/lib/utils"
+import { UserButton, useUser, useClerk } from "@clerk/clerk-react";
+import { LogOut } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules";
+import { getLocalTokenPayload, clearLocalToken } from "@/lib/auth";
 
-const navigationItems = [
-  { to: "/competition", label: "Competition", icon: Code2, adminOnly: false },
-  { to: "/interpreter", label: "Interpreter", icon: ClipboardList, adminOnly: false },
-  { to: "/leaderboard", label: "Leaderboard", icon: Trophy, adminOnly: false },
-  { to: "/admin", label: "Admin Dashboard", icon: LayoutDashboard, adminOnly: true },
-  { to: "/admin/queue", label: "Submission Queue", icon: BarChart3, adminOnly: true },
-]
+export default function AppLayout({
+  memberLeaderboardOnly,
+  onSignOut
+}: {
+  memberLeaderboardOnly?: boolean;
+  onSignOut?: () => void;
+}) {
+  const { pathname } = useLocation();
+  const { user: clerkUser } = useUser();
+  const { signOut: clerkSignOut } = useClerk();
+  
+  const localUser = getLocalTokenPayload();
+  
+  const email = normalizeEmail(clerkUser?.primaryEmailAddress?.emailAddress ?? "");
+  const isAdmin = email.length > 0 && isAdminEmail(email);
 
-interface AppLayoutProps {
-  memberLeaderboardOnly?: boolean
-}
+  const navItems = [];
+  
+  if (isAdmin) {
+    navItems.push(
+      { name: "Admin Dashboard", path: "/admin" },
+      { name: "Queue", path: "/admin/queue" }
+    );
+  }
 
-export default function AppLayout({ memberLeaderboardOnly = false }: AppLayoutProps) {
-  const { user } = useUser()
-  const location = useLocation()
-  const currentEmail = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "")
-  const isAdmin = currentEmail.length > 0 && isAdminEmail(currentEmail)
-  const isAdminPage = isAdmin && location.pathname.startsWith("/admin")
-  const { theme, toggleTheme } = useTheme()
-  const visibleNavigationItems = navigationItems.filter((item) => {
-    if (isAdmin) {
-      // Log admin navigation visibility for audit
-      if (item.adminOnly) {
-        console.log(`SECURITY: Admin navigation item visible: ${item.to} to ${currentEmail}`)
+  if (!memberLeaderboardOnly || isAdmin) {
+    navItems.push(
+      { name: "Competition", path: "/competition" },
+      { name: "Interpreter", path: "/interpreter" }
+    );
+  }
+
+  navItems.push({ name: "Leaderboard", path: "/leaderboard" });
+
+  const handleSignOut = () => {
+    if (onSignOut) {
+      onSignOut();
+    } else {
+      clearLocalToken();
+      if (isAdmin) {
+        void clerkSignOut();
+      } else {
+        window.location.href = "/";
       }
-      return true
     }
-
-    if (memberLeaderboardOnly) {
-      return item.to === "/leaderboard"
-    }
-
-    // Double-check admin-only items are filtered out for non-admins
-    if (item.adminOnly) {
-      console.warn(`SECURITY: Admin-only item filtered for non-admin: ${item.to} to ${currentEmail}`)
-    }
-    return !item.adminOnly
-  })
+  };
 
   return (
-    <div className="section-spacing">
-      <header className="card-modern">
-        <div className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/codify-logo.png"
-              alt="Codify logo"
-              className="size-12 rounded-xl border border-border object-cover shadow-sm"
-              loading="eager"
-            />
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Site</p>
-              <h1 className="heading-2 text-foreground">Codify</h1>
-            </div>
-            {isAdminPage ? (
-              <Badge className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em] dark:bg-white/10 dark:text-white dark:border-white/20">
-                <Shield className="mr-1 size-3.5" />
-                Admin
-              </Badge>
-            ) : null}
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="mx-auto flex h-16 w-full max-w-[1100px] items-center justify-between px-6">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center space-x-3 transition-opacity hover:opacity-80">
+              <img src="/codify-logo.png" alt="Codify logo" className="h-8 w-8 rounded-lg object-cover" />
+              <span className="font-semibold tracking-tight text-lg">Codify</span>
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-1.5 ml-4">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    pathname === item.path
+                      ? "bg-secondary text-secondary-foreground"
+                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" className="btn-outline" onClick={toggleTheme}>
-              {theme === "dark" ? <Sun className="mr-2 size-4" /> : <Moon className="mr-2 size-4" />}
-              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          <div className="flex items-center gap-4">
+            {isAdmin ? (
+              <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
+            ) : (
+              <div className="hidden sm:flex text-sm text-foreground/80 break-all font-medium bg-secondary/50 px-3 py-1.5 rounded-full">
+                 {localUser?.name || localUser?.email}
+              </div>
+            )}
+            <Button onClick={handleSignOut} variant="outline" size="sm" className="gap-2">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign Out</span>
             </Button>
-            <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
-            <SignOutButton>
-              <Button variant="outline" className="btn-outline">Sign Out</Button>
-            </SignOutButton>
           </div>
         </div>
       </header>
 
-      <nav
-        className={cn(
-          "grid gap-4",
-          isAdmin ? "md:grid-cols-5" : memberLeaderboardOnly ? "md:grid-cols-1" : "md:grid-cols-3"
-        )}
-      >
-        {visibleNavigationItems.map((item) => {
-          const Icon = item.icon
-
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  buttonVariants({
-                    variant: isActive ? "default" : "outline",
-                    size: "lg",
-                  }),
-                  "h-14 justify-start rounded-xl px-4 hover-lift",
-                  isActive ? "nav-item-active" : "nav-item"
-                )
-              }
-            >
-              <Icon className="mr-2 size-4" />
-              {item.label}
-            </NavLink>
-          )
-        })}
-      </nav>
-
-      <section className="card-modern p-8">
+      <main className="mx-auto w-full max-w-[1100px] flex-1 p-6 sm:p-8 animate-fade-in">
         <Outlet />
-      </section>
+      </main>
     </div>
-  )
+  );
 }
-

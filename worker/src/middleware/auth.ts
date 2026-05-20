@@ -1,5 +1,6 @@
 import { createClerkClient, verifyToken } from "@clerk/backend";
 import { isAdminEmail, isAllowedSchoolEmail, normalizeEmail } from "../lib/schoolRules";
+import { verifyCustomJwt } from "../lib/jwt";
 import type { AuthenticatedUser, Middleware } from "../types";
 
 type TokenClaims = Record<string, unknown> & {
@@ -80,6 +81,22 @@ export const requireAuth: Middleware = async (ctx) => {
     return jsonError("Authentication required.", 401);
   }
 
+  // First try verifying as a Custom JWT
+  if (ctx.env.JWT_SECRET) {
+    const customPayload = await verifyCustomJwt(token, ctx.env.JWT_SECRET);
+    if (customPayload && customPayload.email && customPayload.sub) {
+      if (!isAllowedSchoolEmail(customPayload.email)) {
+         return jsonError("Access restricted to @psbbschools.edu.in accounts.", 403);
+      }
+      const user: AuthenticatedUser = {
+        userId: customPayload.sub,
+        email: customPayload.email,
+        role: isAdminEmail(customPayload.email) ? "admin" : "member"
+      };
+      return { ...ctx, user };
+    }
+  }
+
   const secretKey = ctx.env.CLERK_SECRET_KEY;
   if (!secretKey) {
     return jsonError("Missing Clerk secret key configuration.", 500);
@@ -89,7 +106,7 @@ export const requireAuth: Middleware = async (ctx) => {
   try {
     claims = (await verifyToken(token, { secretKey })) as TokenClaims;
   } catch {
-    return jsonError("Invalid or expired Clerk session token.", 401);
+    return jsonError("Invalid or expired session token.", 401);
   }
 
   const userId = readString(claims.sub);
