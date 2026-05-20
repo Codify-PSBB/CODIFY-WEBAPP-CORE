@@ -6,6 +6,7 @@ interface LeaderboardUserRow {
   clerk_user_id: string | null;
   name: string;
   email: string;
+  grade: number | null;
 }
 
 interface LeaderboardEntry {
@@ -13,6 +14,7 @@ interface LeaderboardEntry {
   name: string;
   student_id: string;
   xp: number;
+  grade: number | null;
 }
 
 function deriveFallbackName(email: string): string {
@@ -41,7 +43,7 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
     const db = createDbClient(ctx.env.DB);
 
     const rows = await db.all<LeaderboardUserRow>(
-      "SELECT xp, clerk_user_id, name, email FROM users ORDER BY xp DESC, email ASC"
+      "SELECT xp, clerk_user_id, name, email, grade FROM users ORDER BY xp DESC, email ASC"
     );
 
     // Single batch Clerk lookup — 1 API call total regardless of user count.
@@ -75,24 +77,32 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
       }
     }
 
-    const leaderboard: LeaderboardEntry[] = rows.map((row, index) => {
+    const fullLeaderboard = rows.map((row) => {
       const email = row.email.toLowerCase();
       const resolvedName =
         clerkNameByEmail.get(email) ??
         (isPlaceholderName(row.name, row.email) ? deriveFallbackName(row.email) : row.name);
 
       return {
-        rank: index + 1,
         name: resolvedName,
         student_id: deriveStudentId(row.email),
-        xp: row.xp
+        xp: row.xp,
+        grade: row.grade
       };
     });
+
+    const addRanks = (list: Omit<LeaderboardEntry, "rank">[]) => list.map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+
+    const leaderboard = addRanks(fullLeaderboard);
+    const grade9 = addRanks(fullLeaderboard.filter(u => u.grade === 9));
+    const grade10 = addRanks(fullLeaderboard.filter(u => u.grade === 10));
 
     return Response.json({
       status: "success",
       data: {
-        leaderboard
+        leaderboard,
+        grade9,
+        grade10
       }
     });
   } catch (error: unknown) {

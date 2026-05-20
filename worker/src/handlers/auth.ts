@@ -15,10 +15,15 @@ function jsonError(message: string, status = 400) {
 export async function handleRegister(ctx: RequestContext) {
   try {
     const body = (await ctx.request.json()) as any;
-    const { eduId, password, name } = body;
+    const { eduId, password, name, grade } = body;
 
-    if (!eduId || !password || !name) {
-      return jsonError("Missing required fields (eduId, password, name).");
+    if (!eduId || !password || !name || !grade) {
+      return jsonError("Missing required fields (eduId, password, name, grade).");
+    }
+
+    const numericGrade = parseInt(grade, 10);
+    if (numericGrade !== 9 && numericGrade !== 10) {
+      return jsonError("Grade must be 9 or 10.");
     }
 
     const username = eduId.toUpperCase().trim();
@@ -38,8 +43,8 @@ export async function handleRegister(ctx: RequestContext) {
     
     // Insert new member
     await client.run(
-      "INSERT INTO users (name, email, role, xp, password_hash) VALUES (?, ?, ?, 0, ?)",
-      [name.trim(), email, "member", hashedPassword]
+      "INSERT INTO users (name, email, role, xp, password_hash, grade) VALUES (?, ?, ?, 0, ?, ?)",
+      [name.trim(), email, "member", hashedPassword, numericGrade]
     );
 
     const created = await client.first<{ id: number }>("SELECT id FROM users WHERE email = ?", [email]);

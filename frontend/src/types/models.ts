@@ -41,6 +41,7 @@ export interface LeaderboardEntry {
   name: string;
   student_id: string;
   xp: number;
+  grade: number | null;
 }
 
 export interface AdminUser {

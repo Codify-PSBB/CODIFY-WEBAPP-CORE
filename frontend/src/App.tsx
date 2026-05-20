@@ -52,6 +52,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
   const [eduId, setEduId] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [grade, setGrade] = useState("9");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +62,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
     setError(null);
     try {
       const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const body = isRegister ? { eduId, password, name } : { eduId, password };
+      const body = isRegister ? { eduId, password, name, grade } : { eduId, password };
       
       const res = await apiRequest<{ token: string }>(endpoint, { method: "POST", body });
       if (res.data?.token) {
@@ -104,17 +105,32 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
               <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="Enter your EDU ID" />
             </div>
             {isRegister && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Full Name</label>
-                <Input required value={name} onChange={e => setName(e.target.value)} placeholder="Enter your full name" />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Full Name</label>
+                  <Input required value={name} onChange={e => setName(e.target.value)} placeholder="Enter your full name" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Grade</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded border border-border bg-background flex-1 justify-center relative hover:bg-secondary/50 transition-colors">
+                      <input type="radio" name="grade" value="9" checked={grade === "9"} onChange={e => setGrade(e.target.value)} className="w-4 h-4 text-primary" />
+                      <span className="font-medium">9th Grade</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded border border-border bg-background flex-1 justify-center relative hover:bg-secondary/50 transition-colors">
+                      <input type="radio" name="grade" value="10" checked={grade === "10"} onChange={e => setGrade(e.target.value)} className="w-4 h-4 text-primary" />
+                      <span className="font-medium">10th Grade</span>
+                    </label>
+                  </div>
+                </div>
+              </>
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" />
+              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             
-            <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full">
+            <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full mt-2">
               {isRegister ? "Register" : "Login"}
             </Button>
           </form>
@@ -126,7 +142,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
 
-        <div className="pt-6 relative">
+        <div className="pt-6 relative mt-2">
            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/4 bg-border"></div>
            <div className="bg-background relative inline-block px-4 -mt-3 mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             If you're an Admin
