@@ -100,18 +100,18 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
           <form onSubmit={handleSubmit} className="space-y-4 text-left mt-2">
             {error && <div className="text-sm text-red-500 text-center font-medium bg-red-500/10 p-2 rounded">{error}</div>}
             <div className="space-y-2">
-              <label className="text-sm font-medium">EDU ID (e.g. S220162)</label>
-              <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="S220162" />
+              <label className="text-sm font-medium">EDU ID</label>
+              <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="Enter your EDU ID" />
             </div>
             {isRegister && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Full Name</label>
-                <Input required value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" />
+                <Input required value={name} onChange={e => setName(e.target.value)} placeholder="Enter your full name" />
               </div>
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½" />
             </div>
             
             <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full">
