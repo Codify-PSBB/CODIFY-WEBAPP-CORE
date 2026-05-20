@@ -86,7 +86,6 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
           className="mx-auto h-16 w-16 rounded-2xl border border-border object-cover"
           loading="eager"
         />
-        <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Members Only</p>
         <div className="space-y-2">
           <h1 className="text-4xl font-semibold tracking-tight">Codify</h1>
           <p className="text-base text-muted-foreground">
@@ -94,37 +93,48 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
           </p>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-4 text-left">
-          {error && <div className="text-sm text-red-500 text-center font-medium bg-red-500/10 p-2 rounded">{error}</div>}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">EDU ID (e.g. S220162)</label>
-            <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="S220162" />
+        <div className="rounded-xl border border-border bg-card/50 p-6 relative">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-background px-3 text-xs font-semibold uppercase tracking-widest text-primary border border-border rounded-full">
+            If you're a member
           </div>
-          {isRegister && (
+          <form onSubmit={handleSubmit} className="space-y-4 text-left mt-2">
+            {error && <div className="text-sm text-red-500 text-center font-medium bg-red-500/10 p-2 rounded">{error}</div>}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Full Name</label>
-              <Input required value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" />
+              <label className="text-sm font-medium">EDU ID (e.g. S220162)</label>
+              <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="S220162" />
             </div>
-          )}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
-            <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
-          </div>
-          
-          <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full">
-            {isRegister ? "Register" : "Login"}
-          </Button>
-        </form>
+            {isRegister && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Full Name</label>
+                <Input required value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" />
+              </div>
+            )}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Password</label>
+              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+            </div>
+            
+            <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full">
+              {isRegister ? "Register" : "Login"}
+            </Button>
+          </form>
 
-        <div className="pt-4 flex flex-col space-y-2 items-center text-sm text-muted-foreground">
-          <button type="button" onClick={() => setIsRegister(!isRegister)} className="hover:text-primary underline underline-offset-4">
-            {isRegister ? "Already registered? Sign in" : "Need an account? Register here"}
-          </button>
-          
-          <SignInButton mode="modal">
-            <button type="button" className="text-xs opacity-50 hover:opacity-100 transition-opacity pt-4">
-              Admin Login
+          <div className="pt-4 flex flex-col space-y-2 items-center text-sm text-muted-foreground">
+            <button type="button" onClick={() => setIsRegister(!isRegister)} className="hover:text-primary underline underline-offset-4">
+              {isRegister ? "Already registered? Sign in" : "Need an account? Register here"}
             </button>
+          </div>
+        </div>
+
+        <div className="pt-6 relative">
+           <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/4 bg-border"></div>
+           <div className="bg-background relative inline-block px-4 -mt-3 mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            If you're an Admin
+          </div>
+          <SignInButton mode="modal">
+            <Button variant="outline" className="w-full mt-2">
+              Login as Admin (Google Clerk)
+            </Button>
           </SignInButton>
         </div>
       </CardContent>
