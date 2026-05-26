@@ -1,17 +1,3 @@
-/**
- * Student Account Generator for Codify WebApp
- * 
- * INSTRUCTIONS:
- * 1. Populate the file 'scripts/users.json' with your student accounts (name, eduId, grade, password).
- * 2. Run this script using Node:
- *      node scripts/create-users.mjs
- * 3. This will generate 'scripts/insert_users.sql'.
- * 4. Run the generated SQL against your PRODUCTION (remote) Cloudflare D1 database:
- *      npx wrangler d1 execute coding-club-db --remote --file=scripts/insert_users.sql
- * 
- * NOTE: Both 'users.json' and 'insert_users.sql' are git-ignored to ensure passwords are kept secure.
- */
-
 import { existsSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
