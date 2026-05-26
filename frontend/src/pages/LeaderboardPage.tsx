@@ -12,30 +12,30 @@ interface LeaderboardResponse {
 }
 
 const PODIUM_STYLES = [
-  // 1st � Gold
+  // 1st — Gold
   {
     wrapper: "order-1 md:order-2",
     card: "bg-gradient-to-b from-amber-50 to-white border-2 border-amber-300/80 shadow-[0_8px_40px_-8px_rgba(251,191,36,0.45)] dark:from-amber-900/20 dark:to-card dark:border-amber-400/40 dark:shadow-[0_8px_40px_-8px_rgba(251,191,36,0.2)]",
     number: "text-amber-500 dark:text-amber-400",
-    emoji: "??",
+    emoji: "🥇",
     height: "pb-8",
     xpClass: "bg-amber-400/80 dark:bg-amber-400/60",
   },
-  // 2nd � Silver
+  // 2nd — Silver
   {
     wrapper: "order-2 md:order-1",
     card: "bg-gradient-to-b from-slate-50 to-white border-2 border-slate-300/80 shadow-[0_8px_30px_-8px_rgba(148,163,184,0.4)] dark:from-slate-700/20 dark:to-card dark:border-slate-500/40",
     number: "text-slate-500 dark:text-slate-300",
-    emoji: "??",
+    emoji: "🥈",
     height: "pb-4",
     xpClass: "bg-slate-400/70 dark:bg-slate-400/50",
   },
-  // 3rd � Bronze
+  // 3rd — Bronze
   {
     wrapper: "order-3",
     card: "bg-gradient-to-b from-orange-50 to-white border-2 border-orange-300/80 shadow-[0_8px_30px_-8px_rgba(251,146,60,0.35)] dark:from-orange-900/20 dark:to-card dark:border-orange-500/40",
     number: "text-orange-500 dark:text-orange-400",
-    emoji: "??",
+    emoji: "🥉",
     height: "pb-2",
     xpClass: "bg-orange-400/70 dark:bg-orange-400/50",
   },
