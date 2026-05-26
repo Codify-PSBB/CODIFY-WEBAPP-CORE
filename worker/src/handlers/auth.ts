@@ -57,8 +57,10 @@ export async function handleLogin(ctx: RequestContext) {
     
     return jsonResponse({
       status: "success",
-      token,
-      user: { id: userRow.id.toString(), email, role: userRow.role, name: userRow.name }
+      data: {
+        token,
+        user: { id: userRow.id.toString(), email, role: userRow.role, name: userRow.name }
+      }
     });
   } catch (e: any) {
     return jsonError(e.message || "Login failed", 500);
