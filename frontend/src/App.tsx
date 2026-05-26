@@ -48,11 +48,8 @@ function AdminRouteGuard({ children }: { children: ReactElement }) {
 // ----- Login Components for Custom Auth -----
 
 function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
-  const [isRegister, setIsRegister] = useState(false);
   const [eduId, setEduId] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [grade, setGrade] = useState("9");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,15 +58,15 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
     setLoading(true);
     setError(null);
     try {
-      const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
-      const body = isRegister ? { eduId, password, name, grade } : { eduId, password };
-      
-      const res = await apiRequest<{ token: string }>(endpoint, { method: "POST", body });
+      const res = await apiRequest<{ token: string }>("/api/auth/login", {
+        method: "POST",
+        body: { eduId, password }
+      });
       if (res.data?.token) {
         setLocalToken(res.data.token);
         onLogin();
       } else {
-        throw new Error(res.error || "Authentication failed");
+        throw new Error(res.message || "Authentication failed");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred");
@@ -90,7 +87,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
         <div className="space-y-2">
           <h1 className="text-4xl font-semibold tracking-tight">Codify</h1>
           <p className="text-base text-muted-foreground">
-            {isRegister ? "Register for the competition using your EDU ID" : "Sign in to access competitions and rankings."}
+            Sign in to access competitions and rankings.
           </p>
         </div>
         
@@ -104,42 +101,15 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
               <label className="text-sm font-medium">EDU ID</label>
               <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="Enter your EDU ID" />
             </div>
-            {isRegister && (
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Name</label>
-                  <Input required value={name} onChange={e => setName(e.target.value)} placeholder="Enter your full name" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Grade</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded border border-border bg-background flex-1 justify-center relative hover:bg-secondary/50 transition-colors">
-                      <input type="radio" name="grade" value="9" checked={grade === "9"} onChange={e => setGrade(e.target.value)} className="w-4 h-4 text-primary" />
-                      <span className="font-medium">9th Grade</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer p-2 rounded border border-border bg-background flex-1 justify-center relative hover:bg-secondary/50 transition-colors">
-                      <input type="radio" name="grade" value="10" checked={grade === "10"} onChange={e => setGrade(e.target.value)} className="w-4 h-4 text-primary" />
-                      <span className="font-medium">10th Grade</span>
-                    </label>
-                  </div>
-                </div>
-              </>
-            )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
             </div>
             
             <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full mt-2">
-              {isRegister ? "Register" : "Login"}
+              Login
             </Button>
           </form>
-
-          <div className="pt-4 flex flex-col space-y-2 items-center text-sm text-muted-foreground">
-            <button type="button" onClick={() => setIsRegister(!isRegister)} className="hover:text-primary underline underline-offset-4">
-              {isRegister ? "Already registered? Sign in" : "Need an account? Register here"}
-            </button>
-          </div>
         </div>
 
         <div className="pt-6 relative mt-2">
