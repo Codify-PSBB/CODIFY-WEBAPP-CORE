@@ -20,3 +20,7 @@
 
 /.env.example
 /frontend/.env.example
+
+# Custom user account generation data
+/scripts/users.json
+/scripts/insert_users.sql
