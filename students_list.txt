@@ -1,0 +1,35 @@
+Students List Status (Ticked = added to DB)
+
+9A1 (current 10th batch):
+[x] Shravan (s140019@psbbschools.edu.in)
+[x] Harshath (s190143@psbbschools.edu.in)
+[x] Ajay (s180113@psbbschools.edu.in)
+[x] Keshav (s220183@psbbschools.edu.in)
+[ ] Ashwin (No USN provided)
+[ ] Krish (No USN provided)
+[x] Varnith (s200069@psbbschools.edu.in)
+[ ] Bhagya (No USN provided)
+[x] Rishika (s140061@psbbschools.edu.in)
+[x] Dharanish (s250157@psbbschools.edu.in)
+[x] Sahaana (s140017@psbbschools.edu.in)
+
+9B1 (Current 10th batch):
+[ ] Aarnav Balaji (No USN provided)
+[x] Arnav Kapoor (s140065@psbbschools.edu.in - previously added)
+[x] Sahasra Kudaka (s210135@psbbschools.edu.in)
+[x] Sahasra Kurimindla (s190144@psbbschools.edu.in)
+[x] Pavana.M (s230210@psbbschools.edu.in)
+[x] Kanishka.V (s240167@psbbschools.edu.in)
+[x] Gowri (s140011@psbbschools.edu.in)
+[x] Paarvana.V (s190147@psbbschools.edu.in)
+[x] Meghana (s160127@psbbschools.edu.in)
+[x] Shraddha (s150098@psbbschools.edu.in)
+[x] Divya (s250158@psbbschools.edu.in)
+
+9C1 (Current 10th batch):
+[ ] Anjana (No USN provided / not in DB)
+[ ] Ryan (No USN provided / not in DB)
+
+9D1 (Current 10th Batch):
+[ ] Prananjay (No USN provided / not in DB)
+[ ] Kavin Kumar (No USN provided / not in DB)
