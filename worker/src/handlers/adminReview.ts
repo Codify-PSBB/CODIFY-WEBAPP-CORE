@@ -151,7 +151,14 @@ export const adminReviewHandler: RouteHandler = async (ctx) => {
     }
 
     if (action === "approve") {
-      await db.run("UPDATE users SET xp = xp + ? WHERE id = ?", [submission.xp_reward, submission.user_id]);
+      const priorApproved = await db.first<{ id: number }>(
+        "SELECT id FROM submissions WHERE user_id = ? AND problem_id = ? AND status = 'approved' AND id != ? LIMIT 1",
+        [submission.user_id, submission.problem_id, submissionId]
+      );
+      
+      if (!priorApproved) {
+        await db.run("UPDATE users SET xp = xp + ? WHERE id = ?", [submission.xp_reward, submission.user_id]);
+      }
     }
 
     const reviewed = await db.first<ReviewedSubmissionRow>(

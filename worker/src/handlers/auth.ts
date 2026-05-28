@@ -46,7 +46,8 @@ export async function handleLogin(ctx: RequestContext) {
     const payload = {
       sub: userRow.id.toString(),
       email: email,
-      role: userRow.role
+      role: userRow.role,
+      exp: Math.floor(Date.now() / 1000) + 86400 // 24 hours
     };
 
     if (!ctx.env.JWT_SECRET) {

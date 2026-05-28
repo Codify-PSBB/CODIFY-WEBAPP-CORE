@@ -38,8 +38,25 @@ function isPlaceholderName(name: string, email: string): boolean {
   return name.toLowerCase() === deriveStudentId(email);
 }
 
+interface CachePayload {
+  leaderboard: LeaderboardEntry[];
+  grade9: LeaderboardEntry[];
+  grade10: LeaderboardEntry[];
+}
+
+let cachedResponse: { data: CachePayload; timestamp: number } | null = null;
+const CACHE_TTL_MS = 5000; // 5 seconds TTL
+
 export const leaderboardHandler: RouteHandler = async (ctx) => {
   try {
+    const now = Date.now();
+    if (cachedResponse && (now - cachedResponse.timestamp) < CACHE_TTL_MS) {
+      return Response.json({
+        status: "success",
+        data: cachedResponse.data
+      });
+    }
+
     const db = createDbClient(ctx.env.DB);
 
     const rows = await db.all<LeaderboardUserRow>(
@@ -97,13 +114,20 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
     const grade9 = addRanks(fullLeaderboard.filter(u => u.grade === 9));
     const grade10 = addRanks(fullLeaderboard.filter(u => u.grade === 10));
 
+    const resultData = {
+      leaderboard,
+      grade9,
+      grade10
+    };
+
+    cachedResponse = {
+      data: resultData,
+      timestamp: now
+    };
+
     return Response.json({
       status: "success",
-      data: {
-        leaderboard,
-        grade9,
-        grade10
-      }
+      data: resultData
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);

@@ -67,7 +67,16 @@ export async function verifyCustomJwt(token: string, secret: string): Promise<an
     if (!isValid) return null;
     
     const payloadStr = new TextDecoder().decode(base64urlDecode(b64Payload));
-    return JSON.parse(payloadStr);
+    const payload = JSON.parse(payloadStr);
+    
+    if (payload && typeof payload.exp === "number") {
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      if (currentTimestamp > payload.exp) {
+        return null; // Token expired
+      }
+    }
+    
+    return payload;
   } catch (e) {
     return null;
   }
