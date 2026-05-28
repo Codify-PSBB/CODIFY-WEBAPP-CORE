@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { apiRequest } from "@/lib/api"
 import type { Problem, Submission } from "@/types/models"
 import { CheckCircle2, ChevronRight, Play, RefreshCcw, Send, XCircle, Zap } from "lucide-react"
+import { loadPyodideRuntime } from "@/lib/pyodide"
 
 interface ProblemsResponse {
   problems?: Problem[]
@@ -46,7 +47,18 @@ export default function CompetitionPage() {
     }
   }
 
-  useEffect(() => { void loadProblems() }, [])
+  useEffect(() => {
+    void loadProblems()
+    // Preload Pyodide in the background for instant test execution
+    void (async () => {
+      try {
+        await loadPyodideRuntime()
+        log("Local Python runtime preloaded and ready.")
+      } catch (e) {
+        log(`WARNING: Failed to preload Python runtime: ${e instanceof Error ? e.message : String(e)}`)
+      }
+    })()
+  }, [])
 
   const selectedProblem = useMemo(
     () => problems.find((p) => p.id === Number(problemId)),
@@ -71,7 +83,6 @@ export default function CompetitionPage() {
     setTestResults([])
     log("Running tests…")
     try {
-      const { loadPyodideRuntime } = await import("@/lib/pyodide")
       const runtime = await loadPyodideRuntime()
       const results: { passed: boolean; expected: string; got: string }[] = []
 

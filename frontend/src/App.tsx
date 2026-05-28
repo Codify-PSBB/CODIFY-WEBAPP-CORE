@@ -198,7 +198,7 @@ export default function App() {
     };
   }, [isAdmin, isFullyLoaded, isAuthenticated]);
 
-  if (!isFullyLoaded || statusLoading) {
+  if (!isFullyLoaded) {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-[1100px] items-center p-8">
         <Card className="card-modern w-full max-w-md mx-auto">
