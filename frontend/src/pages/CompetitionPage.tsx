@@ -295,7 +295,7 @@ export default function CompetitionPage() {
               <Editor
                 height="440px"
                 language="python"
-                theme={theme === "dark" ? "vs-dark" : "vs"}
+                theme={theme === "light" ? "vs" : "vs-dark"}
                 value={code}
                 onChange={(v) => setCode(v ?? "")}
                 options={{
@@ -371,9 +371,7 @@ export default function CompetitionPage() {
                 </button>
               </div>
               <div
-                className={`min-h-[120px] max-h-[200px] overflow-y-auto p-4 font-mono text-xs leading-6 ${
-                  theme === "dark" ? "text-green-400" : "text-emerald-700"
-                }`}
+                className="min-h-[120px] max-h-[200px] overflow-y-auto p-4 font-mono text-xs leading-6 text-primary"
               >
                 {consoleLog.length > 0
                   ? consoleLog.map((line, i) => <div key={i}>{line}</div>)

@@ -333,4 +333,123 @@
   transition: opacity 80ms ease-out, width 80ms ease-out, left 80ms ease-out !important;
 }
 
+/* Premium Creative Themes */
+.theme-cyberpunk {
+  /* High contrast cyberpunk dark */
+  --background: #090616;
+  --foreground: #f8fafc;
+
+  /* Cards & Popovers */
+  --card: #120e2a;
+  --card-foreground: #fde047; /* Yellow text for cyberpunk labels */
+  --popover: #151034;
+  --popover-foreground: #f8fafc;
+
+  /* Neon Pink Primary */
+  --primary: #ff007f;
+  --primary-foreground: #ffffff;
+
+  /* Elevated secondary surfaces */
+  --secondary: #1a153c;
+  --secondary-foreground: #a5b4fc; /* soft indigo */
+
+  /* Muted Surfaces */
+  --muted: #151034;
+  --muted-foreground: #6366f1;
+
+  /* Accent - Neon Cyan Glow */
+  --accent: #2b0e45;
+  --accent-foreground: #00ffff;
+
+  /* Visible cyberpunk borders */
+  --border: #3c1a6d;
+  --input: #151034;
+  --ring: #ff007f;
+
+  /* Shadows with neon pink glow */
+  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(255, 0, 127, 0.12);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 0, 127, 0.18);
+  --glass-bg: rgba(18, 14, 42, 0.9);
+  --glass-border: rgba(60, 26, 109, 0.95);
+}
+
+.theme-matrix {
+  /* Matrix pure black */
+  --background: #000000;
+  --foreground: #39ff14; /* Digital green */
+
+  /* Cards & Popovers */
+  --card: #050a05;
+  --card-foreground: #39ff14;
+  --popover: #070e07;
+  --popover-foreground: #39ff14;
+
+  /* Matrix Green Primary */
+  --primary: #22c55e;
+  --primary-foreground: #000000;
+
+  /* Elevated secondary surfaces */
+  --secondary: #0c140c;
+  --secondary-foreground: #4ade80;
+
+  /* Muted Surfaces */
+  --muted: #0c140c;
+  --muted-foreground: #15803d;
+
+  /* Accent - Green Glow */
+  --accent: #0f2a0f;
+  --accent-foreground: #86efac;
+
+  /* Visible matrix borders */
+  --border: #14532d;
+  --input: #070e07;
+  --ring: #22c55e;
+
+  /* Shadows with green digital glow */
+  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(34, 197, 94, 0.12);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(34, 197, 94, 0.18);
+  --glass-bg: rgba(5, 10, 5, 0.9);
+  --glass-border: rgba(20, 83, 45, 0.95);
+}
+
+.theme-solarized {
+  /* Solarized Dark Warm Amber */
+  --background: #110d08;
+  --foreground: #fef08a; /* Warm Amber */
+
+  /* Cards & Popovers */
+  --card: #1b1610;
+  --card-foreground: #fef08a;
+  --popover: #211b13;
+  --popover-foreground: #fef08a;
+
+  /* Solarized Amber Primary */
+  --primary: #f59e0b;
+  --primary-foreground: #110d08;
+
+  /* Elevated secondary surfaces */
+  --secondary: #2a2218;
+  --secondary-foreground: #fbbf24;
+
+  /* Muted Surfaces */
+  --muted: #2a2218;
+  --muted-foreground: #b45309;
+
+  /* Accent - Warm glow */
+  --accent: #372c1e;
+  --accent-foreground: #f59e0b;
+
+  /* Visible solarized borders */
+  --border: #3b2e1e;
+  --input: #211b13;
+  --ring: #f59e0b;
+
+  /* Shadows with amber warm glow */
+  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(245, 158, 11, 0.08);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(245, 158, 11, 0.12);
+  --glass-bg: rgba(27, 22, 16, 0.9);
+  --glass-border: rgba(59, 46, 30, 0.95);
+}
+
+
 

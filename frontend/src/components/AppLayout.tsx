@@ -1,9 +1,11 @@
 import { UserButton, useUser, useClerk } from "@clerk/clerk-react";
-import { LogOut } from "lucide-react";
+import { LogOut, Palette } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules";
 import { getLocalTokenPayload, clearLocalToken } from "@/lib/auth";
+import { useTheme, Theme } from "@/components/ThemeProvider";
+import { useState, useRef, useEffect } from "react";
 
 export default function AppLayout({
   memberLeaderboardOnly,
@@ -15,6 +17,28 @@ export default function AppLayout({
   const { pathname } = useLocation();
   const { user: clerkUser } = useUser();
   const { signOut: clerkSignOut } = useClerk();
+  
+  const { theme, setTheme } = useTheme();
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const themeMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(e.target as Node)) {
+        setShowThemeMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const themesList: { id: Theme; name: string; iconBg: string; borderCol: string }[] = [
+    { id: "light", name: "Light Minimalist", iconBg: "bg-slate-100", borderCol: "border-slate-300" },
+    { id: "dark", name: "Carbon Space", iconBg: "bg-zinc-900", borderCol: "border-zinc-700" },
+    { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500" },
+    { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },
+    { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" }
+  ];
   
   const localUser = getLocalTokenPayload();
   
@@ -87,6 +111,49 @@ export default function AppLayout({
                  {localUser?.name || localUser?.email}
               </div>
             )}
+            {/* Theme Picker Dropdown */}
+            <div className="relative" ref={themeMenuRef}>
+              <Button
+                onClick={() => setShowThemeMenu(!showThemeMenu)}
+                variant="outline"
+                size="icon"
+                className="rounded-full h-9 w-9 p-0 hover:bg-secondary/80 click-press"
+                title="Change Theme"
+              >
+                <Palette className="h-4.5 w-4.5" />
+              </Button>
+
+              {showThemeMenu && (
+                <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-border bg-card p-2.5 shadow-lg z-50 animate-fade-in">
+                  <div className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Choose Theme
+                  </div>
+                  <div className="mt-1.5 space-y-1">
+                    {themesList.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          setTheme(t.id);
+                          setShowThemeMenu(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl text-left hover:bg-secondary transition-colors ${
+                          theme === t.id ? "bg-secondary font-semibold" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className={`h-4.5 w-4.5 rounded-full border ${t.iconBg} ${t.borderCol} shrink-0`} />
+                          <span>{t.name}</span>
+                        </div>
+                        {theme === t.id && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Button onClick={handleSignOut} variant="outline" size="sm" className="gap-2">
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Sign Out</span>

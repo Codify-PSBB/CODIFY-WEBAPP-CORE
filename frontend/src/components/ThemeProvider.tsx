@@ -6,11 +6,11 @@ import {
   useState,
 } from "react"
 
-type Theme = "light" | "dark"
+export type Theme = "light" | "dark" | "cyberpunk" | "matrix" | "solarized"
 
 interface ThemeContextValue {
   theme: Theme
-  toggleTheme: () => void
+  setTheme: (theme: Theme) => void
 }
 
 const STORAGE_KEY = "codify-theme"
@@ -18,15 +18,21 @@ const STORAGE_KEY = "codify-theme"
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function readInitialTheme(): Theme {
-  if (typeof document !== "undefined" && document.documentElement.classList.contains("dark")) {
-    return "dark"
-  }
-
   if (typeof window !== "undefined") {
     const storedTheme = window.localStorage.getItem(STORAGE_KEY)
-    if (storedTheme === "dark" || storedTheme === "light") {
-      return storedTheme
+    if (
+      storedTheme === "dark" ||
+      storedTheme === "light" ||
+      storedTheme === "cyberpunk" ||
+      storedTheme === "matrix" ||
+      storedTheme === "solarized"
+    ) {
+      return storedTheme as Theme
     }
+  }
+
+  if (typeof document !== "undefined" && document.documentElement.classList.contains("dark")) {
+    return "dark"
   }
 
   return "light"
@@ -37,18 +43,27 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     const root = document.documentElement
-    root.classList.toggle("dark", theme === "dark")
-    root.style.colorScheme = theme
+    // Remove all old classes
+    root.classList.remove("light", "dark", "theme-cyberpunk", "theme-matrix", "theme-solarized")
+    
+    // Add dark/light depending on theme base
+    if (theme === "light") {
+      root.classList.add("light")
+      root.style.colorScheme = "light"
+    } else {
+      root.classList.add("dark")
+      root.style.colorScheme = "dark"
+      
+      if (theme !== "dark") {
+        root.classList.add(`theme-${theme}`)
+      }
+    }
+
     window.localStorage.setItem(STORAGE_KEY, theme)
   }, [theme])
 
   return (
-    <ThemeContext.Provider
-      value={{
-        theme,
-        toggleTheme: () => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark")),
-      }}
-    >
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   )

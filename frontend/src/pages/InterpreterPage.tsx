@@ -21,10 +21,7 @@ export default function InterpreterPage() {
   const [output, setOutput] = useState("Console output will appear here.")
   const [running, setRunning] = useState(false)
 
-  const consoleAreaClassName =
-    theme === "dark"
-      ? "border-slate-700 bg-[#0f172a] text-[#4ade80]"
-      : "border-slate-200 bg-slate-50 text-emerald-800"
+  const consoleAreaClassName = "border-border bg-muted/40 text-foreground"
 
   useEffect(() => {
     let active = true
@@ -128,11 +125,11 @@ export default function InterpreterPage() {
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className={`overflow-hidden rounded-2xl border shadow-inner ${theme === "dark" ? "border-slate-700" : "border-slate-200"}`}>
+            <div className={`overflow-hidden rounded-2xl border shadow-inner ${theme === "light" ? "border-slate-200" : "border-slate-700"}`}>
               <Editor
                 height="420px"
                 language="python"
-                theme={theme === "dark" ? "vs-dark" : "vs"}
+                theme={theme === "light" ? "vs" : "vs-dark"}
                 value={code}
                 onChange={(value) => setCode(value ?? "")}
                 options={{
