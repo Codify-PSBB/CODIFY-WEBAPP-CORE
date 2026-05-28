@@ -31,15 +31,21 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50 transition-all duration-200;
+    @apply border-border outline-ring/50;
   }
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased leading-relaxed;
   }
 
+  /* Target interactive elements specifically for smooth transitions, avoiding the global wildcard transition performance anti-pattern */
+  a, button, select, input, textarea, [role="button"], .transition-interactive,
+  .card-modern, .nav-item, .badge-modern, .badge-primary {
+    @apply transition-all duration-300 ease-out;
+  }
+
   button {
-    @apply cursor-pointer transition-all duration-200;
+    @apply cursor-pointer;
   }
 
   html {
@@ -50,26 +56,26 @@
 @layer components {
   /* Modern Card Styles */
   .card-modern {
-    @apply bg-card border border-border rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl;
+    @apply bg-card border border-border rounded-xl shadow-md hover:shadow-xl hover:-translate-y-0.5 hover:border-border/80 dark:hover:border-primary/20 dark:hover:shadow-[0_20px_40px_-20px_rgba(0,0,0,0.8),0_0_20px_rgba(59,130,246,0.06)];
   }
   
   .card-glass {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    @apply border border-border rounded-xl transition-all duration-200;
+    @apply border border-border rounded-xl;
   }
   
   /* Modern Button Styles */
   .btn-primary {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:bg-primary/90 hover:shadow-lg active:scale-95;
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-primary/95 hover:shadow-[0_4px_20px_rgba(59,130,246,0.35)] active:scale-[0.98] active:translate-y-0;
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:bg-secondary/80 hover:shadow-md active:scale-95;
+    @apply bg-secondary text-secondary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-secondary/90 hover:shadow-md active:scale-[0.98];
   }
   
   .btn-outline {
-    @apply border border-border bg-transparent text-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:shadow-md active:scale-95;
+    @apply border border-border bg-transparent text-foreground px-6 py-3 rounded-xl font-semibold hover:bg-accent hover:text-accent-foreground hover:shadow-md active:scale-[0.98];
   }
   
   /* Navigation Styles */
@@ -144,11 +150,19 @@
   
   /* Hover Effects */
   .hover-lift {
-    @apply transition-all duration-200 hover:-translate-y-1 hover:shadow-lg;
+    @apply hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:scale-[0.98];
   }
   
   .hover-scale {
-    @apply transition-all duration-200 hover:scale-105;
+    @apply hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .hover-glow {
+    @apply hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:border-primary/50;
+  }
+
+  .click-press {
+    @apply active:scale-[0.97] transition-transform duration-100;
   }
   
   /* Glassmorphism Effect */
@@ -248,65 +262,65 @@
 }
 
 .dark {
-  /* Premium Deep Blue-Grey Background */
-  --background: #0c0e14;
-  --foreground: #e8eaf0;
+  /* Premium Deep High-Contrast Space Carbon Background */
+  --background: #08090d;
+  --foreground: #f8fafc;
 
-  /* Cards: Slightly elevated from background */
-  --card: #13151d;
-  --card-foreground: #e8eaf0;
-  --popover: #1a1d29;
-  --popover-foreground: #e8eaf0;
+  /* Cards: Higher contrast elevated dark surface */
+  --card: #12141f;
+  --card-foreground: #f8fafc;
+  --popover: #151826;
+  --popover-foreground: #f8fafc;
 
-  /* Vibrant Blue Primary */
-  --primary: #4f8ef7;
+  /* Vibrant Blue Primary for high readability */
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
 
-  /* Subtle Elevated Secondary */
-  --secondary: #1e2130;
-  --secondary-foreground: #c5c9d6;
+  /* Secondary surfaces */
+  --secondary: #1e2235;
+  --secondary-foreground: #cbd5e1;
 
   /* Muted Surfaces */
-  --muted: #1a1d29;
-  --muted-foreground: #7c82a0;
+  --muted: #171926;
+  --muted-foreground: #8a93b2;
 
-  /* Accent - Soft Blue Glow */
-  --accent: #1e2a45;
-  --accent-foreground: #93b4f7;
+  /* Accent - Richer Blue Glow */
+  --accent: #202b48;
+  --accent-foreground: #60a5fa;
 
   /* Status Colors */
-  --destructive: #f04848;
-  --success: #34c77b;
+  --destructive: #ef4444;
+  --success: #10b981;
   --warning: #f59e0b;
 
-  /* Borders — visible but not harsh */
-  --border: #252836;
-  --input: #1a1d29;
-  --ring: #4f8ef7;
+  /* High contrast visible borders */
+  --border: #22273c;
+  --input: #151826;
+  --ring: #3b82f6;
 
   /* Chart Colors */
-  --chart-1: #4f8ef7;
-  --chart-2: #7c5cf6;
-  --chart-3: #34c77b;
+  --chart-1: #3b82f6;
+  --chart-2: #8b5cf6;
+  --chart-3: #10b981;
   --chart-4: #f59e0b;
-  --chart-5: #f04848;
+  --chart-5: #ef4444;
 
   /* Sidebar */
-  --sidebar: #0f1118;
-  --sidebar-foreground: #e8eaf0;
-  --sidebar-primary: #4f8ef7;
+  --sidebar: #0b0c12;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #3b82f6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e2a45;
-  --sidebar-accent-foreground: #93b4f7;
-  --sidebar-border: #252836;
-  --sidebar-ring: #4f8ef7;
+  --sidebar-accent: #202b48;
+  --sidebar-accent-foreground: #60a5fa;
+  --sidebar-border: #22273c;
+  --sidebar-ring: #3b82f6;
 
-  /* Refined Shadows */
-  --shadow-soft: 0 20px 50px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(79, 142, 247, 0.04);
-  --shadow-lg: 0 25px 60px -15px rgba(0, 0, 0, 0.7);
+  /* Refined high-contrast shadows */
+  --shadow-soft: 0 20px 40px -20px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.06);
 
   /* Glassmorphism - Premium Dark */
-  --glass-bg: rgba(19, 21, 29, 0.85);
-  --glass-border: rgba(37, 40, 54, 0.9);
+  --glass-bg: rgba(18, 20, 31, 0.9);
+  --glass-border: rgba(34, 39, 61, 0.95);
 }
 
