@@ -310,6 +310,8 @@ export default function CompetitionPage() {
                   fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
                   renderLineHighlight: "gutter",
                   padding: { top: 12, bottom: 12 },
+                  cursorSmoothCaretAnimation: "on",
+                  cursorBlinking: "smooth",
                 }}
               />
             </div>

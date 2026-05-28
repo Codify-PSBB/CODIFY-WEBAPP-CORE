@@ -145,6 +145,8 @@ export default function InterpreterPage() {
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
                   wordWrap: "on",
+                  cursorSmoothCaretAnimation: "on",
+                  cursorBlinking: "smooth",
                 }}
               />
             </div>

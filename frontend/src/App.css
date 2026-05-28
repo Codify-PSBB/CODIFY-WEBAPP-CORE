@@ -324,3 +324,13 @@
   --glass-border: rgba(34, 39, 61, 0.95);
 }
 
+/* Premium Monaco Editor Cursor Smooth Caret and Character Entry Transition */
+.monaco-editor .cursor {
+  transition: left 80ms ease-out, top 80ms ease-out, height 80ms ease-out !important;
+}
+
+.monaco-editor .view-line span {
+  transition: opacity 80ms ease-out, width 80ms ease-out, left 80ms ease-out !important;
+}
+
+
