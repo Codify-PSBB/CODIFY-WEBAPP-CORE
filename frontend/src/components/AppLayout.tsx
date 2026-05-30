@@ -34,6 +34,8 @@ export default function AppLayout({
 
   const themesList: { id: Theme; name: string; iconBg: string; borderCol: string }[] = [
     { id: "light", name: "Light Minimalist", iconBg: "bg-slate-100", borderCol: "border-slate-300" },
+    { id: "nordic", name: "Nordic Frost", iconBg: "bg-blue-50", borderCol: "border-sky-300" },
+    { id: "paper", name: "Vintage Print", iconBg: "bg-[#f4f1ea]", borderCol: "border-stone-400" },
     { id: "dark", name: "Carbon Space", iconBg: "bg-zinc-900", borderCol: "border-zinc-700" },
     { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500" },
     { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },

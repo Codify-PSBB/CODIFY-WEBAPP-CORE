@@ -52,8 +52,13 @@
     @apply transition-all duration-300 ease-out;
   }
 
-  button {
+  button, a, [role="button"] {
     @apply cursor-pointer;
+  }
+  
+  /* Global Click Animations */
+  button:active, a:active, [role="button"]:active {
+    @apply scale-[0.97] transition-transform duration-75;
   }
 
   html {
@@ -1073,8 +1078,148 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   font-weight: bold;
 }
 
+/* ==========================================
+   5. Nordic Frost Theme (Light)
+   ========================================== */
+.theme-nordic {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #38bdf8;
+  --primary-foreground: #ffffff;
+  --secondary: #e0f2fe;
+  --secondary-foreground: #0369a1;
+  --muted: #f8fafc;
+  --muted-foreground: #64748b;
+  --accent: #bae6fd;
+  --accent-foreground: #0284c7;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --ring: #7dd3fc;
+  --radius: 1rem;
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --shadow-soft: 0 4px 20px rgba(56, 189, 248, 0.1);
+  --shadow-lg: 0 10px 30px rgba(56, 189, 248, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+}
+
+.theme-nordic body {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(56, 189, 248, 0.1) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+.theme-nordic .card-modern,
+.theme-nordic [class*="bg-card"] {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 4px 24px -4px rgba(2, 132, 199, 0.08) !important;
+  border-radius: 1.25rem !important;
+}
+
+.theme-nordic button,
+.theme-nordic .btn-primary {
+  border-radius: 2rem !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.2);
+}
+.theme-nordic button:hover,
+.theme-nordic .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3) !important;
+}
+
+.theme-nordic header {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
 
 
+/* ==========================================
+   6. Vintage Print / Paper Theme (Light)
+   ========================================== */
+.theme-paper {
+  --background: #f4f1ea;
+  --foreground: #2b2523;
+  --card: #fdfbf7;
+  --card-foreground: #2b2523;
+  --popover: #fdfbf7;
+  --popover-foreground: #2b2523;
+  --primary: #8c2f2f; /* Deep crimson */
+  --primary-foreground: #f4f1ea;
+  --secondary: #e6e1d6;
+  --secondary-foreground: #4a3f3b;
+  --muted: #e6e1d6;
+  --muted-foreground: #70635c;
+  --accent: #d1c8b8;
+  --accent-foreground: #5c4e47;
+  --border: #d4cfc4;
+  --input: #fdfbf7;
+  --ring: #8c2f2f;
+  --radius: 0.25rem;
+  --font-sans: "Merriweather", serif;
+  --font-heading: "Playfair Display", serif;
+  --shadow-soft: 0 2px 10px rgba(43, 37, 35, 0.05);
+  --shadow-lg: 0 4px 20px rgba(43, 37, 35, 0.08);
+  --glass-bg: rgba(253, 251, 247, 0.9);
+  --glass-border: rgba(212, 207, 196, 0.6);
+}
 
+.theme-paper body {
+  background-color: #f4f1ea;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
 
+.theme-paper h1, 
+.theme-paper h2, 
+.theme-paper h3,
+.theme-paper .font-bold {
+  font-family: "Playfair Display", serif !important;
+  color: #1a1614 !important;
+}
+
+.theme-paper .card-modern,
+.theme-paper [class*="bg-card"] {
+  background: #fdfbf7 !important;
+  border: 1px solid #d4cfc4 !important;
+  box-shadow: 2px 2px 0px rgba(43, 37, 35, 0.1) !important;
+  border-radius: 4px !important;
+}
+
+.theme-paper button,
+.theme-paper .btn-primary {
+  font-family: "Merriweather", serif;
+  border-radius: 2px !important;
+  border: 1px solid #8c2f2f !important;
+  background: #fdfbf7 !important;
+  color: #8c2f2f !important;
+  box-shadow: 2px 2px 0px #8c2f2f !important;
+  transition: all 0.2s;
+}
+
+.theme-paper button:hover,
+.theme-paper .btn-primary:hover {
+  background: #8c2f2f !important;
+  color: #f4f1ea !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px #2b2523 !important;
+}
+
+.theme-paper header {
+  background: #fdfbf7 !important;
+  border-bottom: 2px solid #8c2f2f !important;
+}
 

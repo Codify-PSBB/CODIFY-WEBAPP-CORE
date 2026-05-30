@@ -67,11 +67,59 @@ export function defineEditorThemes(monaco: any) {
       'editor.selectionBackground': '#e2874333',
     }
   });
+  monaco.editor.defineTheme('nordic-editor', {
+    base: 'vs',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+      { token: 'keyword', foreground: '0284c7', fontStyle: 'bold' },
+      { token: 'number', foreground: '0369a1' },
+      { token: 'string', foreground: '0ea5e9' },
+      { token: 'type', foreground: '0369a1' },
+      { token: 'class', foreground: '0369a1' },
+      { token: 'function', foreground: '0284c7' },
+    ],
+    colors: {
+      'editor.background': '#ffffff',
+      'editor.foreground': '#0f172a',
+      'editor.lineHighlightBackground': '#f1f5f9',
+      'editorCursor.foreground': '#38bdf8',
+      'editorLineNumber.foreground': '#94a3b8',
+      'editorLineNumber.activeForeground': '#0284c7',
+      'editor.selectionBackground': '#bae6fd80',
+    }
+  });
+
+  monaco.editor.defineTheme('paper-editor', {
+    base: 'vs',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '70635c', fontStyle: 'italic' },
+      { token: 'keyword', foreground: '8c2f2f', fontStyle: 'bold' },
+      { token: 'number', foreground: '5c4e47' },
+      { token: 'string', foreground: '8c2f2f' },
+      { token: 'type', foreground: '4a3f3b' },
+      { token: 'class', foreground: '4a3f3b' },
+      { token: 'function', foreground: '8c2f2f' },
+    ],
+    colors: {
+      'editor.background': '#fdfbf7',
+      'editor.foreground': '#2b2523',
+      'editor.lineHighlightBackground': '#f4f1ea',
+      'editorCursor.foreground': '#8c2f2f',
+      'editorLineNumber.foreground': '#d4cfc4',
+      'editorLineNumber.activeForeground': '#8c2f2f',
+      'editor.selectionBackground': '#d1c8b880',
+    }
+  });
 }
 
 export function getEditorThemeName(theme: string): string {
   if (theme === "cyberpunk") return "cyberpunk-editor";
   if (theme === "matrix") return "matrix-editor";
   if (theme === "solarized") return "solarized-editor";
-  return theme === "light" ? "vs" : "vs-dark";
+  if (theme === "nordic") return "nordic-editor";
+  if (theme === "paper") return "paper-editor";
+  if (theme === "light") return "vs";
+  return "vs-dark";
 }
