@@ -1223,3 +1223,19 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   border-bottom: 2px solid #8c2f2f !important;
 }
 
+/* Custom scrollbar utility for the dropdown */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+

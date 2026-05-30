@@ -130,7 +130,7 @@ export default function AppLayout({
                   <div className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Choose Theme
                   </div>
-                  <div className="mt-1.5 space-y-1">
+                  <div className="mt-1.5 space-y-1 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                     {themesList.map((t) => (
                       <button
                         key={t.id}
