@@ -342,137 +342,205 @@
 }
 
 /* Premium Creative Themes */
-.theme-cyberpunk {
-  /* High contrast cyberpunk dark */
-  --background: #05030a;
-  --foreground: #00ffcc; /* Neon teal body text */
 
-  /* Cards & Popovers */
-  --card: #0c081e;
-  --card-foreground: #ffff00; /* Bright yellow labels */
-  --popover: #0c081e;
-  --popover-foreground: #00ffcc;
-
-  /* Neon Pink Primary */
-  --primary: #ff007f;
-  --primary-foreground: #ffffff;
-
-  /* Elevated secondary surfaces */
-  --secondary: #171034;
-  --secondary-foreground: #a5b4fc;
-
-  /* Muted Surfaces */
-  --muted: #171034;
-  --muted-foreground: #8b8fb3;
-
-  /* Accent - Neon Cyan Glow */
-  --accent: #2c0b47;
-  --accent-foreground: #00ffff;
-
-  /* Cyberpunk borders & corners */
-  --border: #ff007f; /* Magenta borders */
-  --input: #171034;
-  --ring: #ff007f;
-  --radius: 0.25rem; /* Sharp tech corners */
-
-  /* Font overrides */
-  --font-sans: "Rajdhani", sans-serif;
-  --font-heading: "Orbitron", sans-serif;
-
-  /* Shadows with neon pink/cyan glow */
-  --shadow-soft: 0 0 10px rgba(255, 0, 127, 0.25), 0 0 20px rgba(0, 255, 255, 0.08);
-  --shadow-lg: 0 0 25px rgba(255, 0, 127, 0.4), 0 0 45px rgba(0, 255, 255, 0.15);
-  --glass-bg: rgba(12, 8, 30, 0.95);
-  --glass-border: rgba(255, 0, 127, 0.85);
-  
-  background-image: linear-gradient(rgba(255, 0, 127, 0.02) 1px, transparent 0), linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 0);
-  background-size: 30px 30px;
+/* Nordic Ice Glass Theme overrides */
+html.light body {
+  background-color: #f1f6fa;
+  background-image: 
+    radial-gradient(rgba(37, 99, 235, 0.02) 1.5px, transparent 0),
+    linear-gradient(135deg, #f1f6fa 0%, #e5eef5 100%);
+  background-size: 24px 24px, 100% 100%;
+  background-attachment: fixed;
+}
+html.light .card-modern {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.12), 0 1px 3px rgba(148, 163, 184, 0.03);
+}
+html.light .card-modern:hover {
+  border-color: rgba(96, 165, 250, 0.5) !important;
+  box-shadow: 0 20px 40px -15px rgba(96, 165, 250, 0.15);
 }
 
-/* Cyberpunk personality rules */
+/* Carbon Space Star Grid & Nebula */
+html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) body {
+  background-color: #050609;
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 10% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+    radial-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 0);
+  background-size: 100% 100%, 100% 100%, 20px 20px;
+  background-attachment: fixed;
+}
+html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) .card-modern {
+  background: rgba(15, 17, 26, 0.75) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  box-shadow: 0 15px 35px -15px rgba(0, 0, 0, 0.85), inset 0 0 1px 1px rgba(255, 255, 255, 0.02);
+}
+html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) .card-modern:hover {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.95), 0 0 20px rgba(99, 102, 241, 0.08);
+}
+
+.theme-cyberpunk {
+  --background: #050209;
+  --foreground: #00ffcc;
+  --card: #0a0618;
+  --card-foreground: #ffff00;
+  --popover: #0a0618;
+  --popover-foreground: #00ffcc;
+  --primary: #ff007f;
+  --primary-foreground: #ffffff;
+  --secondary: #140d2b;
+  --secondary-foreground: #d1b9ff;
+  --muted: #140d2b;
+  --muted-foreground: #7d729c;
+  --accent: #2c0b47;
+  --accent-foreground: #00ffff;
+  --border: #ff007f;
+  --input: #140d2b;
+  --ring: #ff007f;
+  --radius: 0.125rem;
+  --font-sans: "Rajdhani", sans-serif;
+  --font-heading: "Orbitron", sans-serif;
+  --shadow-soft: 0 0 12px rgba(255, 0, 127, 0.3), 0 0 2px rgba(0, 255, 255, 0.2);
+  --shadow-lg: 0 0 25px rgba(255, 0, 127, 0.45), 0 0 10px rgba(0, 255, 255, 0.3);
+  --glass-bg: rgba(10, 6, 24, 0.9);
+  --glass-border: rgba(255, 0, 127, 0.8);
+}
+
+.theme-cyberpunk body {
+  background-color: #050209;
+  background-image: 
+    linear-gradient(rgba(255, 0, 127, 0.02) 1px, transparent 0),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 0),
+    radial-gradient(circle at 20% 20%, rgba(255, 0, 127, 0.04) 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.04) 0%, transparent 45%);
+  background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+@keyframes text-glitch {
+  0%, 100% { text-shadow: 0 0 8px rgba(255, 0, 127, 0.6), 2px 0 0 rgba(0, 255, 255, 0.4); }
+  50% { text-shadow: 0 0 12px rgba(255, 0, 127, 0.8), -2px 0 0 rgba(0, 255, 255, 0.6); }
+}
+
 .theme-cyberpunk h1, 
 .theme-cyberpunk h2, 
 .theme-cyberpunk h3,
 .theme-cyberpunk .font-bold {
   font-family: "Orbitron", sans-serif !important;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+  letter-spacing: 0.08em;
+  animation: text-glitch 3s infinite alternate;
   color: var(--primary) !important;
 }
 
-.theme-cyberpunk .border,
-.theme-cyberpunk hr {
-  border-color: var(--border) !important;
-  box-shadow: 0 0 5px rgba(255, 0, 127, 0.2);
+.theme-cyberpunk .card-modern {
+  background: rgba(10, 6, 24, 0.85) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0px !important;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.15) !important;
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.theme-cyberpunk .card-modern::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: repeating-linear-gradient(45deg, var(--primary), var(--primary) 8px, var(--accent-foreground) 8px, var(--accent-foreground) 16px);
 }
 
 .theme-cyberpunk button {
+  font-family: "Orbitron", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-family: "Orbitron", sans-serif;
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
   border-radius: 0px !important;
+  border: 1px solid var(--primary) !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%) !important;
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.15) 0%, rgba(44, 11, 71, 0.4) 100%);
+  color: var(--foreground) !important;
+  box-shadow: 0 0 8px rgba(255, 0, 127, 0.2);
+}
+
+.theme-cyberpunk button:hover {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 18px rgba(255, 0, 127, 0.6) !important;
+}
+
+.theme-cyberpunk .input-modern {
+  border-radius: 0px !important;
+  border-color: rgba(255, 0, 127, 0.4) !important;
+  font-family: "Rajdhani", sans-serif;
+}
+.theme-cyberpunk .input-modern:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.4) !important;
 }
 
 .theme-matrix {
-  /* Matrix pure black */
   --background: #000000;
-  --foreground: #39ff14; /* Digital green */
-
-  /* Cards & Popovers */
-  --card: #040804;
+  --foreground: #39ff14;
+  --card: #020502;
   --card-foreground: #39ff14;
-  --popover: #050a05;
+  --popover: #020502;
   --popover-foreground: #39ff14;
-
-  /* Matrix Green Primary */
   --primary: #39ff14;
   --primary-foreground: #000000;
-
-  /* Elevated secondary surfaces */
-  --secondary: #0c140c;
+  --secondary: #060b06;
   --secondary-foreground: #4ade80;
-
-  /* Muted Surfaces */
-  --muted: #0c140c;
-  --muted-foreground: #15803d;
-
-  /* Accent - Green Glow */
-  --accent: #0f2a0f;
+  --muted: #060b06;
+  --muted-foreground: #14532d;
+  --accent: #0b1f0b;
   --accent-foreground: #86efac;
-
-  /* Matrix borders & corners */
-  --border: #15803d; /* Forest green borders */
-  --input: #070e07;
+  --border: #14532d;
+  --input: #030703;
   --ring: #39ff14;
-  --radius: 0rem; /* Strictly 90-degree square corners */
-
-  /* Font overrides */
+  --radius: 0rem;
   --font-sans: "Share Tech Mono", monospace;
   --font-heading: "Share Tech Mono", monospace;
-
-  /* Shadows with green digital glow */
-  --shadow-soft: 0 0 12px rgba(57, 255, 20, 0.2);
-  --shadow-lg: 0 0 30px rgba(57, 255, 20, 0.35);
+  --shadow-soft: 0 0 10px rgba(57, 255, 20, 0.15);
+  --shadow-lg: 0 0 25px rgba(57, 255, 20, 0.35);
   --glass-bg: rgba(0, 0, 0, 0.95);
-  --glass-border: rgba(57, 255, 20, 0.85);
-  
-  background-image: linear-gradient(rgba(57, 255, 20, 0.015) 1px, transparent 0);
-  background-size: 20px 20px;
+  --glass-border: rgba(57, 255, 20, 0.75);
 }
 
-/* Matrix CRT scanlines overlay */
+@keyframes matrix-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 600px; }
+}
+
+.theme-matrix body {
+  background-color: #000000;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='300' viewBox='0 0 120 300'%3E%3Ctext x='10' y='20' fill='%2339ff14' opacity='0.22' font-family='monospace' font-size='11'%3E01 10 11 00 10%3C/text%3E%3Ctext x='40' y='50' fill='%2339ff14' opacity='0.35' font-family='monospace' font-size='11'%3E10101101%3C/text%3E%3Ctext x='15' y='90' fill='%2339ff14' opacity='0.12' font-family='monospace' font-size='11'%3E%5B%5B%23%23%5D%5D%3C/text%3E%3Ctext x='70' y='120' fill='%2339ff14' opacity='0.25' font-family='monospace' font-size='11'%3E%7Bsystem%7D%3C/text%3E%3Ctext x='5' y='160' fill='%2339ff14' opacity='0.42' font-family='monospace' font-size='11'%3E010010110%3C/text%3E%3Ctext x='35' y='210' fill='%2339ff14' opacity='0.18' font-family='monospace' font-size='11'%3E%3C%3E%3C/text%3E%3Ctext x='80' y='250' fill='%2339ff14' opacity='0.4' font-family='monospace' font-size='11'%3E1101 01%3C/text%3E%3Ctext x='20' y='290' fill='%2339ff14' opacity='0.3' font-family='monospace' font-size='11'%3E%5Bmatrix%5D%3C/text%3E%3C/svg%3E"),
+    linear-gradient(rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+  background-size: 120px 300px, 100% 100%;
+  animation: matrix-scroll 18s linear infinite;
+  background-attachment: scroll, fixed;
+}
+
+/* CRT Screen Scanlines & Glare Overlay */
 .theme-matrix::before {
   content: " ";
   display: block;
   position: fixed;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%),
+    radial-gradient(circle at center, rgba(57, 255, 20, 0.05) 0%, rgba(0,0,0,0) 80%);
   z-index: 99999;
-  background-size: 100% 4px, 6px 100%;
+  background-size: 100% 4px, 100% 100%;
   pointer-events: none;
-  opacity: 0.12;
+  opacity: 0.85;
 }
 
 .theme-matrix h1, 
@@ -483,64 +551,83 @@
 .theme-matrix div,
 .theme-matrix label {
   font-family: "Share Tech Mono", monospace !important;
-  text-shadow: 0 0 4px rgba(57, 255, 20, 0.5);
+  text-shadow: 0 0 5px rgba(57, 255, 20, 0.6);
+}
+
+.theme-matrix .card-modern {
+  background: #000000 !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0px !important;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.15) !important;
+}
+
+.theme-matrix .card-modern:hover {
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.4) !important;
+  border-color: var(--primary) !important;
 }
 
 .theme-matrix button {
+  font-family: "Share Tech Mono", monospace;
   border: 1px solid var(--primary) !important;
   border-radius: 0px !important;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  background: transparent;
+  color: var(--primary);
+}
+
+.theme-matrix button:hover {
+  background: var(--primary) !important;
+  color: #000000 !important;
+  box-shadow: 0 0 15px var(--primary) !important;
+}
+
+.theme-matrix .input-modern {
+  border-radius: 0px !important;
+  border-color: var(--border) !important;
+  font-family: "Share Tech Mono", monospace;
+}
+.theme-matrix .input-modern:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.5) !important;
 }
 
 .theme-solarized {
-  /* Solarized Dark Warm Amber */
-  --background: #0f0b08;
-  --foreground: #f4e8c1; /* Soft cream warm paper */
-
-  /* Cards & Popovers */
-  --card: #18120c;
-  --card-foreground: #f59e0b; /* Amber */
-  --popover: #211910;
-  --popover-foreground: #fde68a;
-
-  /* Solarized Terracotta Primary */
+  --background: #100b08;
+  --foreground: #f2e3be;
+  --card: #18110b;
+  --card-foreground: #d97706;
+  --popover: #21160e;
+  --popover-foreground: #fbe3a1;
   --primary: #e28743;
-  --primary-foreground: #0f0b08;
-
-  /* Elevated secondary surfaces */
-  --secondary: #251b11;
+  --primary-foreground: #100b08;
+  --secondary: #241910;
   --secondary-foreground: #fbbf24;
-
-  /* Muted Surfaces */
-  --muted: #251b11;
-  --muted-foreground: #b45309;
-
-  /* Accent - Warm glow */
-  --accent: #332517;
+  --muted: #241910;
+  --muted-foreground: #a15c25;
+  --accent: #332115;
   --accent-foreground: #f59e0b;
-
-  /* Solarized borders & corners */
-  --border: #423120; /* Leather brown borders */
-  --input: #1f1810;
+  --border: #4a3421;
+  --input: #1a120b;
   --ring: #e28743;
-  --radius: 1.5rem; /* Highly organic, soft rounded corners */
-
-  /* Font overrides */
+  --radius: 1.25rem;
   --font-sans: "Courier Prime", monospace;
   --font-heading: "Courier Prime", monospace;
-
-  /* Shadows with amber warm glow */
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(226, 135, 67, 0.05);
-  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.55), 0 0 25px rgba(226, 135, 67, 0.08);
-  --glass-bg: rgba(24, 18, 12, 0.95);
-  --glass-border: rgba(66, 49, 32, 0.95);
-
-  background-image: radial-gradient(rgba(226, 135, 67, 0.015) 1px, transparent 0);
-  background-size: 26px 26px;
+  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.55), inset 0 0 15px rgba(226, 135, 67, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.65), inset 0 0 25px rgba(226, 135, 67, 0.08);
+  --glass-bg: rgba(24, 17, 11, 0.95);
+  --glass-border: rgba(74, 52, 33, 0.9);
 }
 
-/* Solarized typewriter personality rules */
+.theme-solarized body {
+  background-color: #100b08;
+  background-image: 
+    radial-gradient(circle at center, #1b130c 0%, #0d0906 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+  background-size: 100% 100%, auto;
+  background-attachment: fixed;
+}
+
 .theme-solarized h1,
 .theme-solarized h2,
 .theme-solarized h3,
@@ -556,17 +643,51 @@
 .theme-solarized h3 {
   font-weight: 700;
   color: var(--primary) !important;
+  letter-spacing: -0.02em;
 }
 
-.theme-solarized .card-modern,
-.theme-solarized .card {
-  border-width: 2px;
-  background-color: var(--card) !important;
+.theme-solarized .card-modern {
+  background: #18110b !important;
+  border: 3px double var(--border) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(226, 135, 67, 0.05) !important;
+  position: relative;
+}
+
+.theme-solarized .card-modern::after {
+  content: "";
+  position: absolute;
+  top: 5px; left: 5px; right: 5px; bottom: 5px;
+  border: 1px solid rgba(226, 135, 67, 0.16);
+  pointer-events: none;
+  border-radius: 1.0rem;
 }
 
 .theme-solarized button {
-  border-radius: 1.5rem !important;
+  font-family: "Courier Prime", monospace;
+  border-radius: 1.25rem !important;
+  border: 2px solid var(--primary) !important;
+  background: transparent;
+  color: var(--primary);
+  font-weight: bold;
 }
+
+.theme-solarized button:hover {
+  background: var(--primary) !important;
+  color: #100b08 !important;
+  box-shadow: 0 0 15px rgba(226, 135, 67, 0.4) !important;
+}
+
+.theme-solarized .input-modern {
+  border-radius: 1.25rem !important;
+  border: 2px solid var(--border) !important;
+  font-family: "Courier Prime", monospace;
+}
+.theme-solarized .input-modern:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 10px rgba(226, 135, 67, 0.2) !important;
+}
+
 
 
 

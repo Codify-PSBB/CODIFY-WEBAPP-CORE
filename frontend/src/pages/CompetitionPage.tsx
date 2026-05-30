@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react"
-import Editor from "@monaco-editor/react"
 import { useTheme } from "@/components/ThemeProvider"
+import { defineEditorThemes, getEditorThemeName } from "@/lib/editorThemes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { apiRequest } from "@/lib/api"
@@ -295,7 +295,8 @@ export default function CompetitionPage() {
               <Editor
                 height="440px"
                 language="python"
-                theme={theme === "light" ? "vs" : "vs-dark"}
+                theme={getEditorThemeName(theme)}
+                beforeMount={defineEditorThemes}
                 value={code}
                 onChange={(v) => setCode(v ?? "")}
                 options={{

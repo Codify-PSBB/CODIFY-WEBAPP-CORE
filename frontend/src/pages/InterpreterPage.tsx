@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
-import Editor from "@monaco-editor/react"
 import { useTheme } from "@/components/ThemeProvider"
+import { defineEditorThemes, getEditorThemeName } from "@/lib/editorThemes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -129,7 +129,8 @@ export default function InterpreterPage() {
               <Editor
                 height="420px"
                 language="python"
-                theme={theme === "light" ? "vs" : "vs-dark"}
+                theme={getEditorThemeName(theme)}
+                beforeMount={defineEditorThemes}
                 value={code}
                 onChange={(value) => setCode(value ?? "")}
                 options={{
