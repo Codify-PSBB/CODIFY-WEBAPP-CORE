@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from "react"
+import Editor from "@monaco-editor/react"
 import { useTheme } from "@/components/ThemeProvider"
 import { defineEditorThemes, getEditorThemeName } from "@/lib/editorThemes"
 import { Badge } from "@/components/ui/badge"
