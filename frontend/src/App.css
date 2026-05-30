@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Orbitron:wght@400..900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -36,6 +37,13 @@
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased leading-relaxed;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .dark body {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 0);
+    background-size: 20px 20px;
   }
 
   /* Target interactive elements specifically for smooth transitions, avoiding the global wildcard transition performance anti-pattern */
@@ -336,41 +344,75 @@
 /* Premium Creative Themes */
 .theme-cyberpunk {
   /* High contrast cyberpunk dark */
-  --background: #090616;
-  --foreground: #f8fafc;
+  --background: #05030a;
+  --foreground: #00ffcc; /* Neon teal body text */
 
   /* Cards & Popovers */
-  --card: #120e2a;
-  --card-foreground: #fde047; /* Yellow text for cyberpunk labels */
-  --popover: #151034;
-  --popover-foreground: #f8fafc;
+  --card: #0c081e;
+  --card-foreground: #ffff00; /* Bright yellow labels */
+  --popover: #0c081e;
+  --popover-foreground: #00ffcc;
 
   /* Neon Pink Primary */
   --primary: #ff007f;
   --primary-foreground: #ffffff;
 
   /* Elevated secondary surfaces */
-  --secondary: #1a153c;
-  --secondary-foreground: #a5b4fc; /* soft indigo */
+  --secondary: #171034;
+  --secondary-foreground: #a5b4fc;
 
   /* Muted Surfaces */
-  --muted: #151034;
-  --muted-foreground: #6366f1;
+  --muted: #171034;
+  --muted-foreground: #8b8fb3;
 
   /* Accent - Neon Cyan Glow */
-  --accent: #2b0e45;
+  --accent: #2c0b47;
   --accent-foreground: #00ffff;
 
-  /* Visible cyberpunk borders */
-  --border: #3c1a6d;
-  --input: #151034;
+  /* Cyberpunk borders & corners */
+  --border: #ff007f; /* Magenta borders */
+  --input: #171034;
   --ring: #ff007f;
+  --radius: 0.25rem; /* Sharp tech corners */
 
-  /* Shadows with neon pink glow */
-  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(255, 0, 127, 0.12);
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 0, 127, 0.18);
-  --glass-bg: rgba(18, 14, 42, 0.9);
-  --glass-border: rgba(60, 26, 109, 0.95);
+  /* Font overrides */
+  --font-sans: "Rajdhani", sans-serif;
+  --font-heading: "Orbitron", sans-serif;
+
+  /* Shadows with neon pink/cyan glow */
+  --shadow-soft: 0 0 10px rgba(255, 0, 127, 0.25), 0 0 20px rgba(0, 255, 255, 0.08);
+  --shadow-lg: 0 0 25px rgba(255, 0, 127, 0.4), 0 0 45px rgba(0, 255, 255, 0.15);
+  --glass-bg: rgba(12, 8, 30, 0.95);
+  --glass-border: rgba(255, 0, 127, 0.85);
+  
+  background-image: linear-gradient(rgba(255, 0, 127, 0.02) 1px, transparent 0), linear-gradient(90deg, rgba(0, 255, 255, 0.02) 1px, transparent 0);
+  background-size: 30px 30px;
+}
+
+/* Cyberpunk personality rules */
+.theme-cyberpunk h1, 
+.theme-cyberpunk h2, 
+.theme-cyberpunk h3,
+.theme-cyberpunk .font-bold {
+  font-family: "Orbitron", sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(255, 0, 127, 0.6);
+  color: var(--primary) !important;
+}
+
+.theme-cyberpunk .border,
+.theme-cyberpunk hr {
+  border-color: var(--border) !important;
+  box-shadow: 0 0 5px rgba(255, 0, 127, 0.2);
+}
+
+.theme-cyberpunk button {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-family: "Orbitron", sans-serif;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+  border-radius: 0px !important;
 }
 
 .theme-matrix {
@@ -379,13 +421,13 @@
   --foreground: #39ff14; /* Digital green */
 
   /* Cards & Popovers */
-  --card: #050a05;
+  --card: #040804;
   --card-foreground: #39ff14;
-  --popover: #070e07;
+  --popover: #050a05;
   --popover-foreground: #39ff14;
 
   /* Matrix Green Primary */
-  --primary: #22c55e;
+  --primary: #39ff14;
   --primary-foreground: #000000;
 
   /* Elevated secondary surfaces */
@@ -400,56 +442,132 @@
   --accent: #0f2a0f;
   --accent-foreground: #86efac;
 
-  /* Visible matrix borders */
-  --border: #14532d;
+  /* Matrix borders & corners */
+  --border: #15803d; /* Forest green borders */
   --input: #070e07;
-  --ring: #22c55e;
+  --ring: #39ff14;
+  --radius: 0rem; /* Strictly 90-degree square corners */
+
+  /* Font overrides */
+  --font-sans: "Share Tech Mono", monospace;
+  --font-heading: "Share Tech Mono", monospace;
 
   /* Shadows with green digital glow */
-  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(34, 197, 94, 0.12);
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(34, 197, 94, 0.18);
-  --glass-bg: rgba(5, 10, 5, 0.9);
-  --glass-border: rgba(20, 83, 45, 0.95);
+  --shadow-soft: 0 0 12px rgba(57, 255, 20, 0.2);
+  --shadow-lg: 0 0 30px rgba(57, 255, 20, 0.35);
+  --glass-bg: rgba(0, 0, 0, 0.95);
+  --glass-border: rgba(57, 255, 20, 0.85);
+  
+  background-image: linear-gradient(rgba(57, 255, 20, 0.015) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+/* Matrix CRT scanlines overlay */
+.theme-matrix::before {
+  content: " ";
+  display: block;
+  position: fixed;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 99999;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.12;
+}
+
+.theme-matrix h1, 
+.theme-matrix h2, 
+.theme-matrix h3, 
+.theme-matrix p,
+.theme-matrix span,
+.theme-matrix div,
+.theme-matrix label {
+  font-family: "Share Tech Mono", monospace !important;
+  text-shadow: 0 0 4px rgba(57, 255, 20, 0.5);
+}
+
+.theme-matrix button {
+  border: 1px solid var(--primary) !important;
+  border-radius: 0px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 .theme-solarized {
   /* Solarized Dark Warm Amber */
-  --background: #110d08;
-  --foreground: #fef08a; /* Warm Amber */
+  --background: #0f0b08;
+  --foreground: #f4e8c1; /* Soft cream warm paper */
 
   /* Cards & Popovers */
-  --card: #1b1610;
-  --card-foreground: #fef08a;
-  --popover: #211b13;
-  --popover-foreground: #fef08a;
+  --card: #18120c;
+  --card-foreground: #f59e0b; /* Amber */
+  --popover: #211910;
+  --popover-foreground: #fde68a;
 
-  /* Solarized Amber Primary */
-  --primary: #f59e0b;
-  --primary-foreground: #110d08;
+  /* Solarized Terracotta Primary */
+  --primary: #e28743;
+  --primary-foreground: #0f0b08;
 
   /* Elevated secondary surfaces */
-  --secondary: #2a2218;
+  --secondary: #251b11;
   --secondary-foreground: #fbbf24;
 
   /* Muted Surfaces */
-  --muted: #2a2218;
+  --muted: #251b11;
   --muted-foreground: #b45309;
 
   /* Accent - Warm glow */
-  --accent: #372c1e;
+  --accent: #332517;
   --accent-foreground: #f59e0b;
 
-  /* Visible solarized borders */
-  --border: #3b2e1e;
-  --input: #211b13;
-  --ring: #f59e0b;
+  /* Solarized borders & corners */
+  --border: #423120; /* Leather brown borders */
+  --input: #1f1810;
+  --ring: #e28743;
+  --radius: 1.5rem; /* Highly organic, soft rounded corners */
+
+  /* Font overrides */
+  --font-sans: "Courier Prime", monospace;
+  --font-heading: "Courier Prime", monospace;
 
   /* Shadows with amber warm glow */
-  --shadow-soft: 0 15px 30px -10px rgba(0, 0, 0, 0.95), 0 0 15px rgba(245, 158, 11, 0.08);
-  --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(245, 158, 11, 0.12);
-  --glass-bg: rgba(27, 22, 16, 0.9);
-  --glass-border: rgba(59, 46, 30, 0.95);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 15px rgba(226, 135, 67, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.55), 0 0 25px rgba(226, 135, 67, 0.08);
+  --glass-bg: rgba(24, 18, 12, 0.95);
+  --glass-border: rgba(66, 49, 32, 0.95);
+
+  background-image: radial-gradient(rgba(226, 135, 67, 0.015) 1px, transparent 0);
+  background-size: 26px 26px;
 }
+
+/* Solarized typewriter personality rules */
+.theme-solarized h1,
+.theme-solarized h2,
+.theme-solarized h3,
+.theme-solarized p,
+.theme-solarized span,
+.theme-solarized div,
+.theme-solarized label {
+  font-family: "Courier Prime", monospace !important;
+}
+
+.theme-solarized h1,
+.theme-solarized h2,
+.theme-solarized h3 {
+  font-weight: 700;
+  color: var(--primary) !important;
+}
+
+.theme-solarized .card-modern,
+.theme-solarized .card {
+  border-width: 2px;
+  background-color: var(--card) !important;
+}
+
+.theme-solarized button {
+  border-radius: 1.5rem !important;
+}
+
 
 
 
