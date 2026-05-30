@@ -125,7 +125,7 @@ export default function InterpreterPage() {
             <CardDescription>Use this scratchpad to experiment before submitting solutions.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className={`overflow-hidden rounded-2xl border shadow-inner ${theme === "light" ? "border-slate-200" : "border-slate-700"}`}>
+            <div className="overflow-hidden rounded-2xl border border-border shadow-inner bg-card">
               <Editor
                 height="420px"
                 language="python"
