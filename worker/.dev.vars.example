@@ -1,0 +1,5 @@
+# JWT Secret for signing session tokens
+JWT_SECRET="your_jwt_secret_here"
+
+# Clerk Secret Key for admin/user authentication
+CLERK_SECRET_KEY="your_clerk_secret_key_here"

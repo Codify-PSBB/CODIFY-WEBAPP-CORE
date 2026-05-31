@@ -17,6 +17,9 @@
 /frontend/.env.local
 /worker/.env
 /worker/.env.*
+*.dev.vars
+.dev.vars
+
 
 /.env.example
 /frontend/.env.example
