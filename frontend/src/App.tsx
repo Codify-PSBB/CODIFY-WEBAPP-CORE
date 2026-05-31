@@ -230,31 +230,31 @@ export default function App() {
     <AppLayout memberLeaderboardOnly={memberLeaderboardOnly} onSignOut={handleSignOut} />
   );
 
-  const LayoutWrapper = isAdmin ? 
-    ({ children }: { children: ReactElement }) => <SchoolEmailGuard>{children}</SchoolEmailGuard> :
-    ({ children }: { children: ReactElement }) => <>{children}</>;
+  const routesElement = (
+    <Routes>
+      <Route path="/" element={appLayoutElement}>
+        <Route index element={<Navigate to={memberLeaderboardOnly ? "/leaderboard" : "/competition"} replace />} />
+        <Route path="competition" element={
+          <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
+            <CompetitionPage />
+          </MemberAppOnGuard>
+        } />
+        <Route path="interpreter" element={
+          <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
+            <InterpreterPage />
+          </MemberAppOnGuard>
+        } />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
 
-  return (
-    <LayoutWrapper>
-      <Routes>
-        <Route path="/" element={appLayoutElement}>
-          <Route index element={<Navigate to={memberLeaderboardOnly ? "/leaderboard" : "/competition"} replace />} />
-          <Route path="competition" element={
-            <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-              <CompetitionPage />
-            </MemberAppOnGuard>
-          } />
-          <Route path="interpreter" element={
-            <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-              <InterpreterPage />
-            </MemberAppOnGuard>
-          } />
-          <Route path="leaderboard" element={<LeaderboardPage />} />
-
-          <Route path="admin" element={<AdminRouteGuard><AdminDashboardPage /></AdminRouteGuard>} />
-          <Route path="admin/queue" element={<AdminRouteGuard><SubmissionQueuePage /></AdminRouteGuard>} />
-        </Route>
-      </Routes>
-    </LayoutWrapper>
+        <Route path="admin" element={<AdminRouteGuard><AdminDashboardPage /></AdminRouteGuard>} />
+        <Route path="admin/queue" element={<AdminRouteGuard><SubmissionQueuePage /></AdminRouteGuard>} />
+      </Route>
+    </Routes>
   );
+
+  if (isAdmin) {
+    return <SchoolEmailGuard>{routesElement}</SchoolEmailGuard>;
+  }
+
+  return routesElement;
 }
