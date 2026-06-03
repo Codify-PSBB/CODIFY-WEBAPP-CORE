@@ -1,3 +1,4 @@
+import { isAdminEmail } from "../lib/schoolRules";
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
 
@@ -59,9 +60,10 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
 
     const db = createDbClient(ctx.env.DB);
 
-    const rows = await db.all<LeaderboardUserRow>(
+    const allRows = await db.all<LeaderboardUserRow>(
       "SELECT xp, clerk_user_id, name, email, grade FROM users ORDER BY xp DESC, email ASC"
     );
+    const rows = allRows.filter((r) => !isAdminEmail(r.email));
 
     // Single batch Clerk lookup — 1 API call total regardless of user count.
     // Only queries Clerk for users whose DB name is still a placeholder.
