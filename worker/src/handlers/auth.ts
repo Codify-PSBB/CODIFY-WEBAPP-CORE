@@ -26,12 +26,13 @@ export async function handleLogin(ctx: RequestContext) {
     }
 
     const username = eduId.toUpperCase().trim();
-    const email = normalizeEmail(`${username}@psbbschools.edu.in`);
+    const emailWithDomain = normalizeEmail(`${username}@psbbschools.edu.in`);
+    const emailRaw = username.toLowerCase();
     const client = createDbClient(ctx.env.DB);
 
     const userRow = await client.first<{ id: number, role: string, name: string, password_hash: string }>(
-      "SELECT id, role, name, password_hash FROM users WHERE email = ?",
-      [email]
+      "SELECT id, role, name, password_hash FROM users WHERE email = ? OR email = ?",
+      [emailRaw, emailWithDomain]
     );
 
     if (!userRow || !userRow.password_hash) {
@@ -43,9 +44,12 @@ export async function handleLogin(ctx: RequestContext) {
       return jsonError("Invalid EDU ID or password.", 401);
     }
 
+    // Keep the full email domain in the payload to pass isAllowedSchoolEmail checks
+    const emailForToken = emailWithDomain;
+
     const payload = {
       sub: userRow.id.toString(),
-      email: email,
+      email: emailForToken,
       role: userRow.role,
       exp: Math.floor(Date.now() / 1000) + 86400 // 24 hours
     };
@@ -60,7 +64,7 @@ export async function handleLogin(ctx: RequestContext) {
       status: "success",
       data: {
         token,
-        user: { id: userRow.id.toString(), email, role: userRow.role, name: userRow.name }
+        user: { id: userRow.id.toString(), email: emailForToken, role: userRow.role, name: userRow.name }
       }
     });
   } catch (e: any) {
