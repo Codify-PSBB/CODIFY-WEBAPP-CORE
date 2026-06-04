@@ -46,7 +46,7 @@ try {
     }
 
     const username = eduId.toUpperCase().trim();
-    const email = `${username.toLowerCase()}@psbbschools.edu.in`;
+    const email = username.toLowerCase();
     const passwordHash = createHash("sha256").update(password + SALT).digest("hex");
     const numericGrade = parseInt(grade, 10);
 
