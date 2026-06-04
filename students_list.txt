@@ -1,73 +1,80 @@
 Students List Status (Ticked = added to DB)
 
-9A1 (current 10th batch):
+10A1 (Batch: 10th):
 [x] Shravan (s140019@psbbschools.edu.in) - Password: Shravan@S140019
 [x] Harshath (s190143@psbbschools.edu.in) - Password: Harshath@S190143
 [x] Ajay (s180113@psbbschools.edu.in) - Password: Ajay@S180113
 [x] Keshav (s220183@psbbschools.edu.in) - Password: Keshav@S220183
-[ ] Ashwin (No USN provided)
-[ ] Krish (No USN provided)
+[ ] Ashwin (No USN provided / not in DB)
+[ ] Krish (No USN provided / not in DB)
 [x] Varnith (s200069@psbbschools.edu.in) - Password: Varnith@S200069
-[ ] Bhagya (No USN provided)
+[ ] Bhagya (No USN provided / not in DB)
 [x] Rishika (s140061@psbbschools.edu.in) - Password: Rishika@S140061
 [x] Dharanish (s250157@psbbschools.edu.in) - Password: Dharanish@S250157
 [x] Sahaana (s140017@psbbschools.edu.in) - Password: Sahaana@S140017
 
-9B1 (Current 10th batch):
-[ ] Aarnav Balaji (No USN provided)
+10B1 (Batch: 10th):
+[ ] Aarnav Balaji (No USN provided / not in DB)
 [x] Arnav Kapoor (s140065@psbbschools.edu.in) - Password: ArnavKapoor@S140065
 [x] Sahasra Kudaka (s210135@psbbschools.edu.in) - Password: SahasraKudaka@S210135
-[x] Sahasra Kurimindla (s190144@psbbschools.edu.in) - Password: SahasraKurmindla@S190144
-[x] Pavana.M (s230210@psbbschools.edu.in) - Password: PavanaM@S230210
-[x] Kanishka.V (s240167@psbbschools.edu.in) - Password: KanishkaV@S240167
+[x] Sahasra Kurmindla (s190144@psbbschools.edu.in) - Password: SahasraKurmindla@S190144
+[x] Pavana M (s230210@psbbschools.edu.in) - Password: PavanaM@S230210
+[x] Kanishka V (s240167@psbbschools.edu.in) - Password: KanishkaV@S240167
 [x] Gowri (s140011@psbbschools.edu.in) - Password: Gowri@S140011
-[x] Paarvana.V (s190147@psbbschools.edu.in) - Password: PaarvanaV@S190147
+[x] Paarvana V (s190147@psbbschools.edu.in) - Password: PaarvanaV@S190147
 [x] Meghana (s160127@psbbschools.edu.in) - Password: Meghana@S160127
 [x] Shraddha (s150098@psbbschools.edu.in) - Password: Shraddha@S150098
 [x] Divya (s250158@psbbschools.edu.in) - Password: Divya@S250158
 
-9C1 (Current 10th batch):
+10C1 (Batch: 10th):
 [ ] Anjana (No USN provided / not in DB)
 [ ] Ryan (No USN provided / not in DB)
 
-9D1 (Current 10th Batch):
+10D1 (Batch: 10th):
 [ ] Prananjay (No USN provided / not in DB)
 [ ] Kavin Kumar (No USN provided / not in DB)
 
-IX-A1:
-[ ] Sashini (No USN provided / not in DB)
+IX-A1 (Batch: 9th):
+[x] V.Shashini (s150050@psbbschools.edu.in) - Password: Shashini@S150050
 [ ] Adithi (No USN provided / not in DB)
-[x] Aadesh (s150008@psbbschools.edu.in) - Password: Aadesh@S150008
-[ ] Shrinish (No USN provided / not in DB)
-[ ] Rithik (No USN provided / not in DB)
+[x] K.S.Aadesh Rathan (s150008@psbbschools.edu.in) - Password: Aadesh@S150008
+[x] R.Shrinish (s150059@psbbschools.edu.in) - Password: Shrinish@S150059
 [ ] Jeev (No USN provided / not in DB)
-[ ] Prasana (No USN provided / not in DB)
+[x] Prasanna Venkatesh (s230203@psbbschools.edu.in) - Password: Prasanna@S230203
 [ ] Sri Raghavan (No USN provided / not in DB)
-[ ] Gautham (No USN provided / not in DB)
-[ ] Aadhir (No USN provided / not in DB)
+[x] Sonika Murugan (s160107@psbbschools.edu.in) - Password: Sonika@S160107
 [ ] Abishek (No USN provided / not in DB)
-[ ] Sonika (No USN provided / not in DB)
 
-IX-C1:
-[ ] Aadishri (No USN provided / not in DB)
+IX-B1 (Batch: 9th):
+[x] Rithik Prabhakaran (s150026@psbbschools.edu.in) - Password: Rithik@S150026
+[x] Aadhir A (s220142@psbbschools.edu.in) - Password: Aadhir@S220142
+
+IX-C1 (Batch: 9th):
+[x] Aadishri Manuprasad (s190128@psbbschools.edu.in) - Password: Aadishri@S190128
 [ ] Aaradhna (No USN provided / not in DB)
-[ ] Ananya (No USN provided / not in DB)
-[ ] Sriya (No USN provided / not in DB)
+[x] Ananyaa S (s150007@psbbschools.edu.in) - Password: Ananyaa@S150007
+[x] Kamal Sriya (s150082@psbbschools.edu.in) - Password: KamalSriya@S150082
 [ ] Pallavi (No USN provided / not in DB)
-[ ] Harshika (No USN provided / not in DB)
-[ ] Isha (No USN provided / not in DB)
+[x] Harshita Nakkula (s150006@psbbschools.edu.in) - Password: Harshita@S150006
+[x] Isha Harish (s150084@psbbschools.edu.in) - Password: Isha@S150084
 [ ] Sanciapal (No USN provided / not in DB)
-[ ] Varenyaa (No USN provided / not in DB)
-[ ] Roshni (No USN provided / not in DB)
+[x] Varenyaa Singh (s220143@psbbschools.edu.in) - Password: Varenyaa@S220143
 [ ] Thushitha (No USN provided / not in DB)
-[ ] Atharv (No USN provided / not in DB)
-[ ] Rishabh (No USN provided / not in DB)
+[x] Rishab Jayden Arun (s150200@psbbschools.edu.in) - Password: Rishab@S150200
 [ ] Aatmika (No USN provided / not in DB)
+[x] Mandava Sriaakash (s250151@psbbschools.edu.in) - Password: Sriaakash@S250151
+[x] Arsh Srivastava (s230230@psbbschools.edu.in) - Password: Arsh@S230230
+[x] Sukruth Shyam (s250181@psbbschools.edu.in) - Password: Sukruth@S250181
 
-IX-D1:
+IX-D1 (Batch: 9th):
 [ ] Niveditha (No USN provided / not in DB)
-[ ] Niyantri (No USN provided / not in DB)
-[ ] Sri Devi (No USN provided / not in DB)
+[x] Niyanthri (s150027@psbbschools.edu.in) - Password: Niyanthri@S150027
+[x] Sridevi R (s220151@psbbschools.edu.in) - Password: Sridevi@S220151
 [ ] Aakash (No USN provided / not in DB)
-[ ] R Sukruth (No USN provided / not in DB)
+[x] Roshni Vankadara (s150029@psbbschools.edu.in) - Password: Roshni@S150029
+[x] Atharv Kabra (s250155@psbbschools.edu.in) - Password: Atharv@S250155
+[x] J.S.Gautham (s150017@psbbschools.edu.in) - Password: Gautham@S150017
 [ ] Lakshya (No USN provided / not in DB)
+
+--- TOTAL IN DB: 40 members ---
+Last updated: 2026-06-04
