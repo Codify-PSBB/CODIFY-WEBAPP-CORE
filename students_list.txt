@@ -5,16 +5,16 @@ Students List Status (Ticked = added to DB)
 [x] Harshath (s190143) - Password: Harshath@S190143
 [x] Ajay (s180113) - Password: Ajay@S180113
 [x] Keshav (s220183) - Password: Keshav@S220183
-[ ] Ashwin (No USN provided / not in DB)
-[ ] Krish (No USN provided / not in DB)
+[x] Ashwin (s240170) - Password: Ashwin@S240170
+[x] Krish (s230212) - Password: Krish@S230212
 [x] Varnith (s200069) - Password: Varnith@S200069
-[ ] Bhagya (No USN provided / not in DB)
+[x] Bhagya (s150116) - Password: Bhagya@S150116
 [x] Rishika (s140061) - Password: Rishika@S140061
 [x] Dharanish (s250157) - Password: Dharanish@S250157
 [x] Sahaana (s140017) - Password: Sahaana@S140017
 
 10B1 (Batch: 10th):
-[ ] Aarnav Balaji (No USN provided / not in DB)
+[x] Aarnav Balaji (s200105) - Password: AarnavBalaji@S200105
 [x] Arnav Kapoor (s140065) - Password: ArnavKapoor@S140065
 [x] Sahasra Kudaka (s210135) - Password: SahasraKudaka@S210135
 [x] Sahasra Kurmindla (s190144) - Password: SahasraKurmindla@S190144
@@ -27,12 +27,12 @@ Students List Status (Ticked = added to DB)
 [x] Divya (s250158) - Password: Divya@S250158
 
 10C1 (Batch: 10th):
-[ ] Anjana (No USN provided / not in DB)
-[ ] Ryan (No USN provided / not in DB)
+[x] Anjana (s140114) - Password: Anjana@S140114
+[x] Ryan (s150205) - Password: Ryan@S150205
 
 10D1 (Batch: 10th):
-[ ] Prananjay (No USN provided / not in DB)
-[ ] Kavin Kumar (No USN provided / not in DB)
+[x] Prananjay (s240173) - Password: Prananjay@S240173
+[x] Kavin Kumar (s240172) - Password: KavinKumar@S240172
 
 IX-A1 (Batch: 9th):
 [x] V.Shashini (s150050) - Password: Shashini@S150050
@@ -76,5 +76,5 @@ IX-D1 (Batch: 9th):
 [x] J.S.Gautham (s150017) - Password: Gautham@S150017
 [ ] Lakshya (No USN provided / not in DB)
 
---- TOTAL IN DB: 40 members ---
-Last updated: 2026-06-04
+--- TOTAL IN DB: 48 members ---
+Last updated: 2026-06-05
