@@ -29,6 +29,7 @@ Students List Status (Ticked = added to DB)
 10C1 (Batch: 10th):
 [x] Anjana (s140114) - Password: Anjana@S140114
 [x] Ryan (s150205) - Password: Ryan@S150205
+[x] Niyusha Mathews (s170046) - Password: NiyushaMathews@S170046
 
 10D1 (Batch: 10th):
 [x] Prananjay (s240173) - Password: Prananjay@S240173
@@ -76,5 +77,5 @@ IX-D1 (Batch: 9th):
 [x] J.S.Gautham (s150017) - Password: Gautham@S150017
 [ ] Lakshya (No USN provided / not in DB)
 
---- TOTAL IN DB: 48 members ---
-Last updated: 2026-06-05
+--- TOTAL IN DB: 49 members ---
+Last updated: 2026-06-06
