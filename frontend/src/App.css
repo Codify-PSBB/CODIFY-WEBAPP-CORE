@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Orbitron:wght@400..900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Merriweather:wght@300;400;700&family=Orbitron:wght@400..900&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Rajdhani:wght@500;600;700&family=Righteous&family=Share+Tech+Mono&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -1239,3 +1239,311 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
 }
 
 
+
+/* ==========================================
+   7. Synthwave / Outrun Theme
+   ========================================== */
+.theme-synthwave {
+  --background: #0d0221;
+  --foreground: #f4d9ff;
+  --card: #1c053a;
+  --card-foreground: #00ffff;
+  --popover: #1c053a;
+  --popover-foreground: #ff007f;
+  --primary: #ff007f;
+  --primary-foreground: #ffffff;
+  --secondary: #2b0b5c;
+  --secondary-foreground: #00ffff;
+  --muted: #2b0b5c;
+  --muted-foreground: #9a66c4;
+  --accent: #ffb8d2;
+  --accent-foreground: #0d0221;
+  --border: #ff007f;
+  --input: #1c053a;
+  --ring: #00ffff;
+  --radius: 0.5rem;
+  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Righteous", cursive;
+  --shadow-soft: 0 0 15px rgba(255, 0, 127, 0.4);
+  --shadow-lg: 0 0 25px rgba(0, 255, 255, 0.5);
+  --glass-bg: rgba(28, 5, 58, 0.85);
+  --glass-border: rgba(255, 0, 127, 0.6);
+}
+
+@keyframes synthwave-grid {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+}
+
+.theme-synthwave body {
+  background-color: #0d0221;
+  position: relative;
+  overflow-x: hidden;
+}
+.theme-synthwave body::before {
+  content: "";
+  position: fixed;
+  top: 50%; left: -50%; width: 200%; height: 100vh;
+  background-image: 
+    linear-gradient(rgba(255, 0, 127, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.4) 1px, transparent 1px);
+  background-size: 50px 50px, 50px 50px;
+  transform: perspective(500px) rotateX(60deg);
+  animation: synthwave-grid 2s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+.theme-synthwave body::after {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 0, 127, 0.15) 0%, transparent 60%);
+  z-index: -2;
+  pointer-events: none;
+}
+
+.theme-synthwave h1, .theme-synthwave h2, .theme-synthwave h3 {
+  font-family: "Righteous", cursive !important;
+  color: #00ffff !important;
+  text-shadow: 2px 2px 0px #ff007f, 0 0 10px #00ffff;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.theme-synthwave .card-modern, .theme-synthwave [class*="bg-card"] {
+  background: rgba(28, 5, 58, 0.9) !important;
+  border: 1px solid #ff007f !important;
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.2) !important;
+  backdrop-filter: blur(8px);
+}
+.theme-synthwave .card-modern:hover {
+  border-color: #00ffff !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+}
+
+.theme-synthwave button, .theme-synthwave .btn-primary {
+  font-family: "Righteous", cursive;
+  background: linear-gradient(90deg, #ff007f 0%, #7e00ff 100%) !important;
+  border: 1px solid #00ffff !important;
+  color: #ffffff !important;
+  text-transform: uppercase;
+  text-shadow: 0 0 5px #ffffff;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+  transform: skewX(-10deg);
+  border-radius: 4px;
+}
+.theme-synthwave button > *, .theme-synthwave .btn-primary > * {
+  transform: skewX(10deg);
+  display: inline-block;
+}
+.theme-synthwave button:hover, .theme-synthwave .btn-primary:hover {
+  background: linear-gradient(90deg, #00ffff 0%, #ff007f 100%) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8) !important;
+  color: #000 !important;
+  text-shadow: none;
+}
+
+.theme-synthwave header {
+  background: rgba(13, 2, 33, 0.8) !important;
+  border-bottom: 2px solid #00ffff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.theme-synthwave [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #ff007f !important;
+  color: #ffffff !important;
+  text-shadow: 0 0 5px #ffffff;
+  box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+}
+
+/* ==========================================
+   8. Ethereal / Dreamscape Theme
+   ========================================== */
+.theme-ethereal {
+  --background: #fbf9ff;
+  --foreground: #4a4063;
+  --card: rgba(255, 255, 255, 0.6);
+  --card-foreground: #5c4d80;
+  --popover: rgba(255, 255, 255, 0.7);
+  --popover-foreground: #5c4d80;
+  --primary: #9b82e3;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(155, 130, 227, 0.1);
+  --secondary-foreground: #7d5cd1;
+  --muted: rgba(200, 190, 230, 0.2);
+  --muted-foreground: #a69bb8;
+  --accent: #e0d4f7;
+  --accent-foreground: #7d5cd1;
+  --border: rgba(255, 255, 255, 0.8);
+  --input: rgba(255, 255, 255, 0.5);
+  --ring: #c6b5f0;
+  --radius: 1.5rem;
+  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --shadow-soft: 0 8px 32px rgba(155, 130, 227, 0.15);
+  --shadow-lg: 0 16px 40px rgba(155, 130, 227, 0.25);
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes float-orb {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.theme-ethereal body {
+  background-color: #fbf9ff;
+  position: relative;
+  overflow-x: hidden;
+}
+.theme-ethereal body::before, .theme-ethereal body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: -1;
+  pointer-events: none;
+}
+.theme-ethereal body::before {
+  top: -10%; left: -10%;
+  width: 50vw; height: 50vw;
+  background: radial-gradient(circle, rgba(230, 200, 255, 0.8), rgba(255, 255, 255, 0));
+  animation: float-orb 15s ease-in-out infinite alternate;
+}
+.theme-ethereal body::after {
+  bottom: -10%; right: -10%;
+  width: 60vw; height: 60vw;
+  background: radial-gradient(circle, rgba(180, 220, 255, 0.6), rgba(255, 255, 255, 0));
+  animation: float-orb 18s ease-in-out infinite alternate-reverse;
+}
+
+.theme-ethereal .card-modern, .theme-ethereal [class*="bg-card"] {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 8px 32px rgba(155, 130, 227, 0.1) !important;
+  border-radius: 1.5rem !important;
+}
+.theme-ethereal .card-modern:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(155, 130, 227, 0.2) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.theme-ethereal button, .theme-ethereal .btn-primary {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  color: #7d5cd1 !important;
+  backdrop-filter: blur(10px);
+  border-radius: 2rem !important;
+  box-shadow: 0 4px 15px rgba(155, 130, 227, 0.15);
+  font-weight: 600;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.theme-ethereal button:hover, .theme-ethereal .btn-primary:hover {
+  background: #9b82e3 !important;
+  color: #ffffff !important;
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(155, 130, 227, 0.3) !important;
+}
+
+.theme-ethereal header {
+  background: rgba(251, 249, 255, 0.5) !important;
+  backdrop-filter: blur(25px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+
+/* ==========================================
+   9. Dark Academia / Crimson Theme
+   ========================================== */
+.theme-academia {
+  --background: #1a1817;
+  --foreground: #e6dfd3;
+  --card: #24211f;
+  --card-foreground: #e6dfd3;
+  --popover: #24211f;
+  --popover-foreground: #e6dfd3;
+  --primary: #8c001a; /* Deep Crimson */
+  --primary-foreground: #f4f1ea;
+  --secondary: #302b28;
+  --secondary-foreground: #d6b885; /* Vintage gold */
+  --muted: #302b28;
+  --muted-foreground: #8a7f76;
+  --accent: #453730;
+  --accent-foreground: #d6b885;
+  --border: #4a413b;
+  --input: #1f1c1a;
+  --ring: #8c001a;
+  --radius: 0.35rem;
+  --font-sans: "Merriweather", serif;
+  --font-heading: "Playfair Display", serif;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.9);
+  --glass-bg: rgba(36, 33, 31, 0.8);
+  --glass-border: rgba(74, 65, 59, 0.5);
+}
+
+.theme-academia body {
+  background-color: #1a1817;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(140, 0, 26, 0.05) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+.theme-academia h1, .theme-academia h2, .theme-academia h3, .theme-academia .font-bold {
+  font-family: "Playfair Display", serif !important;
+  color: #d6b885 !important;
+  letter-spacing: 0.02em;
+}
+
+.theme-academia .card-modern, .theme-academia [class*="bg-card"] {
+  background: #24211f !important;
+  border: 1px solid #4a413b !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  border-radius: 4px !important;
+  position: relative;
+}
+.theme-academia .card-modern::before, .theme-academia [class*="bg-card"]::before {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px; right: 3px; bottom: 3px;
+  border: 1px solid rgba(214, 184, 133, 0.1);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.theme-academia .card-modern:hover {
+  border-color: #8c001a !important;
+}
+
+.theme-academia button, .theme-academia .btn-primary {
+  font-family: "Playfair Display", serif;
+  background: #8c001a !important;
+  color: #e6dfd3 !important;
+  border: 1px solid #5a0011 !important;
+  border-radius: 2px !important;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 4px 10px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+.theme-academia button:hover, .theme-academia .btn-primary:hover {
+  background: #a8001f !important;
+  border-color: #d6b885 !important;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.1), 0 6px 15px rgba(140,0,26,0.3) !important;
+}
+
+.theme-academia header {
+  background: rgba(26, 24, 23, 0.95) !important;
+  border-bottom: 2px solid #302b28 !important;
+  border-top: 4px solid #8c001a !important;
+}
+
+.theme-academia [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #302b28 !important;
+  color: #d6b885 !important;
+  border-bottom: 2px solid #8c001a;
+}

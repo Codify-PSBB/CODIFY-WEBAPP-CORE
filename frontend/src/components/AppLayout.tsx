@@ -36,7 +36,10 @@ export default function AppLayout({
     { id: "light", name: "Light Minimalist", iconBg: "bg-slate-100", borderCol: "border-slate-300" },
     { id: "nordic", name: "Nordic Frost", iconBg: "bg-blue-50", borderCol: "border-sky-300" },
     { id: "paper", name: "Vintage Print", iconBg: "bg-[#f4f1ea]", borderCol: "border-stone-400" },
+    { id: "ethereal", name: "Ethereal Dreamscape", iconBg: "bg-purple-100", borderCol: "border-purple-300" },
     { id: "dark", name: "Carbon Space", iconBg: "bg-zinc-900", borderCol: "border-zinc-700" },
+    { id: "academia", name: "Dark Academia", iconBg: "bg-[#24211f]", borderCol: "border-red-900" },
+    { id: "synthwave", name: "Synthwave Outrun", iconBg: "bg-fuchsia-950", borderCol: "border-pink-500" },
     { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500" },
     { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },
     { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" }
