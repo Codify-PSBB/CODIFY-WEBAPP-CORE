@@ -9,6 +9,7 @@ export interface CompetitionState {
 
 export interface CompetitionProblem {
   id: number;
+  problem_id: number;
   title: string;
   description: string;
   xp_reward: number;

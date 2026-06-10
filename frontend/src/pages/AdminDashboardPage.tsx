@@ -21,6 +21,8 @@ import {
   Users2, XCircle, Zap,
 } from "lucide-react"
 
+const TOTAL_SLOTS = 10
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTimestamp(value: string) {
@@ -260,7 +262,7 @@ export default function AdminDashboardPage() {
 
   const totalStudents = useMemo(() => users.filter((u) => u.role === "member").length, [users])
   const totalXp = useMemo(() => users.reduce((sum, u) => sum + u.xp, 0), [users])
-  const competitionProblemIds = new Set(competitionProblems.map((p) => p.id))
+  const competitionProblemIds = new Set(competitionProblems.map((p) => p.problem_id))
 
   const isError = (msg: string) =>
     msg.includes("Failed") || msg.includes("Cannot") || msg.includes("error")
@@ -377,68 +379,90 @@ export default function AdminDashboardPage() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {phase === "setup" && (
         <>
-          {/* Competition problems being built */}
+          {/* ── 10-Slot Question Grid ──────────────────────────────────────── */}
           <Card className="rounded-[28px] border-blue-200 bg-blue-50/50 shadow-soft dark:border-blue-800 dark:bg-blue-950/20">
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <CardTitle className="text-2xl">Competition Setup</CardTitle>
                   <CardDescription>
-                    Add problems from the bank below. Once you've added all questions, click "Go Live".
+                    Fill up to {TOTAL_SLOTS} question slots. Pick from the bank below or create new ones.
                   </CardDescription>
                 </div>
-                <Button
-                  size="lg"
-                  className="gap-2 bg-green-600 hover:bg-green-700 text-white px-8 rounded-2xl"
-                  onClick={() => void goLive()}
-                  disabled={actionLoading || competitionProblems.length === 0}
-                >
-                  <Radio className="size-4" />
-                  {actionLoading ? "Going live…" : `Go Live (${competitionProblems.length} problem${competitionProblems.length !== 1 ? "s" : ""})`}
-                </Button>
+                <div className="flex items-center gap-3">
+                  {/* Progress badge */}
+                  <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2">
+                    <span className={`text-2xl font-bold tabular-nums ${
+                      competitionProblems.length === TOTAL_SLOTS ? "text-green-600" : competitionProblems.length > 0 ? "text-blue-600" : "text-muted-foreground"
+                    }`}>{competitionProblems.length}</span>
+                    <span className="text-sm text-muted-foreground">/ {TOTAL_SLOTS}</span>
+                  </div>
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-green-600 hover:bg-green-700 text-white px-8 rounded-2xl"
+                    onClick={() => void goLive()}
+                    disabled={actionLoading || competitionProblems.length === 0}
+                  >
+                    <Radio className="size-4" />
+                    {actionLoading ? "Going live…" : "Go Live"}
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {competitionProblems.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4">No problems added yet. Use the problem bank below to add questions.</p>
-              ) : (
-                <div className="space-y-2">
-                  {competitionProblems.map((p, i) => (
-                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-muted-foreground w-5">{i + 1}.</span>
-                        <span className="font-medium text-sm">{p.title}</span>
-                        <Badge variant="secondary" className="gap-1 text-xs">
-                          <Zap className="size-2.5" />{p.xp_reward} XP
-                        </Badge>
+              {/* Visual 10-slot grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {Array.from({ length: TOTAL_SLOTS }).map((_, i) => {
+                  const filled = competitionProblems[i]
+                  return (
+                    <div
+                      key={i}
+                      className={`relative rounded-xl border-2 border-dashed p-3 min-h-[80px] flex flex-col justify-between transition-all ${
+                        filled
+                          ? "border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 dark:border-blue-600"
+                          : "border-border/50 bg-muted/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded-md ${
+                          filled ? "bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200" : "bg-muted text-muted-foreground"
+                        }`}>Q{i + 1}</span>
+                        {filled && (
+                          <button
+                            type="button"
+                            className="text-red-400 hover:text-red-600 transition-colors p-0.5"
+                            onClick={() => void removeProblemFromCompetition(filled.problem_id)}
+                          >
+                            <XCircle className="size-4" />
+                          </button>
+                        )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => void removeProblemFromCompetition(p.id)}
-                        disabled={problemActionLoading?.problemId === p.id}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      {filled ? (
+                        <div className="mt-1.5">
+                          <p className="text-xs font-medium leading-tight line-clamp-2">{filled.title}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">{filled.xp_reward} XP</p>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground/50 mt-1">Empty</p>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Problem Bank */}
+          {/* ── Problem Bank for picking ───────────────────────────────────── */}
           <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <CardTitle className="text-2xl">Problem Bank</CardTitle>
-                  <CardDescription>Select problems to add to this competition.</CardDescription>
+                  <CardDescription>Click &ldquo;Add&rdquo; to fill a slot. Create new problems with the button on the right.</CardDescription>
                 </div>
                 <Button variant="outline" size="sm" onClick={() => setShowNewProblemForm(!showNewProblemForm)} className="gap-2">
                   <FilePlus2 className="size-4" />
-                  {showNewProblemForm ? "Cancel" : "New Problem"}
+                  {showNewProblemForm ? "Cancel" : "Create New Problem"}
                 </Button>
               </div>
             </CardHeader>
@@ -499,8 +523,9 @@ export default function AdminDashboardPage() {
                   ) : (
                     allProblems.map((p) => {
                       const inCompetition = competitionProblemIds.has(p.id)
+                      const isFull = competitionProblems.length >= TOTAL_SLOTS
                       return (
-                        <TableRow key={p.id}>
+                        <TableRow key={p.id} className={inCompetition ? "bg-blue-50/40 dark:bg-blue-900/10" : ""}>
                           <TableCell>
                             <p className="font-medium">{p.title}</p>
                             <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
@@ -508,17 +533,17 @@ export default function AdminDashboardPage() {
                           <TableCell>{p.xp_reward}</TableCell>
                           <TableCell className="text-right">
                             {inCompetition ? (
-                              <Badge variant="secondary" className="text-xs">Added ✓</Badge>
+                              <Badge variant="secondary" className="text-xs gap-1"><CheckCircle2 className="size-3" />Added</Badge>
                             ) : (
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="gap-1"
                                 onClick={() => void addProblemToCompetition(p.id)}
-                                disabled={problemActionLoading?.problemId === p.id && problemActionLoading.action === "add"}
+                                disabled={isFull || (problemActionLoading?.problemId === p.id && problemActionLoading.action === "add")}
                               >
                                 <PlusCircle className="size-3.5" />
-                                Add
+                                {isFull ? "Full" : `Add as Q${competitionProblems.length + 1}`}
                               </Button>
                             )}
                           </TableCell>
