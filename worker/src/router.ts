@@ -8,14 +8,23 @@ import { handleLogin, handleRegister } from "./handlers/auth";
 import { appStatusHandler } from "./handlers/appStatus";
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
-import { adminToggleGetHandler, adminToggleHandler } from "./handlers/adminToggle";
 import { adminUsersHandler } from "./handlers/adminUsers";
 import { leaderboardHandler } from "./handlers/leaderboard";
 import { problemsHandler } from "./handlers/problems";
 import { submissionsHandler } from "./handlers/submissions";
+import { competitionStatusHandler } from "./handlers/publicCompetition";
+import {
+  adminCompetitionGetHandler,
+  adminCompetitionCreateHandler,
+  adminCompetitionAddProblemHandler,
+  adminCompetitionRemoveProblemHandler,
+  adminCompetitionGoLiveHandler,
+  adminCompetitionEndHandler,
+  adminCompetitionResetHandler,
+} from "./handlers/adminCompetition";
 import { requireAdmin } from "./middleware/admin";
 import { requireAuth } from "./middleware/auth";
-import { requireAppOnForMembers } from "./middleware/appStatus";
+import { requireCompetitionLiveForMembers } from "./middleware/appStatus";
 import { notFoundHandler } from "./placeholders";
 import type { Env, Middleware, RequestContext, RouteHandler } from "./types";
 
@@ -27,55 +36,42 @@ interface Route {
 }
 
 const authOnly = [requireAuth];
-const authAndAppOn = [requireAuth, requireAppOnForMembers];
+const authAndLive = [requireAuth, requireCompetitionLiveForMembers];
 const adminOnly = [requireAuth, requireAdmin];
 
 const routes: Route[] = [
+  // ── Public auth ─────────────────────────────────────────────────────────────
   { method: "POST", path: "/api/auth/register", middlewares: [], handler: handleRegister },
   { method: "POST", path: "/api/auth/login", middlewares: [], handler: handleLogin },
-  { method: "GET", path: "/api/status", middlewares: authOnly, handler: appStatusHandler },
+
+  // ── Member endpoints ─────────────────────────────────────────────────────────
+  { method: "GET", path: "/api/status", middlewares: authOnly, handler: appStatusHandler }, // legacy
+  { method: "GET", path: "/api/competition/status", middlewares: authOnly, handler: competitionStatusHandler },
   { method: "GET", path: "/api/leaderboard", middlewares: authOnly, handler: leaderboardHandler },
-  { method: "GET", path: "/api/problems", middlewares: authAndAppOn, handler: problemsHandler },
-  { method: "POST", path: "/api/submissions", middlewares: authAndAppOn, handler: submissionsHandler },
-  {
-    method: "GET",
-    path: "/api/admin/submissions",
-    middlewares: adminOnly,
-    handler: adminSubmissionsHandler
-  },
-  {
-    method: "GET",
-    path: "/api/admin/users",
-    middlewares: adminOnly,
-    handler: adminUsersHandler
-  },
-  {
-    method: "GET",
-    path: "/api/admin/problems",
-    middlewares: adminOnly,
-    handler: adminProblemsGetHandler
-  },
-  {
-    method: "POST",
-    path: "/api/admin/problems",
-    middlewares: adminOnly,
-    handler: adminProblemsPostHandler
-  },
-  {
-    method: "POST",
-    path: "/api/admin/problems/archive",
-    middlewares: adminOnly,
-    handler: adminProblemsArchiveHandler
-  },
-  {
-    method: "POST",
-    path: "/api/admin/problems/delete",
-    middlewares: adminOnly,
-    handler: adminProblemsDeleteHandler
-  },
-  { method: "GET", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleGetHandler },
+  { method: "GET", path: "/api/problems", middlewares: authAndLive, handler: problemsHandler }, // legacy member endpoint
+  { method: "POST", path: "/api/submissions", middlewares: authAndLive, handler: submissionsHandler },
+
+  // ── Admin: users ─────────────────────────────────────────────────────────────
+  { method: "GET", path: "/api/admin/users", middlewares: adminOnly, handler: adminUsersHandler },
+
+  // ── Admin: problem bank ──────────────────────────────────────────────────────
+  { method: "GET", path: "/api/admin/problems", middlewares: adminOnly, handler: adminProblemsGetHandler },
+  { method: "POST", path: "/api/admin/problems", middlewares: adminOnly, handler: adminProblemsPostHandler },
+  { method: "POST", path: "/api/admin/problems/archive", middlewares: adminOnly, handler: adminProblemsArchiveHandler },
+  { method: "POST", path: "/api/admin/problems/delete", middlewares: adminOnly, handler: adminProblemsDeleteHandler },
+
+  // ── Admin: competition lifecycle ─────────────────────────────────────────────
+  { method: "GET", path: "/api/admin/competition", middlewares: adminOnly, handler: adminCompetitionGetHandler },
+  { method: "POST", path: "/api/admin/competition/create", middlewares: adminOnly, handler: adminCompetitionCreateHandler },
+  { method: "POST", path: "/api/admin/competition/problems/add", middlewares: adminOnly, handler: adminCompetitionAddProblemHandler },
+  { method: "POST", path: "/api/admin/competition/problems/remove", middlewares: adminOnly, handler: adminCompetitionRemoveProblemHandler },
+  { method: "POST", path: "/api/admin/competition/go-live", middlewares: adminOnly, handler: adminCompetitionGoLiveHandler },
+  { method: "POST", path: "/api/admin/competition/end", middlewares: adminOnly, handler: adminCompetitionEndHandler },
+  { method: "POST", path: "/api/admin/competition/reset", middlewares: adminOnly, handler: adminCompetitionResetHandler },
+
+  // ── Admin: submissions & review ──────────────────────────────────────────────
+  { method: "GET", path: "/api/admin/submissions", middlewares: adminOnly, handler: adminSubmissionsHandler },
   { method: "POST", path: "/api/admin/review", middlewares: adminOnly, handler: adminReviewHandler },
-  { method: "POST", path: "/api/admin/toggle", middlewares: adminOnly, handler: adminToggleHandler }
 ];
 
 async function runMiddlewares(ctx: RequestContext, middlewares: Middleware[]): Promise<RequestContext | Response> {
@@ -86,7 +82,6 @@ async function runMiddlewares(ctx: RequestContext, middlewares: Middleware[]): P
     if (result instanceof Response) {
       return result;
     }
-
     current = result;
   }
 
@@ -114,18 +109,9 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
   const match = pathMatches.find((route) => route.method === request.method);
   if (!match) {
     const allow = Array.from(new Set(pathMatches.map((route) => route.method))).join(", ");
-
     return Response.json(
-      {
-        status: "error",
-        message: `Method ${request.method} not allowed for ${url.pathname}.`
-      },
-      {
-        status: 405,
-        headers: {
-          Allow: allow
-        }
-      }
+      { status: "error", message: `Method ${request.method} not allowed for ${url.pathname}.` },
+      { status: 405, headers: { Allow: allow } }
     );
   }
 

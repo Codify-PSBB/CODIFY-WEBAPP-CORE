@@ -1,220 +1,221 @@
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import { apiRequest } from "@/lib/api"
-import type { AdminUser, AppStatus, PendingSubmission, Problem, ToggleState } from "@/types/models"
-import { ArrowRight, FilePlus2, Gauge, RefreshCcw, Trophy, Users2, AlertTriangle } from "lucide-react"
+import type {
+  AdminUser, CompetitionPhase, CompetitionProblem, PendingSubmission,
+  Problem, SubmissionGroup,
+} from "@/types/models"
+import {
+  AlertTriangle, ArrowRight, CheckCircle2, Clock, FilePlus2,
+  Gauge, Play, PlusCircle, Radio, RefreshCcw, Trash2, Trophy,
+  Users2, XCircle, Zap,
+} from "lucide-react"
 
-interface PendingSubmissionsResponse {
-  submissions?: PendingSubmission[]
-}
-
-interface AdminUsersResponse {
-  users?: AdminUser[]
-}
-
-interface AdminProblemsResponse {
-  problems?: Problem[]
-}
-
-interface ToggleResponse extends Partial<ToggleState> {
-  app_status?: AppStatus
-}
-
-interface ProblemCreateResponse {
-  problem?: Problem
-  message?: string
-}
-
-interface ProblemActionResponse {
-  problem?: Problem
-  deleted_problem_id?: number
-  message?: string
-}
-
-interface ProblemFormState {
-  title: string
-  description: string
-  publicTestcase1Input: string
-  publicTestcase1Output: string
-  publicTestcase2Input: string
-  publicTestcase2Output: string
-  publicTestcase3Input: string
-  publicTestcase3Output: string
-  testcases: string
-  xpReward: string
-  active: boolean
-}
-
-const defaultProblemForm: ProblemFormState = {
-  title: "",
-  description: "",
-  publicTestcase1Input: "",
-  publicTestcase1Output: "",
-  publicTestcase2Input: "",
-  publicTestcase2Output: "",
-  publicTestcase3Input: "",
-  publicTestcase3Output: "",
-  testcases: "",
-  xpReward: "50",
-  active: true,
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTimestamp(value: string) {
   const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleString()
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString()
 }
 
+function formatElapsed(seconds: number | null): string {
+  if (seconds === null) return "—"
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${String(s).padStart(2, "0")}`
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface CompetitionStateResponse {
+  phase?: CompetitionPhase
+  competition?: {
+    id: number
+    status: string
+    created_by: string
+    started_at: string | null
+    ended_at: string | null
+    created_at: string
+  } | null
+  competition_problems?: CompetitionProblem[]
+  submission_group_count?: number
+}
+
+interface AdminProblemsResponse { problems?: Problem[] }
+interface AdminUsersResponse { users?: AdminUser[] }
+interface AdminSubmissionsResponse {
+  submissions?: PendingSubmission[]
+  groups?: SubmissionGroup[]
+}
+
+interface ProblemFormState {
+  title: string; description: string
+  publicTestcase1Input: string; publicTestcase1Output: string
+  publicTestcase2Input: string; publicTestcase2Output: string
+  publicTestcase3Input: string; publicTestcase3Output: string
+  testcases: string; xpReward: string; active: boolean
+}
+
+const defaultProblemForm: ProblemFormState = {
+  title: "", description: "",
+  publicTestcase1Input: "", publicTestcase1Output: "",
+  publicTestcase2Input: "", publicTestcase2Output: "",
+  publicTestcase3Input: "", publicTestcase3Output: "",
+  testcases: "", xpReward: "50", active: true,
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export default function AdminDashboardPage() {
-  const [submissions, setSubmissions] = useState<PendingSubmission[]>([])
+  // Competition state
+  const [phase, setPhase] = useState<CompetitionPhase>("idle")
+  const [competition, setCompetition] = useState<CompetitionStateResponse["competition"]>(null)
+  const [competitionProblems, setCompetitionProblems] = useState<CompetitionProblem[]>([])
+  const [submissionGroupCount, setSubmissionGroupCount] = useState(0)
+
+  // Problem bank
+  const [allProblems, setAllProblems] = useState<Problem[]>([])
+
+  // Users + submissions
   const [users, setUsers] = useState<AdminUser[]>([])
-  const [problems, setProblems] = useState<Problem[]>([])
-  const [appStatus, setAppStatus] = useState<AppStatus | "UNKNOWN">("UNKNOWN")
-  const [offVoteCount, setOffVoteCount] = useState(0)
-  const [offVotesRequired, setOffVotesRequired] = useState(2)
-  const [hasVotedOff, setHasVotedOff] = useState(false)
+  const [submissions, setSubmissions] = useState<PendingSubmission[]>([])
+  const [groups, setGroups] = useState<SubmissionGroup[]>([])
+
+  // UI state
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
   const [postingProblem, setPostingProblem] = useState(false)
-  const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" } | null>(null)
   const [message, setMessage] = useState("")
   const [problemForm, setProblemForm] = useState<ProblemFormState>(defaultProblemForm)
+  const [showNewProblemForm, setShowNewProblemForm] = useState(false)
+  const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" | "add" } | null>(null)
 
-  const remainingOffVotes = Math.max(offVotesRequired - offVoteCount, 0)
+  // ── Loaders ─────────────────────────────────────────────────────────────────
 
-  const totalStudents = useMemo(
-    () => users.filter((user) => user.role === "member").length,
-    [users]
-  )
-  const totalXp = useMemo(
-    () => users.reduce((sum, user) => sum + user.xp, 0),
-    [users]
-  )
+  const loadCompetitionState = useCallback(async () => {
+    const res = await apiRequest<CompetitionStateResponse>("/api/admin/competition")
+    const data = res.data
+    setPhase(data?.phase ?? "idle")
+    setCompetition(data?.competition ?? null)
+    setCompetitionProblems(Array.isArray(data?.competition_problems) ? data.competition_problems : [])
+    setSubmissionGroupCount(data?.submission_group_count ?? 0)
+  }, [])
 
-  function applyToggleState(payload?: ToggleResponse) {
-    if (!payload) {
-      return
-    }
+  const loadAllProblems = useCallback(async () => {
+    const res = await apiRequest<AdminProblemsResponse>("/api/admin/problems")
+    setAllProblems(Array.isArray(res.data?.problems) ? res.data.problems : [])
+  }, [])
 
-    const status = payload.app_status
-    if (status === "ON" || status === "OFF") {
-      setAppStatus(status)
-    }
+  const loadUsers = useCallback(async () => {
+    const res = await apiRequest<AdminUsersResponse>("/api/admin/users")
+    setUsers(Array.isArray(res.data?.users) ? res.data.users : [])
+  }, [])
 
-    if (typeof payload.off_vote_count === "number") {
-      setOffVoteCount(payload.off_vote_count)
-    }
+  const loadSubmissions = useCallback(async () => {
+    const res = await apiRequest<AdminSubmissionsResponse>("/api/admin/submissions")
+    setSubmissions(Array.isArray(res.data?.submissions) ? res.data.submissions : [])
+    setGroups(Array.isArray(res.data?.groups) ? res.data.groups : [])
+  }, [])
 
-    if (typeof payload.off_votes_required === "number") {
-      setOffVotesRequired(payload.off_votes_required)
-    }
-
-    if (typeof payload.has_voted_off === "boolean") {
-      setHasVotedOff(payload.has_voted_off)
-    }
-  }
-
-  async function loadPendingSubmissions() {
-    const response = await apiRequest<PendingSubmissionsResponse>("/api/admin/submissions")
-    setSubmissions(Array.isArray(response.data?.submissions) ? response.data.submissions : [])
-  }
-
-  async function loadUsers() {
-    const response = await apiRequest<AdminUsersResponse>("/api/admin/users")
-    setUsers(Array.isArray(response.data?.users) ? response.data.users : [])
-  }
-
-  async function loadProblems() {
-    const response = await apiRequest<AdminProblemsResponse>("/api/admin/problems")
-    setProblems(Array.isArray(response.data?.problems) ? response.data.problems : [])
-  }
-
-  async function loadAppStatus() {
-    const response = await apiRequest<ToggleResponse>("/api/admin/toggle")
-    applyToggleState(response.data)
-  }
-
-  async function refreshDashboard() {
+  const refreshAll = useCallback(async () => {
     setLoading(true)
     setMessage("")
-
     try {
-      await Promise.all([loadPendingSubmissions(), loadUsers(), loadProblems(), loadAppStatus()])
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to load admin dashboard.")
+      await Promise.all([loadCompetitionState(), loadAllProblems(), loadUsers(), loadSubmissions()])
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Failed to load dashboard.")
     } finally {
       setLoading(false)
     }
-  }
+  }, [loadCompetitionState, loadAllProblems, loadUsers, loadSubmissions])
 
-  useEffect(() => {
-    void refreshDashboard()
-  }, [])
+  useEffect(() => { void refreshAll() }, [refreshAll])
 
-  async function toggleCompetition(status: AppStatus) {
-    setMessage("")
+  // ── Competition actions ──────────────────────────────────────────────────────
 
+  async function createCompetition() {
+    setActionLoading(true); setMessage("")
     try {
-      const response = await apiRequest<ToggleResponse>("/api/admin/toggle", {
-        method: "POST",
-        body: { status },
-      })
-
-      applyToggleState(response.data)
-
-      const nextStatus = response.data?.app_status ?? status
-      setAppStatus(nextStatus)
-      setMessage(response.data?.message ?? `Competition status: ${nextStatus}.`)
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to toggle competition.")
-    }
+      await apiRequest("/api/admin/competition/create", { method: "POST", body: {} })
+      await loadCompetitionState()
+      setMessage("Competition created! Now add problems and go live.")
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to create.") }
+    finally { setActionLoading(false) }
   }
+
+  async function goLive() {
+    setActionLoading(true); setMessage("")
+    try {
+      await apiRequest("/api/admin/competition/go-live", { method: "POST", body: {} })
+      await loadCompetitionState()
+      setMessage("🚀 Competition is now LIVE!")
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to go live.") }
+    finally { setActionLoading(false) }
+  }
+
+  async function endCompetition() {
+    if (!window.confirm("End the competition? Students will no longer be able to submit.")) return
+    setActionLoading(true); setMessage("")
+    try {
+      await apiRequest("/api/admin/competition/end", { method: "POST", body: {} })
+      await loadCompetitionState()
+      setMessage("Competition ended.")
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to end.") }
+    finally { setActionLoading(false) }
+  }
+
+  async function resetToIdle() {
+    if (!window.confirm("Reset to idle? Historical data is preserved in the DB.")) return
+    setActionLoading(true); setMessage("")
+    try {
+      await apiRequest("/api/admin/competition/reset", { method: "POST", body: {} })
+      await loadCompetitionState()
+      setMessage("Reset to idle.")
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to reset.") }
+    finally { setActionLoading(false) }
+  }
+
+  async function addProblemToCompetition(problemId: number) {
+    setProblemActionLoading({ problemId, action: "add" }); setMessage("")
+    try {
+      await apiRequest("/api/admin/competition/problems/add", { method: "POST", body: { problem_id: problemId } })
+      await loadCompetitionState()
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to add problem.") }
+    finally { setProblemActionLoading(null) }
+  }
+
+  async function removeProblemFromCompetition(problemId: number) {
+    setProblemActionLoading({ problemId, action: "archive" }); setMessage("")
+    try {
+      await apiRequest("/api/admin/competition/problems/remove", { method: "POST", body: { problem_id: problemId } })
+      await loadCompetitionState()
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to remove problem.") }
+    finally { setProblemActionLoading(null) }
+  }
+
+  // ── Problem bank actions ─────────────────────────────────────────────────────
 
   async function createProblem(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setMessage("")
-
+    event.preventDefault(); setMessage("")
     const xpReward = Number(problemForm.xpReward)
-    if (!Number.isInteger(xpReward) || xpReward < 0) {
-      setMessage("XP reward must be a non-negative integer.")
-      return
-    }
-
-    if (!problemForm.title.trim() || !problemForm.description.trim()) {
-      setMessage("Problem title and statement are required.")
-      return
-    }
-
+    if (!Number.isInteger(xpReward) || xpReward < 0) { setMessage("XP reward must be a non-negative integer."); return }
+    if (!problemForm.title.trim() || !problemForm.description.trim()) { setMessage("Title and statement are required."); return }
     setPostingProblem(true)
-
     try {
-      const response = await apiRequest<ProblemCreateResponse>("/api/admin/problems", {
+      await apiRequest("/api/admin/problems", {
         method: "POST",
         body: {
-          title: problemForm.title,
-          description: problemForm.description,
+          title: problemForm.title, description: problemForm.description,
           public_testcase_1_input: problemForm.publicTestcase1Input,
           public_testcase_1_output: problemForm.publicTestcase1Output,
           public_testcase_2_input: problemForm.publicTestcase2Input,
@@ -222,510 +223,627 @@ export default function AdminDashboardPage() {
           public_testcase_3_input: problemForm.publicTestcase3Input,
           public_testcase_3_output: problemForm.publicTestcase3Output,
           testcases: problemForm.testcases,
-          xp_reward: xpReward,
-          active: problemForm.active,
+          xp_reward: xpReward, active: false,
         },
       })
-
-      const createdId = response.data?.problem?.id
-      setMessage(
-        response.data?.message ??
-          (createdId
-            ? `Problem #${createdId} created successfully.`
-            : "Problem created successfully.")
-      )
       setProblemForm(defaultProblemForm)
-      await loadProblems()
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to create problem.")
-    } finally {
-      setPostingProblem(false)
-    }
-  }
-
-  async function archiveProblem(problemId: number) {
-    setProblemActionLoading({ problemId, action: "archive" })
-    setMessage("")
-
-    try {
-      const response = await apiRequest<ProblemActionResponse>("/api/admin/problems/archive", {
-        method: "POST",
-        body: { problem_id: problemId },
-      })
-
-      setMessage(response.data?.message ?? `Problem #${problemId} archived.`)
-      await loadProblems()
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to archive problem.")
-    } finally {
-      setProblemActionLoading(null)
-    }
+      setShowNewProblemForm(false)
+      await loadAllProblems()
+      setMessage("Problem created and added to the problem bank!")
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to create problem.") }
+    finally { setPostingProblem(false) }
   }
 
   async function deleteProblem(problemId: number) {
-    const confirmed = window.confirm(
-      `Delete problem #${problemId}? This is permanent and should only be used for problems with no submissions.`
-    )
-
-    if (!confirmed) {
-      return
-    }
-
-    setProblemActionLoading({ problemId, action: "delete" })
-    setMessage("")
-
+    if (!window.confirm(`Delete problem #${problemId}? This is permanent.`)) return
+    setProblemActionLoading({ problemId, action: "delete" }); setMessage("")
     try {
-      console.log(`Attempting to delete problem #${problemId}`)
-      const response = await apiRequest<ProblemActionResponse>("/api/admin/problems/delete", {
-        method: "POST",
-        body: { problem_id: problemId },
-      })
+      await apiRequest("/api/admin/problems/delete", { method: "POST", body: { problem_id: problemId } })
+      await loadAllProblems()
+      setMessage(`Problem #${problemId} deleted.`)
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to delete.") }
+    finally { setProblemActionLoading(null) }
+  }
 
-      console.log('Delete response:', response)
-      
-      if (response.data?.message) {
-        setMessage(response.data.message)
-      } else {
-        setMessage(`Problem #${problemId} deleted.`)
-      }
-      
-      await loadProblems()
-    } catch (error) {
-      console.error('Delete error:', error)
-      
-      if (error instanceof Error) {
-        // Check for 409 conflict (submissions exist)
-        if ((error as any).status === 409 || error.message.includes('submissions')) {
-          setMessage(`Cannot delete: ${error.message}`)
-        } else {
-          setMessage(`Delete failed: ${error.message}`)
-        }
-      } else {
-        setMessage("Failed to delete problem.")
-      }
-    } finally {
-      setProblemActionLoading(null)
-    }
+  // ── Submission review ────────────────────────────────────────────────────────
+
+  async function reviewSubmission(submissionId: number, action: "approve" | "reject") {
+    setMessage("")
+    try {
+      await apiRequest("/api/admin/review", { method: "POST", body: { submission_id: submissionId, action } })
+      setSubmissions((prev) => prev.filter((s) => s.id !== submissionId))
+      setMessage(`Submission #${submissionId} ${action}d.`)
+    } catch (e) { setMessage(e instanceof Error ? e.message : `Failed to ${action}.`) }
+  }
+
+  // ── Derived stats ────────────────────────────────────────────────────────────
+
+  const totalStudents = useMemo(() => users.filter((u) => u.role === "member").length, [users])
+  const totalXp = useMemo(() => users.reduce((sum, u) => sum + u.xp, 0), [users])
+  const competitionProblemIds = new Set(competitionProblems.map((p) => p.id))
+
+  const isError = (msg: string) =>
+    msg.includes("Failed") || msg.includes("Cannot") || msg.includes("error")
+
+  // ── Phase panels ──────────────────────────────────────────────────────────────
+
+  const phaseLabel: Record<CompetitionPhase, string> = {
+    idle: "Idle — No Active Competition",
+    setup: "Setup — Building Competition",
+    live: "LIVE — Competition Running",
+    ended: "Ended — Competition Over",
+  }
+
+  const phaseColor: Record<CompetitionPhase, string> = {
+    idle: "border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900/40",
+    setup: "border-blue-300 bg-blue-50 dark:border-blue-700 dark:bg-blue-900/20",
+    live: "border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-900/20",
+    ended: "border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20",
   }
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background ">
+      {/* ── Header card ──────────────────────────────────────────────────────── */}
+      <Card className="rounded-[28px] border-white/70 bg-white/85 shadow-soft dark:border-border dark:bg-background">
         <CardHeader className="gap-4">
           <div className="space-y-2">
-            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">
-              Admin Control Room
-            </p>
+            <p className="text-sm uppercase tracking-[0.24em] text-muted-foreground">Admin Control Room</p>
             <CardTitle className="text-3xl font-semibold tracking-tight md:text-4xl">
-              Post competitions, review submissions, and control competition access.
+              Manage competitions, problems, and submissions.
             </CardTitle>
-            <CardDescription className="max-w-2xl text-base text-muted-foreground">
-              Turning OFF now requires at least 2 admin votes. Turning ON is immediate and resets OFF votes.
-            </CardDescription>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Badge variant={appStatus === "ON" ? "default" : "secondary"} className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Competition {appStatus}
+            <Badge
+              className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em] border ${phaseColor[phase]}`}
+              variant="outline"
+            >
+              {phase === "live" && <Radio className="size-3 mr-1.5 animate-pulse text-green-600" />}
+              {phaseLabel[phase]}
             </Badge>
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.14em]">
-              OFF Votes {offVoteCount}/{offVotesRequired}
-            </Badge>
-            <Button variant="outline" size="lg" onClick={() => void refreshDashboard()} disabled={loading}>
+            <Button variant="outline" size="lg" onClick={() => void refreshAll()} disabled={loading}>
               <RefreshCcw className="mr-2 size-4" />
-              Refresh Dashboard
+              Refresh
             </Button>
-            <Button size="lg" onClick={() => void toggleCompetition("ON")}>Turn ON</Button>
-            <Button variant="outline" size="lg" onClick={() => void toggleCompetition("OFF")}>
-              {hasVotedOff && appStatus === "ON" ? "Voted OFF" : "Vote OFF"}
-            </Button>
-            <Button asChild variant="secondary" size="lg" className="justify-between rounded-2xl">
+            <Button asChild variant="secondary" size="lg" className="gap-2 rounded-2xl">
               <Link to="/admin/queue">
                 Open Submission Queue
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
           </div>
-          {appStatus === "ON" ? (
-            <p className="text-sm text-muted-foreground">
-              {remainingOffVotes === 0
-                ? "OFF vote threshold reached."
-                : `${remainingOffVotes} more OFF vote${remainingOffVotes === 1 ? "" : "s"} needed to switch OFF.`}
-            </p>
-          ) : null}
         </CardHeader>
       </Card>
 
+      {/* ── Message banner ───────────────────────────────────────────────────── */}
       {message && (
         <div className={`rounded-2xl border p-4 text-sm ${
-          message.includes('Cannot delete') || message.includes('Failed') || message.includes('error')
-            ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400'
-            : 'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400'
+          isError(message)
+            ? "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+            : "border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
         }`}>
           <div className="flex items-center gap-2">
-            {(message.includes('Cannot delete') || message.includes('Failed') || message.includes('error')) && (
-              <AlertTriangle className="size-4 shrink-0" />
-            )}
+            {isError(message) ? <AlertTriangle className="size-4 shrink-0" /> : <CheckCircle2 className="size-4 shrink-0" />}
             <span>{message}</span>
           </div>
         </div>
       )}
 
+      {/* ── Stats row ────────────────────────────────────────────────────────── */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
-          <CardContent className="space-y-3 p-6">
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Total Students
-            </Badge>
-            <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Users2 className="size-5 text-primary" />
-              {totalStudents}
-            </div>
-            <p className="text-sm text-muted-foreground">Students with member role in the current dataset.</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
-          <CardContent className="space-y-3 p-6">
-            <Badge variant="secondary" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Total XP
-            </Badge>
-            <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Trophy className="size-5 text-primary" />
-              {totalXp}
-            </div>
-            <p className="text-sm text-muted-foreground">Combined XP across all users shown in leaderboard records.</p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
-          <CardContent className="space-y-3 p-6">
-            <Badge variant="default" className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">
-              Pending Submissions
-            </Badge>
-            <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-              <Gauge className="size-5 text-primary-foreground" />
-              {submissions.length}
-            </div>
-            <p className="text-sm text-muted-foreground">Submissions currently awaiting manual review.</p>
-          </CardContent>
-        </Card>
+        {[
+          { label: "Total Students", value: totalStudents, icon: <Users2 className="size-5 text-primary" />, variant: "outline" as const },
+          { label: "Total XP Awarded", value: totalXp, icon: <Trophy className="size-5 text-primary" />, variant: "secondary" as const },
+          { label: phase === "live" ? "Students Submitted" : "Pending Submissions", value: phase === "live" ? submissionGroupCount : submissions.length, icon: <Gauge className="size-5 text-primary-foreground" />, variant: "default" as const },
+        ].map((stat) => (
+          <Card key={stat.label} className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+            <CardContent className="space-y-3 p-6">
+              <Badge variant={stat.variant} className="rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em]">{stat.label}</Badge>
+              <div className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
+                {stat.icon}
+                {stat.value}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <FilePlus2 className="size-5" />
-            Post New Competition Problem
-          </CardTitle>
-          <CardDescription>
-            Keep exactly one live competition question at a time. Posting as active will automatically archive any currently active question.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={(event) => void createProblem(event)}>
-            <div className="grid gap-4 md:grid-cols-[1.2fr_0.4fr_0.4fr]">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" htmlFor="problem-title">Problem Title</label>
-                <Input
-                  id="problem-title"
-                  value={problemForm.title}
-                  onChange={(event) => setProblemForm((current) => ({ ...current, title: event.target.value }))}
-                  placeholder="e.g. Reverse The Number"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" htmlFor="problem-xp">XP Reward</label>
-                <Input
-                  id="problem-xp"
-                  type="number"
-                  min={0}
-                  value={problemForm.xpReward}
-                  onChange={(event) => setProblemForm((current) => ({ ...current, xpReward: event.target.value }))}
-                />
-              </div>
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm text-foreground">
-                  <input
-                    type="checkbox"
-                    checked={problemForm.active}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, active: event.target.checked }))}
-                  />
-                  Set As Active Competition Question
-                </label>
-              </div>
-            </div>
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* PHASE: IDLE                                                           */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {phase === "idle" && (
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+          <CardHeader>
+            <CardTitle className="text-2xl">Start a New Competition</CardTitle>
+            <CardDescription>
+              Create a competition, add problems in the setup phase, then go live when ready.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-4">
+            <Button
+              size="lg"
+              className="gap-2 text-base px-8 py-5 rounded-2xl"
+              onClick={() => void createCompetition()}
+              disabled={actionLoading}
+            >
+              <Play className="size-5" />
+              {actionLoading ? "Creating…" : "Create New Competition"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground" htmlFor="problem-statement">Problem Statement</label>
-              <Textarea
-                id="problem-statement"
-                className="min-h-36"
-                value={problemForm.description}
-                onChange={(event) => setProblemForm((current) => ({ ...current, description: event.target.value }))}
-                placeholder="Write the full problem statement here..."
-              />
-            </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground">Public Test Cases (Visible to Students)</h4>
-                <p className="text-xs text-muted-foreground">Students will test their code against these cases before submission</p>
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* PHASE: SETUP                                                          */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {phase === "setup" && (
+        <>
+          {/* Competition problems being built */}
+          <Card className="rounded-[28px] border-blue-200 bg-blue-50/50 shadow-soft dark:border-blue-800 dark:bg-blue-950/20">
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <CardTitle className="text-2xl">Competition Setup</CardTitle>
+                  <CardDescription>
+                    Add problems from the bank below. Once you've added all questions, click "Go Live".
+                  </CardDescription>
+                </div>
+                <Button
+                  size="lg"
+                  className="gap-2 bg-green-600 hover:bg-green-700 text-white px-8 rounded-2xl"
+                  onClick={() => void goLive()}
+                  disabled={actionLoading || competitionProblems.length === 0}
+                >
+                  <Radio className="size-4" />
+                  {actionLoading ? "Going live…" : `Go Live (${competitionProblems.length} problem${competitionProblems.length !== 1 ? "s" : ""})`}
+                </Button>
               </div>
-              
-              {/* Test Case 1 */}
-              <div className="grid gap-4 md:grid-cols-2">
+            </CardHeader>
+            <CardContent>
+              {competitionProblems.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">No problems added yet. Use the problem bank below to add questions.</p>
+              ) : (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-1-input">Test Case 1 Input</label>
-                  <Textarea
-                    id="testcase-1-input"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase1Input}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase1Input: event.target.value }))}
-                    placeholder="e.g. 3 5"
-                  />
+                  {competitionProblems.map((p, i) => (
+                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-mono text-muted-foreground w-5">{i + 1}.</span>
+                        <span className="font-medium text-sm">{p.title}</span>
+                        <Badge variant="secondary" className="gap-1 text-xs">
+                          <Zap className="size-2.5" />{p.xp_reward} XP
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => void removeProblemFromCompetition(p.id)}
+                        disabled={problemActionLoading?.problemId === p.id}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-1-output">Test Case 1 Output</label>
-                  <Textarea
-                    id="testcase-1-output"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase1Output}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase1Output: event.target.value }))}
-                    placeholder="e.g. 8"
-                  />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Problem Bank */}
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <CardTitle className="text-2xl">Problem Bank</CardTitle>
+                  <CardDescription>Select problems to add to this competition.</CardDescription>
                 </div>
+                <Button variant="outline" size="sm" onClick={() => setShowNewProblemForm(!showNewProblemForm)} className="gap-2">
+                  <FilePlus2 className="size-4" />
+                  {showNewProblemForm ? "Cancel" : "New Problem"}
+                </Button>
               </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Inline new problem form */}
+              {showNewProblemForm && (
+                <div className="rounded-2xl border border-border bg-muted/20 p-6 space-y-4">
+                  <h4 className="font-semibold">Create New Problem</h4>
+                  <form className="space-y-4" onSubmit={(e) => void createProblem(e)}>
+                    <div className="grid gap-4 md:grid-cols-[1.2fr_0.4fr]">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Title</label>
+                        <Input value={problemForm.title} onChange={(e) => setProblemForm((c) => ({ ...c, title: e.target.value }))} placeholder="e.g. Reverse The Number" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">XP Reward</label>
+                        <Input type="number" min={0} value={problemForm.xpReward} onChange={(e) => setProblemForm((c) => ({ ...c, xpReward: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Problem Statement</label>
+                      <Textarea className="min-h-28" value={problemForm.description} onChange={(e) => setProblemForm((c) => ({ ...c, description: e.target.value }))} placeholder="Full problem statement..." />
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {[1, 2, 3].map((n) => (
+                        <div key={n} className="contents">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Test Case {n} Input</label>
+                            <Textarea className="min-h-20" value={problemForm[`publicTestcase${n}Input` as keyof ProblemFormState] as string} onChange={(e) => setProblemForm((c) => ({ ...c, [`publicTestcase${n}Input`]: e.target.value }))} />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">Test Case {n} Output</label>
+                            <Textarea className="min-h-20" value={problemForm[`publicTestcase${n}Output` as keyof ProblemFormState] as string} onChange={(e) => setProblemForm((c) => ({ ...c, [`publicTestcase${n}Output`]: e.target.value }))} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="ghost" onClick={() => setShowNewProblemForm(false)}>Cancel</Button>
+                      <Button type="submit" disabled={postingProblem}>{postingProblem ? "Creating…" : "Create Problem"}</Button>
+                    </div>
+                  </form>
+                </div>
+              )}
 
-              {/* Test Case 2 */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-2-input">Test Case 2 Input</label>
-                  <Textarea
-                    id="testcase-2-input"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase2Input}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase2Input: event.target.value }))}
-                    placeholder="e.g. 10 20"
-                  />
+              {/* Problem list */}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>XP</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allProblems.length === 0 ? (
+                    <TableRow><TableCell colSpan={3} className="py-6 text-muted-foreground">No problems in bank yet. Create one above.</TableCell></TableRow>
+                  ) : (
+                    allProblems.map((p) => {
+                      const inCompetition = competitionProblemIds.has(p.id)
+                      return (
+                        <TableRow key={p.id}>
+                          <TableCell>
+                            <p className="font-medium">{p.title}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                          </TableCell>
+                          <TableCell>{p.xp_reward}</TableCell>
+                          <TableCell className="text-right">
+                            {inCompetition ? (
+                              <Badge variant="secondary" className="text-xs">Added ✓</Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1"
+                                onClick={() => void addProblemToCompetition(p.id)}
+                                disabled={problemActionLoading?.problemId === p.id && problemActionLoading.action === "add"}
+                              >
+                                <PlusCircle className="size-3.5" />
+                                Add
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* PHASE: LIVE                                                           */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {phase === "live" && (
+        <>
+          {/* Live control */}
+          <Card className="rounded-[28px] border-green-400 bg-green-50/50 shadow-soft dark:border-green-700 dark:bg-green-950/20">
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="relative flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500" />
+                  </span>
+                  <div>
+                    <CardTitle className="text-2xl text-green-800 dark:text-green-300">Competition is LIVE</CardTitle>
+                    <CardDescription>
+                      {competition?.started_at && `Started: ${formatTimestamp(competition.started_at)}`}
+                      {" · "}{submissionGroupCount} student{submissionGroupCount !== 1 ? "s" : ""} submitted
+                    </CardDescription>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-2-output">Test Case 2 Output</label>
-                  <Textarea
-                    id="testcase-2-output"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase2Output}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase2Output: event.target.value }))}
-                    placeholder="e.g. 30"
-                  />
-                </div>
+                <Button
+                  size="lg"
+                  variant="destructive"
+                  className="gap-2 rounded-2xl"
+                  onClick={() => void endCompetition()}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? "Ending…" : "End Competition"}
+                </Button>
               </div>
-
-              {/* Test Case 3 */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-3-input">Test Case 3 Input</label>
-                  <Textarea
-                    id="testcase-3-input"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase3Input}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase3Input: event.target.value }))}
-                    placeholder="e.g. 1 2 3"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground" htmlFor="testcase-3-output">Test Case 3 Output</label>
-                  <Textarea
-                    id="testcase-3-output"
-                    className="min-h-24"
-                    value={problemForm.publicTestcase3Output}
-                    onChange={(event) => setProblemForm((current) => ({ ...current, publicTestcase3Output: event.target.value }))}
-                    placeholder="e.g. 6"
-                  />
-                </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {competitionProblems.map((p, i) => (
+                  <div key={p.id} className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm">
+                    <span className="text-xs text-muted-foreground">{i + 1}.</span>
+                    <span className="font-medium">{p.title}</span>
+                    <Badge variant="secondary" className="text-xs gap-1"><Zap className="size-2.5" />{p.xp_reward} XP</Badge>
+                  </div>
+                ))}
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground" htmlFor="testcases">Testcases Notes (Optional)</label>
-              <Textarea
-                id="testcases"
-                className="min-h-28"
-                value={problemForm.testcases}
-                onChange={(event) => setProblemForm((current) => ({ ...current, testcases: event.target.value }))}
-                placeholder="Add hidden testcase ideas or notes for reviewers."
-              />
-            </div>
+          {/* Live submission groups */}
+          <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Submission Feed</CardTitle>
+                  <CardDescription>Students who have submitted — sorted by fastest time.</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} className="gap-2">
+                  <RefreshCcw className="size-4" />Refresh
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {groups.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">No submissions yet.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {groups.map((g, i) => (
+                      <TableRow key={g.group_id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{i + 1}.</span>
+                            <div>
+                              <p className="font-medium">{g.user_name}</p>
+                              <p className="text-xs text-muted-foreground">{g.user_email}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 font-mono font-semibold">
+                            <Clock className="size-3.5 text-muted-foreground" />
+                            {formatElapsed(g.elapsed_seconds)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">{formatTimestamp(g.submitted_at)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
-            <div className="flex justify-end">
-              <Button size="lg" disabled={postingProblem}>
-                {postingProblem ? "Posting..." : "Post Competition"}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* PHASE: ENDED                                                          */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {phase === "ended" && (
+        <Card className="rounded-[28px] border-amber-300 bg-amber-50/50 shadow-soft dark:border-amber-700 dark:bg-amber-950/20">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <CardTitle className="text-2xl">Competition Ended</CardTitle>
+                <CardDescription>
+                  {competition?.ended_at && `Ended: ${formatTimestamp(competition.ended_at)}`}
+                  {" · "}{submissionGroupCount} student{submissionGroupCount !== 1 ? "s" : ""} submitted
+                </CardDescription>
+              </div>
+              <Button size="lg" variant="outline" className="gap-2 rounded-2xl" onClick={() => void resetToIdle()} disabled={actionLoading}>
+                {actionLoading ? "Resetting…" : "Reset to Idle"}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
-        <CardHeader>
-          <CardTitle className="text-2xl">Competition Problems</CardTitle>
-          <CardDescription>All posted competition questions with publish status.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>XP</TableHead>
-                <TableHead>Submissions</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {problems.length === 0 ? (
-                <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={7}>
-                    No problems posted yet.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                problems.map((problem, index) => (
-                  <TableRow
-                    key={problem.id}
-                    className={
-                      index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
-                    }
-                  >
-                    <TableCell className="font-medium">#{problem.id}</TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-foreground">{problem.title}</p>
-                        <p className="line-clamp-1 text-sm text-muted-foreground">{problem.description}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{problem.xp_reward}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span>{problem.submission_count ?? 0}</span>
-                        {problem.submission_count && problem.submission_count > 0 && (
-                          <Badge variant="secondary" className="text-xs">
-                            {problem.submission_count}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={problem.active === 1 ? "default" : "secondary"}>
-                        {problem.active === 1 ? "Active" : "Archived"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{problem.created_at ? formatTimestamp(problem.created_at) : "-"}</TableCell>
-                    <TableCell className="text-right">
-                      {problem.active === 1 ? (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => void archiveProblem(problem.id)}
-                          disabled={Boolean(problemActionLoading) || appStatus === "ON"}
-                          title={appStatus === "ON" ? "Turn competition OFF before archiving." : undefined}
-                        >
-                          {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "archive"
-                            ? "Archiving..."
-                            : "Archive"}
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-2 justify-end">
-                          {(problem.submission_count ?? 0) > 0 && (
-                            <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                              <AlertTriangle className="size-3" />
-                              <span>Has submissions</span>
-                            </div>
-                          )}
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => void deleteProblem(problem.id)}
-                            disabled={Boolean(problemActionLoading) || ((problem.submission_count ?? 0) > 0)}
-                            title={(problem.submission_count ?? 0) > 0 ? "Cannot delete problems with submissions" : undefined}
-                          >
-                            {problemActionLoading?.problemId === problem.id && problemActionLoading.action === "delete"
-                              ? "Deleting..."
-                              : "Delete"}
-                          </Button>
+          </CardHeader>
+          <CardContent>
+            {groups.length > 0 && (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Rank</TableHead>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {groups.map((g, i) => (
+                    <TableRow key={g.group_id}>
+                      <TableCell className="font-semibold">#{i + 1}</TableCell>
+                      <TableCell>
+                        <p className="font-medium">{g.user_name}</p>
+                        <p className="text-xs text-muted-foreground">{g.user_email}</p>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5 font-mono font-semibold">
+                          <Clock className="size-3.5 text-muted-foreground" />
+                          {formatElapsed(g.elapsed_seconds)}
                         </div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ALWAYS VISIBLE: Pending Submissions for Review                        */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
         <CardHeader>
-          <CardTitle className="text-2xl">Submissions Table</CardTitle>
-          <CardDescription>Pending queue data for fast review triage.</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Submission Review</CardTitle>
+              <CardDescription>Approve or reject pending submissions.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} className="gap-2">
+              <RefreshCcw className="size-4" />Refresh
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Student</TableHead>
-                <TableHead>Problem</TableHead>
-                <TableHead>Submitted At</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {submissions.length === 0 ? (
+          {submissions.length === 0 ? (
+            <p className="py-6 text-sm text-muted-foreground">No pending submissions.</p>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={5}>
-                    No pending submissions right now.
-                  </TableCell>
+                  <TableHead>Student</TableHead>
+                  <TableHead>Problem</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                submissions.map((submission, index) => (
-                  <TableRow
-                    key={submission.id}
-                    className={
-                      index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
-                    }
-                  >
-                    <TableCell className="font-medium">#{submission.id}</TableCell>
+              </TableHeader>
+              <TableBody>
+                {submissions.map((s) => (
+                  <TableRow key={s.id}>
                     <TableCell>
-                      <div>
-                        <p className="font-medium text-foreground">{submission.user_name}</p>
-                        <p className="text-sm text-muted-foreground">{submission.user_email}</p>
+                      <p className="font-medium">{s.user_name}</p>
+                      <p className="text-xs text-muted-foreground">{s.user_email}</p>
+                    </TableCell>
+                    <TableCell>{s.problem_title}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 font-mono text-sm">
+                        <Clock className="size-3.5 text-muted-foreground" />
+                        {formatElapsed(s.elapsed_seconds)}
                       </div>
                     </TableCell>
-                    <TableCell>{submission.problem_title}</TableCell>
-                    <TableCell>{formatTimestamp(submission.created_at)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{formatTimestamp(s.created_at)}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">pending</Badge>
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => void reviewSubmission(s.id, "approve")}>
+                          <CheckCircle2 className="size-3.5" />Approve
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-1 text-red-600 border-red-300 hover:bg-red-50" onClick={() => void reviewSubmission(s.id, "reject")}>
+                          <XCircle className="size-3.5" />Reject
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
-      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background ">
+      {/* ── Problem bank (always visible for management) ─────────────────────── */}
+      {phase !== "setup" && (
+        <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <CardTitle className="text-2xl">Problem Bank</CardTitle>
+                <CardDescription>All problems — available for future competitions.</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowNewProblemForm(!showNewProblemForm)} className="gap-2">
+                <FilePlus2 className="size-4" />{showNewProblemForm ? "Cancel" : "New Problem"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {showNewProblemForm && (
+              <div className="rounded-2xl border border-border bg-muted/20 p-6 space-y-4">
+                <h4 className="font-semibold">Create New Problem</h4>
+                <form className="space-y-4" onSubmit={(e) => void createProblem(e)}>
+                  <div className="grid gap-4 md:grid-cols-[1.2fr_0.4fr]">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Title</label>
+                      <Input value={problemForm.title} onChange={(e) => setProblemForm((c) => ({ ...c, title: e.target.value }))} placeholder="e.g. Reverse The Number" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">XP Reward</label>
+                      <Input type="number" min={0} value={problemForm.xpReward} onChange={(e) => setProblemForm((c) => ({ ...c, xpReward: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Problem Statement</label>
+                    <Textarea className="min-h-28" value={problemForm.description} onChange={(e) => setProblemForm((c) => ({ ...c, description: e.target.value }))} placeholder="Full problem statement..." />
+                  </div>
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Test Case {n} Input</label>
+                        <Textarea className="min-h-20" value={problemForm[`publicTestcase${n}Input` as keyof ProblemFormState] as string} onChange={(e) => setProblemForm((c) => ({ ...c, [`publicTestcase${n}Input`]: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Test Case {n} Output</label>
+                        <Textarea className="min-h-20" value={problemForm[`publicTestcase${n}Output` as keyof ProblemFormState] as string} onChange={(e) => setProblemForm((c) => ({ ...c, [`publicTestcase${n}Output`]: e.target.value }))} />
+                      </div>
+                    </div>
+                  ))}
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="ghost" onClick={() => setShowNewProblemForm(false)}>Cancel</Button>
+                    <Button type="submit" disabled={postingProblem}>{postingProblem ? "Creating…" : "Create Problem"}</Button>
+                  </div>
+                </form>
+              </div>
+            )}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>XP</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allProblems.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="py-6 text-muted-foreground">No problems yet.</TableCell></TableRow>
+                ) : (
+                  allProblems.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <p className="font-medium">{p.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                      </TableCell>
+                      <TableCell>{p.xp_reward}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.created_at ? formatTimestamp(p.created_at) : "—"}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => void deleteProblem(p.id)}
+                          disabled={problemActionLoading?.problemId === p.id && problemActionLoading.action === "delete"}
+                        >
+                          {(p.submission_count ?? 0) > 0 ? "Has submissions" : "Delete"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── User Table ──────────────────────────────────────────────────────── */}
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
         <CardHeader>
           <CardTitle className="text-2xl">User Table</CardTitle>
-          <CardDescription>Users sorted by backend data feed with role and XP visibility.</CardDescription>
+          <CardDescription>All registered users with role and XP.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -739,27 +857,14 @@ export default function AdminDashboardPage() {
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
-                <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={4}>
-                    No users available yet.
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={4} className="py-6 text-muted-foreground">No users yet.</TableCell></TableRow>
               ) : (
-                users.map((user, index) => (
-                  <TableRow
-                    key={user.email}
-                    className={
-                      index % 2 === 0
-                        ? "bg-white/40 hover:bg-white/55 dark:bg-background dark:hover:bg-muted"
-                        : "bg-slate-50/65 hover:bg-slate-100/80 dark:bg-background dark:hover:bg-muted"
-                    }
-                  >
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">{user.xp}</TableCell>
+                users.map((u) => (
+                  <TableRow key={u.email}>
+                    <TableCell className="font-medium">{u.name}</TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell><Badge variant={u.role === "admin" ? "default" : "secondary"}>{u.role}</Badge></TableCell>
+                    <TableCell className="text-right font-semibold">{u.xp}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -770,4 +875,3 @@ export default function AdminDashboardPage() {
     </div>
   )
 }
-

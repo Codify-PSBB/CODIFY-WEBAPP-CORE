@@ -1,32 +1,23 @@
+// Legacy endpoint: GET /api/status
+// Now wraps competition phase into old ON/OFF format for backwards compat.
+// Frontend has been updated to use GET /api/competition/status instead.
+
+import { readCompetitionState, phaseToLegacyStatus } from "../lib/competition";
 import type { RouteHandler } from "../types";
-
-const APP_STATUS_KEY = "app_status";
-
-type AppStatus = "ON" | "OFF";
-
-function normalizeStatus(value: string | null): AppStatus {
-  const upper = (value ?? "ON").trim().toUpperCase();
-  return upper === "OFF" ? "OFF" : "ON";
-}
 
 export const appStatusHandler: RouteHandler = async (ctx) => {
   try {
-    const value = await ctx.env.APP_STATE.get(APP_STATUS_KEY);
-    const appStatus = normalizeStatus(value);
+    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const appStatus = phaseToLegacyStatus(state.phase);
 
     return Response.json({
       status: "success",
       data: {
-        app_status: appStatus
-      }
+        app_status: appStatus,
+        phase: state.phase,
+      },
     });
   } catch {
-    return Response.json(
-      {
-        status: "error",
-        message: "Failed to read app status."
-      },
-      { status: 500 }
-    );
+    return Response.json({ status: "error", message: "Failed to read app status." }, { status: 500 });
   }
 };

@@ -1,23 +1,24 @@
 import { UserButton, useUser, useClerk } from "@clerk/clerk-react";
-import { LogOut, Palette } from "lucide-react";
+import { LogOut, Palette, Radio } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules";
 import { getLocalTokenPayload, clearLocalToken } from "@/lib/auth";
 import { useTheme, Theme } from "@/components/ThemeProvider";
 import { useState, useRef, useEffect } from "react";
+import type { CompetitionPhase } from "@/types/models";
 
 export default function AppLayout({
-  memberLeaderboardOnly,
-  onSignOut
+  competitionPhase = "idle",
+  onSignOut,
 }: {
-  memberLeaderboardOnly?: boolean;
+  competitionPhase?: CompetitionPhase;
   onSignOut?: () => void;
 }) {
   const { pathname } = useLocation();
   const { user: clerkUser } = useUser();
   const { signOut: clerkSignOut } = useClerk();
-  
+
   const { theme, setTheme } = useTheme();
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
@@ -42,16 +43,16 @@ export default function AppLayout({
     { id: "synthwave", name: "Synthwave Outrun", iconBg: "bg-fuchsia-950", borderCol: "border-pink-500" },
     { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500" },
     { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },
-    { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" }
+    { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" },
   ];
-  
+
   const localUser = getLocalTokenPayload();
-  
   const email = normalizeEmail(clerkUser?.primaryEmailAddress?.emailAddress ?? "");
   const isAdmin = email.length > 0 && isAdminEmail(email);
+  const isLive = competitionPhase === "live";
 
   const navItems = [];
-  
+
   if (isAdmin) {
     navItems.push(
       { name: "Admin Dashboard", path: "/admin" },
@@ -59,11 +60,9 @@ export default function AppLayout({
     );
   }
 
-  if (!memberLeaderboardOnly || isAdmin) {
-    navItems.push(
-      { name: "Competition", path: "/competition" },
-      { name: "Interpreter", path: "/interpreter" }
-    );
+  if (isAdmin || isLive) {
+    navItems.push({ name: "Competition", path: "/competition", live: isLive && !isAdmin });
+    navItems.push({ name: "Interpreter", path: "/interpreter" });
   }
 
   navItems.push({ name: "Leaderboard", path: "/leaderboard" });
@@ -73,11 +72,8 @@ export default function AppLayout({
       onSignOut();
     } else {
       clearLocalToken();
-      if (isAdmin) {
-        void clerkSignOut();
-      } else {
-        window.location.href = "/";
-      }
+      if (isAdmin) void clerkSignOut();
+      else window.location.href = "/";
     }
   };
 
@@ -96,27 +92,42 @@ export default function AppLayout({
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    pathname === item.path
+                  className={`relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    pathname === item.path || pathname.startsWith(item.path + "/")
                       ? "bg-secondary text-secondary-foreground"
                       : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                   }`}
                 >
                   {item.name}
+                  {"live" in item && item.live && (
+                    <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Live indicator for admins */}
+            {isAdmin && isLive && (
+              <div className="hidden sm:flex items-center gap-1.5 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-600 dark:text-green-400 border border-green-500/20">
+                <Radio className="size-3 animate-pulse" />
+                LIVE
+              </div>
+            )}
+
             {isAdmin ? (
               <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
             ) : (
               <div className="hidden sm:flex text-sm text-foreground/80 break-all font-medium bg-secondary/50 px-3 py-1.5 rounded-full">
-                 {localUser?.name || localUser?.email}
+                {localUser?.name || localUser?.email}
               </div>
             )}
-            {/* Theme Picker Dropdown */}
+
+            {/* Theme Picker */}
             <div className="relative" ref={themeMenuRef}>
               <Button
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
@@ -137,10 +148,7 @@ export default function AppLayout({
                     {themesList.map((t) => (
                       <button
                         key={t.id}
-                        onClick={() => {
-                          setTheme(t.id);
-                          setShowThemeMenu(false);
-                        }}
+                        onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
                         className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl text-left hover:bg-secondary transition-colors ${
                           theme === t.id ? "bg-secondary font-semibold" : ""
                         }`}
@@ -149,9 +157,7 @@ export default function AppLayout({
                           <span className={`h-4.5 w-4.5 rounded-full border ${t.iconBg} ${t.borderCol} shrink-0`} />
                           <span>{t.name}</span>
                         </div>
-                        {theme === t.id && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        )}
+                        {theme === t.id && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                       </button>
                     ))}
                   </div>

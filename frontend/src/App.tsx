@@ -6,24 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { apiRequest } from "@/lib/api";
-import type { AppStatus } from "@/types/models";
+import type { CompetitionPhase, CompetitionProblem } from "@/types/models";
 import { clearAuthTokenProvider, getLocalTokenPayload, setAuthTokenProvider, setLocalToken, clearLocalToken } from "./lib/auth";
 import SchoolEmailGuard from "./components/SchoolEmailGuard";
 import { isAdminEmail, normalizeEmail } from "./lib/schoolRules";
 import AppLayout from "./components/AppLayout";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import CompetitionLobbyPage from "./pages/CompetitionLobbyPage";
 import CompetitionPage from "./pages/CompetitionPage";
 import InterpreterPage from "./pages/InterpreterPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import SubmissionQueuePage from "./pages/SubmissionQueuePage";
 import "./App.css";
 
-interface PublicStatusResponse {
-  app_status?: AppStatus;
+interface CompetitionStatusResponse {
+  phase?: CompetitionPhase;
+  competition_id?: number | null;
+  started_at?: string | null;
+  problems?: CompetitionProblem[];
 }
 
-function MemberAppOnGuard({ children, leaderboardOnly }: { children: ReactElement; leaderboardOnly: boolean }) {
-  if (leaderboardOnly) {
+function MemberCompetitionGuard({
+  children,
+  phase,
+}: {
+  children: ReactElement;
+  phase: CompetitionPhase;
+}) {
+  if (phase !== "live") {
     return <Navigate to="/leaderboard" replace />;
   }
   return children;
@@ -31,21 +41,16 @@ function MemberAppOnGuard({ children, leaderboardOnly }: { children: ReactElemen
 
 function AdminRouteGuard({ children }: { children: ReactElement }) {
   const { user, isLoaded } = useUser();
-
   if (!isLoaded) return null;
-
   const email = normalizeEmail(user?.primaryEmailAddress?.emailAddress ?? "");
-  
   if (!isAdminEmail(email)) {
     console.warn(`SECURITY: Non-admin attempted admin access: ${email}`);
-    return <Navigate to="/competition" replace />;
+    return <Navigate to="/leaderboard" replace />;
   }
-
-  console.log(`SECURITY: Admin access granted to: ${email}`);
   return children;
 }
 
-// ----- Login Components for Custom Auth -----
+// ----- Login Form -----
 
 function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
   const [eduId, setEduId] = useState("");
@@ -60,7 +65,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
     try {
       const res = await apiRequest<{ token: string }>("/api/auth/login", {
         method: "POST",
-        body: { eduId, password }
+        body: { eduId, password },
       });
       if (res.data?.token) {
         setLocalToken(res.data.token);
@@ -68,8 +73,8 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
       } else {
         throw new Error(res.message || "Authentication failed");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -90,7 +95,7 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
             Sign in to access competitions and rankings.
           </p>
         </div>
-        
+
         <div className="rounded-xl border border-border bg-card/50 p-6 relative">
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-background px-3 text-xs font-semibold uppercase tracking-widest text-primary border border-border rounded-full">
             If you're a member
@@ -99,13 +104,12 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
             {error && <div className="text-sm text-red-500 text-center font-medium bg-red-500/10 p-2 rounded">{error}</div>}
             <div className="space-y-2">
               <label className="text-sm font-medium">EDU ID</label>
-              <Input required value={eduId} onChange={e => setEduId(e.target.value)} placeholder="Enter your EDU ID" />
+              <Input required value={eduId} onChange={(e) => setEduId(e.target.value)} placeholder="Enter your EDU ID" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Password</label>
-              <Input required type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+              <Input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
-            
             <Button disabled={loading} type="submit" size="lg" className="btn-primary w-full mt-2">
               Login
             </Button>
@@ -113,8 +117,8 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
         </div>
 
         <div className="pt-6 relative mt-2">
-           <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/4 bg-border"></div>
-           <div className="bg-background relative inline-block px-4 -mt-3 mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[1px] w-3/4 bg-border"></div>
+          <div className="bg-background relative inline-block px-4 -mt-3 mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             If you're an Admin
           </div>
           <SignInButton mode="modal">
@@ -128,15 +132,17 @@ function LoginRegisterForm({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ----- Main App Component -----
+// ----- Main App -----
 
 export default function App() {
   const { getToken, isLoaded: clerkLoaded } = useAuth();
   const { user: clerkUser, isLoaded: clerkUserLoaded } = useUser();
   const { signOut: clerkSignOut } = useClerk();
-  
+
   const [localPayload, setLocalPayload] = useState(getLocalTokenPayload());
-  const [memberAppStatus, setMemberAppStatus] = useState<AppStatus>("ON");
+  const [competitionPhase, setCompetitionPhase] = useState<CompetitionPhase>("idle");
+  const [competitionId, setCompetitionId] = useState<number | null>(null);
+  const [competitionProblems, setCompetitionProblems] = useState<CompetitionProblem[]>([]);
   const [statusLoading, setStatusLoading] = useState(false);
 
   useEffect(() => {
@@ -148,23 +154,18 @@ export default function App() {
   const clerkEmail = normalizeEmail(clerkUser?.primaryEmailAddress?.emailAddress ?? "");
   const isAdmin = clerkEmail.length > 0 && isAdminEmail(clerkEmail);
   const isMember = !!localPayload && !isAdmin;
-  
   const isAuthenticated = isAdmin || isMember;
   const isFullyLoaded = clerkLoaded && clerkUserLoaded;
 
-  const memberLeaderboardOnly = !isAdmin && memberAppStatus === "OFF";
-
   useEffect(() => {
     setAuthTokenProvider(() => getToken());
-    return () => {
-      clearAuthTokenProvider();
-    };
+    return () => { clearAuthTokenProvider(); };
   }, [getToken]);
 
+  // Poll competition status for members
   useEffect(() => {
     if (!isFullyLoaded || !isAuthenticated || isAdmin) {
       setStatusLoading(false);
-      setMemberAppStatus("ON");
       return;
     }
 
@@ -173,24 +174,23 @@ export default function App() {
 
     const fetchStatus = async () => {
       try {
-        const response = await apiRequest<PublicStatusResponse>("/api/status");
+        const response = await apiRequest<CompetitionStatusResponse>("/api/competition/status");
         if (!active) return;
-        const status = response.data?.app_status === "OFF" ? "OFF" : "ON";
-        setMemberAppStatus(status);
+        const phase = response.data?.phase ?? "idle";
+        setCompetitionPhase(phase);
+        setCompetitionId(response.data?.competition_id ?? null);
+        setCompetitionProblems(Array.isArray(response.data?.problems) ? response.data.problems : []);
       } catch {
         if (!active) return;
-        setMemberAppStatus("OFF");
+        setCompetitionPhase("idle");
       }
     };
 
     setStatusLoading(true);
-    void fetchStatus().finally(() => {
-      if (active) setStatusLoading(false);
-    });
+    void fetchStatus().finally(() => { if (active) setStatusLoading(false); });
 
-    intervalId = window.setInterval(() => {
-      void fetchStatus();
-    }, 30000);
+    // Poll every 20 seconds
+    intervalId = window.setInterval(() => { void fetchStatus(); }, 20000);
 
     return () => {
       active = false;
@@ -224,28 +224,61 @@ export default function App() {
   const handleSignOut = () => {
     clearLocalToken();
     if (isAdmin) void clerkSignOut();
+    else window.location.href = "/";
   };
 
   const appLayoutElement = (
-    <AppLayout memberLeaderboardOnly={memberLeaderboardOnly} onSignOut={handleSignOut} />
+    <AppLayout
+      competitionPhase={competitionPhase}
+      onSignOut={handleSignOut}
+    />
   );
+
+  const defaultRedirect = isAdmin
+    ? "/admin"
+    : competitionPhase === "live"
+    ? "/competition"
+    : "/leaderboard";
 
   const routesElement = (
     <Routes>
       <Route path="/" element={appLayoutElement}>
-        <Route index element={<Navigate to={memberLeaderboardOnly ? "/leaderboard" : "/competition"} replace />} />
-        <Route path="competition" element={
-          <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-            <CompetitionPage />
-          </MemberAppOnGuard>
-        } />
-        <Route path="interpreter" element={
-          <MemberAppOnGuard leaderboardOnly={memberLeaderboardOnly}>
-            <InterpreterPage />
-          </MemberAppOnGuard>
-        } />
+        <Route index element={<Navigate to={defaultRedirect} replace />} />
+
+        {/* Member-only: competition (lobby + actual page) */}
+        <Route
+          path="competition"
+          element={
+            <MemberCompetitionGuard phase={competitionPhase}>
+              <CompetitionLobbyPage
+                competitionId={competitionId}
+                problems={competitionProblems}
+                startedAt={null}
+              />
+            </MemberCompetitionGuard>
+          }
+        />
+        <Route
+          path="competition/enter"
+          element={
+            <MemberCompetitionGuard phase={competitionPhase}>
+              <CompetitionPage
+                competitionId={competitionId}
+                problems={competitionProblems}
+              />
+            </MemberCompetitionGuard>
+          }
+        />
+
+        <Route
+          path="interpreter"
+          element={
+            competitionPhase !== "live" ? <Navigate to="/leaderboard" replace /> : <InterpreterPage />
+          }
+        />
         <Route path="leaderboard" element={<LeaderboardPage />} />
 
+        {/* Admin-only */}
         <Route path="admin" element={<AdminRouteGuard><AdminDashboardPage /></AdminRouteGuard>} />
         <Route path="admin/queue" element={<AdminRouteGuard><SubmissionQueuePage /></AdminRouteGuard>} />
       </Route>
