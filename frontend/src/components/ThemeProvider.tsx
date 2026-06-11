@@ -6,7 +6,7 @@ import {
   useState,
 } from "react"
 
-export type Theme = "light" | "dark" | "cyberpunk" | "matrix" | "solarized" | "nordic" | "paper" | "synthwave" | "ethereal" | "academia"
+export type Theme = "light" | "dark" | "cyberpunk" | "matrix" | "solarized" | "nordic" | "paper" | "synthwave" | "ethereal" | "academia" | "forest" | "sakura" | "dracula"
 
 interface ThemeContextValue {
   theme: Theme
@@ -30,7 +30,10 @@ function readInitialTheme(): Theme {
       storedTheme === "paper" ||
       storedTheme === "synthwave" ||
       storedTheme === "ethereal" ||
-      storedTheme === "academia"
+      storedTheme === "academia" ||
+      storedTheme === "forest" ||
+      storedTheme === "sakura" ||
+      storedTheme === "dracula"
     ) {
       return storedTheme as Theme
     }
@@ -49,10 +52,10 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const root = document.documentElement
     // Remove all old classes
-    root.classList.remove("light", "dark", "theme-cyberpunk", "theme-matrix", "theme-solarized", "theme-nordic", "theme-paper", "theme-synthwave", "theme-ethereal", "theme-academia")
+    root.classList.remove("light", "dark", "theme-cyberpunk", "theme-matrix", "theme-solarized", "theme-nordic", "theme-paper", "theme-synthwave", "theme-ethereal", "theme-academia", "theme-forest", "theme-sakura", "theme-dracula")
     
     // Add dark/light depending on theme base
-    if (theme === "light" || theme === "nordic" || theme === "paper" || theme === "ethereal") {
+    if (theme === "light" || theme === "nordic" || theme === "paper" || theme === "ethereal" || theme === "sakura") {
       root.classList.add("light")
       root.style.colorScheme = "light"
       if (theme !== "light") {

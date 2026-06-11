@@ -29,7 +29,8 @@ Students List Status (Ticked = added to DB)
 10C1 (Batch: 10th):
 [x] Anjana (s140114) - Password: Anjana@S140114
 [x] Ryan (s150205) - Password: Ryan@S150205
-[x] Niyusha Mathews (s170046) - Password: NiyushaMathews@S170046
+[ ] Shijn
+[ ] Aneesh
 
 10D1 (Batch: 10th):
 [x] Prananjay (s240173) - Password: Prananjay@S240173
@@ -40,11 +41,11 @@ IX-A1 (Batch: 9th):
 [ ] Adithi (No USN provided / not in DB)
 [x] K.S.Aadesh Rathan (s150008) - Password: Aadesh@S150008
 [x] R.Shrinish (s150059) - Password: Shrinish@S150059
-[ ] Jeev (No USN provided / not in DB)
+[x] P.Jeev Pradyun (s160110) - Password: Jeev@S160110
 [x] Prasanna Venkatesh (s230203) - Password: Prasanna@S230203
-[ ] Sri Raghavan (No USN provided / not in DB)
+[x] Sri Raghavan (s150203) - Password: SriRaghavan@S150203
 [x] Sonika Murugan (s160107) - Password: Sonika@S160107
-[ ] Abishek (No USN provided / not in DB)
+[x] Abishek (s150018) - Password: Abishek@S150018
 
 IX-B1 (Batch: 9th):
 [x] Rithik Prabhakaran (s150026) - Password: Rithik@S150026
@@ -52,10 +53,10 @@ IX-B1 (Batch: 9th):
 
 IX-C1 (Batch: 9th):
 [x] Aadishri Manuprasad (s190128) - Password: Aadishri@S190128
-[ ] Aaradhna (No USN provided / not in DB)
+[x] Aaradhana (s220145) - Password: Aaradhana@S220145
 [x] Ananyaa S (s150007) - Password: Ananyaa@S150007
 [x] Kamal Sriya (s150082) - Password: KamalSriya@S150082
-[ ] Pallavi (No USN provided / not in DB)
+[x] Pallavi (s230201) - Password: Pallavi@S230201
 [x] Harshita Nakkula (s150006) - Password: Harshita@S150006
 [x] Isha Harish (s150084) - Password: Isha@S150084
 [ ] Sanciapal (No USN provided / not in DB)
@@ -66,9 +67,13 @@ IX-C1 (Batch: 9th):
 [x] Mandava Sriaakash (s250151) - Password: Sriaakash@S250151
 [x] Arsh Srivastava (s230230) - Password: Arsh@S230230
 [x] Sukruth Shyam (s250181) - Password: Sukruth@S250181
+[x] Niyusha Mathews (s170046) - Password: NiyushaMathews@S170046
+[ ] Lavikaa Ravindran (s150049) - SECTION UNKNOWN - added temporarily
+[ ] C.P.Veerarasu (s220153) - SECTION UNKNOWN - added temporarily
+[ ] Ovee (s190126) - SECTION UNKNOWN - added temporarily
 
 IX-D1 (Batch: 9th):
-[ ] Niveditha (No USN provided / not in DB)
+[x] Nivedita K Aravindan Pillai (s180100) - Password: Nivedita@S180100
 [x] Niyanthri (s150027) - Password: Niyanthri@S150027
 [x] Sridevi R (s220151) - Password: Sridevi@S220151
 [ ] Aakash (No USN provided / not in DB)
@@ -77,5 +82,5 @@ IX-D1 (Batch: 9th):
 [x] J.S.Gautham (s150017) - Password: Gautham@S150017
 [ ] Lakshya (No USN provided / not in DB)
 
---- TOTAL IN DB: 49 members ---
-Last updated: 2026-06-06
+--- TOTAL IN DB: 59 members ---
+Last updated: 2026-06-10

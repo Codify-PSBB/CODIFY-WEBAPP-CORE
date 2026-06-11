@@ -1547,3 +1547,443 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   color: #d6b885 !important;
   border-bottom: 2px solid #8c001a;
 }
+
+/* ==========================================
+   10. Emerald Moss / Forest Theme (Dark)
+   ========================================== */
+.theme-forest {
+  --background: #060f0c;
+  --foreground: #ecf2ee;
+  --card: #0c1a15;
+  --card-foreground: #ecf2ee;
+  --popover: #0c1a15;
+  --popover-foreground: #ecf2ee;
+  --primary: #10b981; /* Emerald/Mint */
+  --primary-foreground: #060f0c;
+  --secondary: #122c20;
+  --secondary-foreground: #34d399;
+  --muted: #122c20;
+  --muted-foreground: #527a67;
+  --accent: #173d2d;
+  --accent-foreground: #a7f3d0;
+  --border: #183e2f;
+  --input: #081410;
+  --ring: #10b981;
+  --radius: 1rem;
+  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 0 15px rgba(16, 185, 129, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.55), inset 0 0 25px rgba(16, 185, 129, 0.08);
+  --glass-bg: rgba(12, 26, 21, 0.9);
+  --glass-border: rgba(24, 62, 47, 0.8);
+}
+
+.theme-forest body {
+  background-color: #060f0c;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54 48c-2 0-3-1-3-3 0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3v4h60v-4zM30 20c-3 0-5 2-5 5 0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5v30h30V20z' fill='%2310b981' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+.theme-forest h1, 
+.theme-forest h2, 
+.theme-forest h3,
+.theme-forest .font-bold {
+  font-family: "Outfit", sans-serif !important;
+  color: #34d399 !important;
+}
+
+.theme-forest .card-modern,
+.theme-forest [class*="bg-card"] {
+  background: #0c1a15 !important;
+  border: 1px solid #183e2f !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 1rem !important;
+}
+
+.theme-forest .card-modern:hover,
+.theme-forest [class*="bg-card"]:hover {
+  border-color: #10b981 !important;
+  box-shadow: 0 12px 35px rgba(16, 185, 129, 0.15) !important;
+}
+
+.theme-forest button,
+.theme-forest .btn-primary {
+  font-family: "Outfit", sans-serif;
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  color: #060f0c !important;
+  font-weight: 600;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+  border: none !important;
+}
+
+.theme-forest button:hover,
+.theme-forest .btn-primary:hover {
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+  color: #060f0c !important;
+}
+
+.theme-forest .input-modern,
+.theme-forest input,
+.theme-forest textarea {
+  border-radius: 0.75rem !important;
+  border: 1px solid #183e2f !important;
+  background-color: #081410 !important;
+  color: #ecf2ee !important;
+}
+
+.theme-forest .input-modern:focus,
+.theme-forest input:focus,
+.theme-forest textarea:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+}
+
+.theme-forest ::-webkit-scrollbar-track {
+  background: #060f0c;
+}
+.theme-forest ::-webkit-scrollbar-thumb {
+  background: #183e2f;
+  border-radius: 4px;
+}
+.theme-forest ::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+.theme-forest ::selection {
+  background: #10b981;
+  color: #060f0c;
+}
+
+.theme-forest .badge-modern,
+.theme-forest .badge {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid #10b981 !important;
+  color: #34d399 !important;
+  border-radius: 9999px !important;
+}
+
+.theme-forest table th {
+  background-color: #0e231c !important;
+  color: #34d399 !important;
+  border-bottom: 2px solid #183e2f !important;
+}
+
+.theme-forest header {
+  background: rgba(6, 15, 12, 0.85) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #183e2f !important;
+}
+
+.theme-forest header nav a.bg-secondary {
+  background-color: #122c20 !important;
+  color: #34d399 !important;
+}
+
+.theme-forest [data-slot="tabs-list"] {
+  background-color: #081410 !important;
+  border: 1px solid #183e2f;
+  border-radius: 0.75rem !important;
+}
+
+.theme-forest [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #10b981 !important;
+  color: #060f0c !important;
+  font-weight: bold;
+}
+
+/* ==========================================
+   11. Sakura Blossom Theme (Light)
+   ========================================== */
+.theme-sakura {
+  --background: #fff5f6;
+  --foreground: #4a2c3a;
+  --card: #ffffff;
+  --card-foreground: #4a2c3a;
+  --popover: #ffffff;
+  --popover-foreground: #4a2c3a;
+  --primary: #f43f5e; /* Vibrant pink */
+  --primary-foreground: #ffffff;
+  --secondary: #ffe4e6;
+  --secondary-foreground: #be123c;
+  --muted: #fbf0f2;
+  --muted-foreground: #a27b8c;
+  --accent: #ffe4e6;
+  --accent-foreground: #9f1239;
+  --border: #f3e2e5;
+  --input: #ffffff;
+  --ring: #f43f5e;
+  --radius: 1.25rem;
+  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Playfair Display", serif;
+  --shadow-soft: 0 8px 30px rgba(244, 63, 94, 0.06);
+  --shadow-lg: 0 16px 40px rgba(244, 63, 94, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(243, 226, 229, 0.8);
+}
+
+.theme-sakura body {
+  background-color: #fff5f6;
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(244, 63, 94, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(244, 63, 94, 0.05) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21 14c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zm10 10c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zM10 28c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zm18-18c1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2z' fill='%23f43f5e' fill-opacity='0.03'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+.theme-sakura h1, 
+.theme-sakura h2, 
+.theme-sakura h3 {
+  font-family: "Playfair Display", serif !important;
+  color: #881337 !important;
+}
+
+.theme-sakura .card-modern,
+.theme-sakura [class*="bg-card"] {
+  background: #ffffff !important;
+  border: 1px solid #f3e2e5 !important;
+  box-shadow: 0 8px 30px rgba(244, 63, 94, 0.04) !important;
+  border-radius: 1.25rem !important;
+}
+
+.theme-sakura .card-modern:hover,
+.theme-sakura [class*="bg-card"]:hover {
+  transform: translateY(-2px);
+  border-color: #fca5a5 !important;
+  box-shadow: 0 12px 35px rgba(244, 63, 94, 0.08) !important;
+}
+
+.theme-sakura button,
+.theme-sakura .btn-primary {
+  font-family: "Outfit", sans-serif;
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 2rem !important;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.2);
+  border: none !important;
+}
+
+.theme-sakura button:hover,
+.theme-sakura .btn-primary:hover {
+  background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%) !important;
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.3) !important;
+}
+
+.theme-sakura .input-modern,
+.theme-sakura input,
+.theme-sakura textarea {
+  border-radius: 1rem !important;
+  border: 1px solid #f3e2e5 !important;
+  background-color: #ffffff !important;
+  color: #4a2c3a !important;
+}
+
+.theme-sakura .input-modern:focus,
+.theme-sakura input:focus,
+.theme-sakura textarea:focus {
+  border-color: #f43f5e !important;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.15) !important;
+}
+
+.theme-sakura ::-webkit-scrollbar-track {
+  background: #fff5f6;
+}
+.theme-sakura ::-webkit-scrollbar-thumb {
+  background: #f3e2e5;
+  border-radius: 6px;
+}
+.theme-sakura ::-webkit-scrollbar-thumb:hover {
+  background: #fca5a5;
+}
+
+.theme-sakura ::selection {
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.theme-sakura .badge-modern,
+.theme-sakura .badge {
+  background-color: rgba(244, 63, 94, 0.06) !important;
+  border: 1px solid #fca5a5 !important;
+  color: #be123c !important;
+  border-radius: 9999px !important;
+}
+
+.theme-sakura table th {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-bottom: 2px solid #ffe4e6 !important;
+}
+
+.theme-sakura header {
+  background: rgba(255, 245, 246, 0.8) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #f3e2e5 !important;
+}
+
+.theme-sakura header nav a.bg-secondary {
+  background-color: #ffe4e6 !important;
+  color: #be123c !important;
+}
+
+.theme-sakura [data-slot="tabs-list"] {
+  background-color: #fbf0f2 !important;
+  border: 1px solid #f3e2e5;
+  border-radius: 1rem !important;
+}
+
+.theme-sakura [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #f43f5e !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+/* ==========================================
+   12. Dracula Classic Theme (Dark)
+   ========================================== */
+.theme-dracula {
+  --background: #1e1f29;
+  --foreground: #f8f8f2;
+  --card: #282a36;
+  --card-foreground: #f8f8f2;
+  --popover: #282a36;
+  --popover-foreground: #f8f8f2;
+  --primary: #ff79c6; /* Dracula Pink */
+  --primary-foreground: #1e1f29;
+  --secondary: #44475a;
+  --secondary-foreground: #8be9fd; /* Dracula Cyan */
+  --muted: #343746;
+  --muted-foreground: #6272a4; /* Dracula Comment */
+  --accent: #44475a;
+  --accent-foreground: #50fa7b; /* Dracula Green */
+  --border: #44475a;
+  --input: #1e1f29;
+  --ring: #ff79c6;
+  --radius: 0.5rem;
+  --font-sans: "Outfit", sans-serif;
+  --font-heading: "Outfit", sans-serif;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.7);
+  --glass-bg: rgba(40, 42, 54, 0.9);
+  --glass-border: rgba(68, 71, 90, 0.8);
+}
+
+.theme-dracula body {
+  background-color: #1e1f29;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(189, 147, 249, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 121, 198, 0.05) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+.theme-dracula h1, 
+.theme-dracula h2, 
+.theme-dracula h3,
+.theme-dracula .font-bold {
+  font-family: "Outfit", sans-serif !important;
+  color: #bd93f9 !important; /* Dracula Purple */
+}
+
+.theme-dracula .card-modern,
+.theme-dracula [class*="bg-card"] {
+  background: #282a36 !important;
+  border: 1px solid #44475a !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 0.5rem !important;
+}
+
+.theme-dracula .card-modern:hover,
+.theme-dracula [class*="bg-card"]:hover {
+  border-color: #ff79c6 !important;
+  box-shadow: 0 12px 30px rgba(255, 121, 198, 0.15) !important;
+}
+
+.theme-dracula button,
+.theme-dracula .btn-primary {
+  font-family: "Outfit", sans-serif;
+  background: #ff79c6 !important;
+  color: #1e1f29 !important;
+  font-weight: bold;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 12px rgba(255, 121, 198, 0.3);
+  border: none !important;
+}
+
+.theme-dracula button:hover,
+.theme-dracula .btn-primary:hover {
+  background: #ff92df !important;
+  box-shadow: 0 6px 18px rgba(255, 121, 198, 0.5) !important;
+}
+
+.theme-dracula .input-modern,
+.theme-dracula input,
+.theme-dracula textarea {
+  border-radius: 0.375rem !important;
+  border: 1px solid #44475a !important;
+  background-color: #1e1f29 !important;
+  color: #f8f8f2 !important;
+}
+
+.theme-dracula .input-modern:focus,
+.theme-dracula input:focus,
+.theme-dracula textarea:focus {
+  border-color: #ff79c6 !important;
+  box-shadow: 0 0 8px rgba(255, 121, 198, 0.3) !important;
+}
+
+.theme-dracula ::-webkit-scrollbar-track {
+  background: #1e1f29;
+}
+.theme-dracula ::-webkit-scrollbar-thumb {
+  background: #44475a;
+  border-radius: 4px;
+}
+.theme-dracula ::-webkit-scrollbar-thumb:hover {
+  background: #ff79c6;
+}
+
+.theme-dracula ::selection {
+  background: #44475a;
+  color: #f8f8f2;
+}
+
+.theme-dracula .badge-modern,
+.theme-dracula .badge {
+  background-color: rgba(80, 250, 123, 0.1) !important; /* Dracula Green bg */
+  border: 1px solid #50fa7b !important;
+  color: #50fa7b !important;
+  border-radius: 4px !important;
+}
+
+.theme-dracula table th {
+  background-color: #21222c !important;
+  color: #8be9fd !important;
+  border-bottom: 2px solid #44475a !important;
+}
+
+.theme-dracula header {
+  background: #1e1f29 !important;
+  border-bottom: 2px solid #44475a !important;
+}
+
+.theme-dracula header nav a.bg-secondary {
+  background-color: #44475a !important;
+  color: #ff79c6 !important;
+}
+
+.theme-dracula [data-slot="tabs-list"] {
+  background-color: #191a21 !important;
+  border: 1px solid #44475a;
+  border-radius: 0.375rem !important;
+}
+
+.theme-dracula [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #44475a !important;
+  color: #50fa7b !important;
+  font-weight: bold;
+}
