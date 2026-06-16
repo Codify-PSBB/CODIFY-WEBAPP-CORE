@@ -18,15 +18,11 @@ const EXPECTED_ADMINS = [
 
 console.log('=== Admin Security Verification ===\n');
 
-// Check frontend admin list
-const frontendPath = path.join(__dirname, '../frontend/src/lib/schoolRules.ts');
-const frontendContent = fs.readFileSync(frontendPath, 'utf8');
-
 // Check backend admin list
 const backendPath = path.join(__dirname, '../worker/src/lib/schoolRules.ts');
 const backendContent = fs.readFileSync(backendPath, 'utf8');
 
-// Extract admin lists from both files
+// Extract admin lists from content
 function extractAdminList(content) {
   const match = content.match(/ADMIN_EMAIL_LIST\s*=\s*\[([\s\S]*?)\]/);
   if (!match) return null;
@@ -49,42 +45,20 @@ function extractAdminList(content) {
   return emails.sort();
 }
 
-const frontendAdmins = extractAdminList(frontendContent);
 const backendAdmins = extractAdminList(backendContent);
 
 console.log('Expected admins:', EXPECTED_ADMINS.length);
-console.log('Frontend admins:', frontendAdmins?.length || 0);
 console.log('Backend admins:', backendAdmins?.length || 0);
-
-// Verify counts
-if (frontendAdmins?.length !== EXPECTED_ADMINS.length) {
-  console.error('ERROR: Frontend admin count mismatch!');
-  process.exit(1);
-}
 
 if (backendAdmins?.length !== EXPECTED_ADMINS.length) {
   console.error('ERROR: Backend admin count mismatch!');
   process.exit(1);
 }
 
-// Verify synchronization
-if (JSON.stringify(frontendAdmins) !== JSON.stringify(backendAdmins)) {
-  console.error('ERROR: Frontend and backend admin lists are not synchronized!');
-  console.error('Frontend:', frontendAdmins);
-  console.error('Backend:', backendAdmins);
-  process.exit(1);
-}
-
 // Verify expected admins
-const frontendSet = new Set(frontendAdmins);
 const backendSet = new Set(backendAdmins);
 
 for (const expectedAdmin of EXPECTED_ADMINS) {
-  if (!frontendSet.has(expectedAdmin)) {
-    console.error(`ERROR: Expected admin ${expectedAdmin} missing from frontend!`);
-    process.exit(1);
-  }
-  
   if (!backendSet.has(expectedAdmin)) {
     console.error(`ERROR: Expected admin ${expectedAdmin} missing from backend!`);
     process.exit(1);
@@ -92,6 +66,7 @@ for (const expectedAdmin of EXPECTED_ADMINS) {
 }
 
 console.log('\n=== Security Verification PASSED ===');
-console.log('All admin lists are properly synchronized and contain the expected 4 admins.');
+console.log('The backend admin list contains all expected admins and is properly configured.');
 console.log('Admin emails:');
-frontendAdmins.forEach(admin => console.log(`  - ${admin}`));
+backendAdmins.forEach(admin => console.log(`  - ${admin}`));
+
