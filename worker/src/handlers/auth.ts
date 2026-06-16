@@ -58,12 +58,13 @@ export async function handleLogin(ctx: RequestContext) {
       return jsonError("Invalid EDU ID or password.", 401);
     }
 
-    // Determine role: use admin list as the source of truth
-    const role = isAdminEmail(userRow.email) ? "admin" : "member";
+    // Determine role: use the normalized full-domain email for admin detection
+    // (DB may store short-form like "s220162", but the admin list has full "@psbbschools.edu.in" form)
+    const role = isAdminEmail(emailWithDomain) ? "admin" : "member";
 
     const payload = {
       sub: userRow.id.toString(),
-      email: userRow.email,
+      email: emailWithDomain,
       role,
       name: userRow.name,
       exp: Math.floor(Date.now() / 1000) + 86400, // 24 hours
@@ -81,7 +82,7 @@ export async function handleLogin(ctx: RequestContext) {
         token,
         user: {
           id: userRow.id.toString(),
-          email: userRow.email,
+          email: emailWithDomain,
           role,
           name: userRow.name,
         },
