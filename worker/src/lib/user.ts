@@ -43,14 +43,24 @@ export async function ensureUserId(
     }
   }
 
-  const existing = await client.first<UserRow>("SELECT id, name FROM users WHERE email = ?", [user.email]);
+  // Try to find by full email first, then by short-form (without domain) as a fallback.
+  // This prevents ghost duplicate rows when a student logs in via both the custom
+  // password system (which historically stored "s150008") and via Clerk (which
+  // always produces "s150008@psbbschools.edu.in").
+  const shortEmail = user.email.split("@")[0]?.toLowerCase() ?? "";
+  const existing = await client.first<UserRow>(
+    "SELECT id, name FROM users WHERE email = ? OR email = ?",
+    [user.email, shortEmail]
+  );
   if (existing) {
     const isPlaceholder = existing.name === deriveNameFromEmail(user.email);
     const newName = isPlaceholder && realName ? realName : existing.name;
 
+    // Always normalise the stored email to the full-domain form so future
+    // lookups always match by full email (no more short-form rows in DB).
     await client.run(
-      "UPDATE users SET role = ?, clerk_user_id = COALESCE(clerk_user_id, ?), name = ? WHERE id = ?",
-      [user.role, user.userId, newName, existing.id]
+      "UPDATE users SET role = ?, clerk_user_id = COALESCE(clerk_user_id, ?), name = ?, email = ? WHERE id = ?",
+      [user.role, user.userId, newName, user.email, existing.id]
     );
     return existing.id;
   }
