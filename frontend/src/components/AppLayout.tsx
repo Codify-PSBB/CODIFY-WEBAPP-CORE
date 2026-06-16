@@ -1,8 +1,6 @@
-import { UserButton, useUser, useClerk } from "@clerk/clerk-react";
 import { LogOut, Palette, Radio } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { isAdminEmail, normalizeEmail } from "@/lib/schoolRules";
 import { getLocalTokenPayload, clearLocalToken } from "@/lib/auth";
 import { useTheme, Theme } from "@/components/ThemeProvider";
 import { useState, useRef, useEffect } from "react";
@@ -16,9 +14,6 @@ export default function AppLayout({
   onSignOut?: () => void;
 }) {
   const { pathname } = useLocation();
-  const { user: clerkUser } = useUser();
-  const { signOut: clerkSignOut } = useClerk();
-
   const { theme, setTheme } = useTheme();
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
@@ -50,11 +45,10 @@ export default function AppLayout({
   ];
 
   const localUser = getLocalTokenPayload();
-  const email = normalizeEmail(clerkUser?.primaryEmailAddress?.emailAddress ?? "");
-  const isAdmin = email.length > 0 && isAdminEmail(email);
+  const isAdmin = localUser?.role === "admin";
   const isLive = competitionPhase === "live";
 
-  const navItems = [];
+  const navItems: { name: string; path: string; live?: boolean }[] = [];
 
   if (isAdmin) {
     navItems.push(
@@ -71,12 +65,11 @@ export default function AppLayout({
   navItems.push({ name: "Leaderboard", path: "/leaderboard" });
 
   const handleSignOut = () => {
+    clearLocalToken();
     if (onSignOut) {
       onSignOut();
     } else {
-      clearLocalToken();
-      if (isAdmin) void clerkSignOut();
-      else window.location.href = "/";
+      window.location.href = "/";
     }
   };
 
@@ -122,13 +115,10 @@ export default function AppLayout({
               </div>
             )}
 
-            {isAdmin ? (
-              <UserButton appearance={{ elements: { userButtonAvatarBox: "ring-2 ring-primary" } }} />
-            ) : (
-              <div className="hidden sm:flex text-sm text-foreground/80 break-all font-medium bg-secondary/50 px-3 py-1.5 rounded-full">
-                {localUser?.name || localUser?.email}
-              </div>
-            )}
+            {/* User identity badge */}
+            <div className="hidden sm:flex text-sm text-foreground/80 break-all font-medium bg-secondary/50 px-3 py-1.5 rounded-full">
+              {localUser?.name || localUser?.email}
+            </div>
 
             {/* Theme Picker */}
             <div className="relative" ref={themeMenuRef}>

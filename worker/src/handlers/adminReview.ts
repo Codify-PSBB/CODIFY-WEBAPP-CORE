@@ -1,5 +1,5 @@
 import { createDbClient } from "../lib/db";
-import { ensureUserId } from "../lib/user";
+import { getUserId } from "../lib/user";
 import type { RouteHandler } from "../types";
 
 type ReviewAction = "approve" | "reject";
@@ -98,7 +98,7 @@ export const adminReviewHandler: RouteHandler = async (ctx) => {
 
   try {
     const db = createDbClient(ctx.env.DB);
-    const reviewerUserId = await ensureUserId(ctx.env.DB, ctx.user, ctx.env.CLERK_SECRET_KEY);
+    const reviewerUserId = await getUserId(ctx.env.DB, ctx.user);
 
     const submission = await db.first<SubmissionWithProblem>(
       `SELECT

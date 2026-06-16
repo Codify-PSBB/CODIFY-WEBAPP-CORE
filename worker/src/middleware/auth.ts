@@ -1,14 +1,6 @@
-import { createClerkClient, verifyToken } from "@clerk/backend";
-import { isAdminEmail, isAllowedSchoolEmail, normalizeEmail } from "../lib/schoolRules";
 import { verifyCustomJwt } from "../lib/jwt";
+import { isAdminEmail, isAllowedSchoolEmail, normalizeEmail } from "../lib/schoolRules";
 import type { AuthenticatedUser, Middleware } from "../types";
-
-type TokenClaims = Record<string, unknown> & {
-  sub?: unknown;
-  sid?: unknown;
-  email?: unknown;
-  email_address?: unknown;
-};
 
 function jsonError(message: string, status = 401): Response {
   return Response.json({ status: "error", message }, { status });
@@ -16,63 +8,10 @@ function jsonError(message: string, status = 401): Response {
 
 function getBearerToken(request: Request): string | null {
   const authHeader = request.headers.get("Authorization");
-  if (!authHeader) {
-    return null;
-  }
-
+  if (!authHeader) return null;
   const [scheme, token] = authHeader.split(" ");
-  if (scheme !== "Bearer" || !token) {
-    return null;
-  }
-
+  if (scheme !== "Bearer" || !token) return null;
   return token;
-}
-
-function readString(value: unknown): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value : null;
-}
-
-function extractEmailFromClaims(claims: TokenClaims): string | null {
-  const direct =
-    readString(claims.email) ??
-    readString(claims.email_address) ??
-    readString(claims["https://clerk.dev/email"]);
-
-  if (direct) {
-    return direct;
-  }
-
-  const nestedClaims = claims["https://clerk.dev/claims"];
-  if (typeof nestedClaims === "object" && nestedClaims !== null) {
-    const nested = nestedClaims as Record<string, unknown>;
-    return readString(nested.email) ?? readString(nested.email_address);
-  }
-
-  return null;
-}
-
-async function resolveEmail(secretKey: string, userId: string, claims: TokenClaims): Promise<string | null> {
-  const fromClaims = extractEmailFromClaims(claims);
-  if (fromClaims) {
-    return normalizeEmail(fromClaims);
-  }
-
-  try {
-    const clerkClient = createClerkClient({ secretKey });
-    const user = await clerkClient.users.getUser(userId);
-
-    const primary =
-      user.emailAddresses.find((emailAddress) => emailAddress.id === user.primaryEmailAddressId) ??
-      user.emailAddresses[0];
-
-    if (!primary?.emailAddress) {
-      return null;
-    }
-
-    return normalizeEmail(primary.emailAddress);
-  } catch {
-    return null;
-  }
 }
 
 export const requireAuth: Middleware = async (ctx) => {
@@ -81,57 +20,26 @@ export const requireAuth: Middleware = async (ctx) => {
     return jsonError("Authentication required.", 401);
   }
 
-  // First try verifying as a Custom JWT
-  if (ctx.env.JWT_SECRET) {
-    const customPayload = await verifyCustomJwt(token, ctx.env.JWT_SECRET);
-    if (customPayload && customPayload.email && customPayload.sub) {
-      if (!isAllowedSchoolEmail(customPayload.email)) {
-         return jsonError("Access restricted to @psbbschools.edu.in accounts.", 403);
-      }
-      const user: AuthenticatedUser = {
-        userId: customPayload.sub,
-        email: customPayload.email,
-        role: isAdminEmail(customPayload.email) ? "admin" : "member"
-      };
-      return { ...ctx, user };
-    }
+  if (!ctx.env.JWT_SECRET) {
+    return jsonError("JWT configuration is missing on server.", 500);
   }
 
-  const secretKey = ctx.env.CLERK_SECRET_KEY;
-  if (!secretKey) {
-    return jsonError("Missing Clerk secret key configuration.", 500);
+  const payload = await verifyCustomJwt(token, ctx.env.JWT_SECRET);
+  if (!payload || !payload.email || !payload.sub) {
+    return jsonError("Invalid or expired token.", 401);
   }
 
-  let claims: TokenClaims;
-  try {
-    claims = (await verifyToken(token, { secretKey })) as TokenClaims;
-  } catch {
-    return jsonError("Invalid or expired session token.", 401);
-  }
-
-  const userId = readString(claims.sub);
-  if (!userId) {
-    return jsonError("Unable to resolve user identity from Clerk session.", 401);
-  }
-
-  const email = await resolveEmail(secretKey, userId, claims);
-  if (!email) {
-    return jsonError("Unable to resolve user email from Clerk session.", 401);
-  }
+  const email = normalizeEmail(payload.email as string);
 
   if (!isAllowedSchoolEmail(email)) {
     return jsonError("Access restricted to @psbbschools.edu.in accounts.", 403);
   }
 
   const user: AuthenticatedUser = {
-    userId,
+    userId: payload.sub as string,
     email,
     role: isAdminEmail(email) ? "admin" : "member",
-    sessionId: readString(claims.sid) ?? undefined
   };
 
-  return {
-    ...ctx,
-    user
-  };
+  return { ...ctx, user };
 };

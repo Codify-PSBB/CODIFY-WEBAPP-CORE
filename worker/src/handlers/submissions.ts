@@ -1,6 +1,6 @@
 import { createDbClient } from "../lib/db";
 import { readCompetitionState } from "../lib/competition";
-import { ensureUserId } from "../lib/user";
+import { getUserId } from "../lib/user";
 import type { RouteHandler } from "../types";
 
 interface ProblemCodePair {
@@ -104,7 +104,7 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
   }
 
   const db = createDbClient(ctx.env.DB);
-  const userId = await ensureUserId(ctx.env.DB, ctx.user, ctx.env.CLERK_SECRET_KEY);
+  const userId = await getUserId(ctx.env.DB, ctx.user);
 
   // ── Prevent re-submission ─────────────────────────────────────────────────
   const existing = await db.first<{ id: number }>(

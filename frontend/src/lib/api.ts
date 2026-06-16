@@ -31,7 +31,7 @@ export async function apiRequest<TData>(
   options: ApiRequestOptions = {}
 ): Promise<ApiResponse<TData>> {
   const headers = new Headers();
-  const token = await resolveAuthToken();
+  const token = resolveAuthToken();
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
