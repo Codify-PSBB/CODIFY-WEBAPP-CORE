@@ -2,7 +2,7 @@ import { existsSync, writeFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 
-const SALT = "CODIFY_SALT_2026!";
+const SALT = process.env.CODIFY_SALT || "CODIFY_SALT_2026!";
 
 const usersJsonPath = resolve(process.cwd(), "scripts", "users.json");
 const outputSqlPath = resolve(process.cwd(), "scripts", "insert_users.sql");

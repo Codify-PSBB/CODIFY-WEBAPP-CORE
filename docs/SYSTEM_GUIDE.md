@@ -162,7 +162,7 @@ We have removed Clerk in favor of simple, performant, and secure school ID crede
        |<--- Return JWT + User Details --------------|                                     |
 ```
 
-* **Password Hashing**: SHA-256 hash using a static salt (`CODIFY_SALT_2026!`).
+* **Password Hashing**: SHA-256 hash using a configurable salt supplied via the `CODIFY_SALT` Worker secret.
 * **JWT Properties**: Exposes `sub` (DB user ID), `email`, `role`, `name`, and an expiration time of 24 hours (`exp`).
 * **JWT Validation**: Synchronous validation on both the client and server using a shared `JWT_SECRET`.
 

@@ -50,7 +50,10 @@ export async function handleLogin(ctx: RequestContext) {
       return jsonError("Invalid EDU ID or password.", 401);
     }
 
-    const hashedPassword = await hashPassword(password);
+    if (!ctx.env.CODIFY_SALT) {
+      return jsonError("Server salt configuration is missing", 500);
+    }
+    const hashedPassword = await hashPassword(password, ctx.env.CODIFY_SALT);
     if (hashedPassword !== userRow.password_hash) {
       return jsonError("Invalid EDU ID or password.", 401);
     }

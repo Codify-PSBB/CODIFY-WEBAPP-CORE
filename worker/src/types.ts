@@ -10,6 +10,7 @@ export interface Env {
   DB: D1Database;
   APP_STATE: KVNamespace;
   JWT_SECRET: string;
+  CODIFY_SALT: string;
 }
 
 export interface RequestContext {
