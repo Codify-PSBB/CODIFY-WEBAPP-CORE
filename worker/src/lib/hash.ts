@@ -6,7 +6,24 @@ function bufferToHex(buffer: ArrayBuffer): string {
 
 export async function hashPassword(password: string, salt: string): Promise<string> {
   const enc = new TextEncoder();
-  const data = enc.encode(password + salt);
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  return bufferToHex(hash);
+  const passwordKey = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"]
+  );
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: enc.encode(salt),
+      iterations: 100000,
+      hash: "SHA-256",
+    },
+    passwordKey,
+    256
+  );
+
+  return bufferToHex(hashBuffer);
 }

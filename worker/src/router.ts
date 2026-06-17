@@ -10,7 +10,6 @@ import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
 import { adminUsersHandler } from "./handlers/adminUsers";
 import { leaderboardHandler } from "./handlers/leaderboard";
-import { problemsHandler } from "./handlers/problems";
 import { submissionsHandler } from "./handlers/submissions";
 import { competitionStatusHandler } from "./handlers/publicCompetition";
 import {
@@ -48,7 +47,6 @@ const routes: Route[] = [
   { method: "GET", path: "/api/status", middlewares: authOnly, handler: appStatusHandler }, // legacy
   { method: "GET", path: "/api/competition/status", middlewares: authOnly, handler: competitionStatusHandler },
   { method: "GET", path: "/api/leaderboard", middlewares: authOnly, handler: leaderboardHandler },
-  { method: "GET", path: "/api/problems", middlewares: authAndLive, handler: problemsHandler }, // legacy member endpoint
   { method: "POST", path: "/api/submissions", middlewares: authAndLive, handler: submissionsHandler },
 
   // ── Admin: users ─────────────────────────────────────────────────────────────

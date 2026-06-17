@@ -32,7 +32,9 @@ function MemberCompetitionGuard({
   children: ReactElement;
   phase: CompetitionPhase;
 }) {
-  if (phase !== "live") {
+  const payload = getLocalTokenPayload();
+  const isAdmin = payload?.role === "admin";
+  if (!isAdmin && phase !== "live") {
     return <Navigate to="/leaderboard" replace />;
   }
   return children;
@@ -233,7 +235,7 @@ export default function App() {
         <Route
           path="interpreter"
           element={
-            competitionPhase !== "live" ? (
+            (!isAdmin && competitionPhase !== "live") ? (
               <Navigate to="/leaderboard" replace />
             ) : (
               <InterpreterPage />

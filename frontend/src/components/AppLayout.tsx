@@ -42,6 +42,8 @@ export default function AppLayout({
     { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },
     { id: "dracula", name: "Dracula Classic", iconBg: "bg-[#282a36]", borderCol: "border-purple-400" },
     { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" },
+    { id: "ocean", name: "Ocean Depth", iconBg: "bg-cyan-950", borderCol: "border-cyan-600" },
+    { id: "sunset", name: "Crimson Sunset", iconBg: "bg-orange-950", borderCol: "border-orange-500" },
   ];
 
   const localUser = getLocalTokenPayload();

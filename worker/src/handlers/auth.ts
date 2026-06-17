@@ -21,8 +21,8 @@ export async function handleLogin(ctx: RequestContext) {
     const body = (await ctx.request.json()) as any;
     const { eduId, password } = body;
 
-    if (!eduId || !password) {
-      return jsonError("Missing required fields (eduId, password).");
+    if (!eduId || !password || typeof eduId !== "string" || typeof password !== "string") {
+      return jsonError("Missing or invalid required fields (eduId, password).");
     }
 
     // Accept either "s150008" or "s150008@psbbschools.edu.in"

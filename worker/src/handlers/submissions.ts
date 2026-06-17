@@ -134,10 +134,22 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
   }
 
   // ── Insert submission_group (atomic) ──────────────────────────────────────
-  const group = await db.first<{ id: number; created_at: string }>(
-    "INSERT INTO submission_groups (user_id, competition_id, elapsed_seconds) VALUES (?, ?, ?) RETURNING id, created_at",
-    [userId, competitionId, elapsedSeconds]
-  );
+  let group: { id: number; created_at: string } | null = null;
+  try {
+    group = await db.first<{ id: number; created_at: string }>(
+      "INSERT INTO submission_groups (user_id, competition_id, elapsed_seconds) VALUES (?, ?, ?) RETURNING id, created_at",
+      [userId, competitionId, elapsedSeconds]
+    );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("UNIQUE constraint failed")) {
+      return Response.json(
+        { status: "error", message: "You have already submitted for this competition." },
+        { status: 409 }
+      );
+    }
+    return Response.json({ status: "error", message: "Failed to create submission record." }, { status: 500 });
+  }
 
   if (!group) {
     return Response.json({ status: "error", message: "Failed to create submission record." }, { status: 500 });
