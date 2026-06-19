@@ -30,7 +30,17 @@ export function getLocalTokenPayload(): {
   try {
     const b64Payload = token.split(".")[1];
     if (!b64Payload) return null;
-    return JSON.parse(atob(b64Payload.replace(/-/g, "+").replace(/_/g, "/")));
+    const payload = JSON.parse(atob(b64Payload.replace(/-/g, "+").replace(/_/g, "/")));
+    
+    // Check expiration locally
+    if (payload && typeof payload.exp === "number") {
+      if (Math.floor(Date.now() / 1000) > payload.exp) {
+        // Automatically clear expired token
+        localStorage.removeItem("codify_token");
+        return null;
+      }
+    }
+    return payload;
   } catch {
     return null;
   }

@@ -1,4 +1,4 @@
-import { resolveAuthToken } from "./auth";
+import { resolveAuthToken, clearLocalToken } from "./auth";
 
 export interface ApiResponse<TData> {
   status: "success" | "error";
@@ -71,6 +71,9 @@ export async function apiRequest<TData>(
   const rawText = isJson ? "" : await response.text().catch(() => "");
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearLocalToken();
+    }
     const message =
       payload?.message ??
       (rawText ? `${trimServerText(rawText)} (status ${response.status})` : `Request failed with status ${response.status} for ${requestUrl}`);
