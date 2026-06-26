@@ -16,9 +16,9 @@ import type {
   Problem, SubmissionGroup,
 } from "@/types/models"
 import {
-  AlertTriangle, ArrowRight, CheckCircle2, Clock, FilePlus2,
+  AlertTriangle, ArrowRight, CheckCircle2, Clock, Eye, FilePlus2,
   Gauge, Play, PlusCircle, Radio, RefreshCcw, Trash2, Trophy,
-  Users2, XCircle, Zap,
+  Users2, X, XCircle, Zap,
 } from "lucide-react"
 
 const TOTAL_SLOTS = 10
@@ -101,6 +101,7 @@ export default function AdminDashboardPage() {
   const [problemForm, setProblemForm] = useState<ProblemFormState>(defaultProblemForm)
   const [showNewProblemForm, setShowNewProblemForm] = useState(false)
   const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" | "add" } | null>(null)
+  const [previewProblem, setPreviewProblem] = useState<Problem | null>(null)
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
@@ -527,11 +528,17 @@ export default function AdminDashboardPage() {
                       return (
                         <TableRow key={p.id} className={inCompetition ? "bg-blue-50/40 dark:bg-blue-900/10" : ""}>
                           <TableCell>
-                            <p className="font-medium">{p.title}</p>
-                            <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                            <button
+                              type="button"
+                              className="flex items-center gap-1.5 text-left group w-full"
+                              onClick={() => setPreviewProblem(p)}
+                            >
+                              <span className="font-medium group-hover:underline underline-offset-2 truncate max-w-[260px]">{p.title}</span>
+                              <Eye className="size-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
                           </TableCell>
-                          <TableCell>{p.xp_reward}</TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="shrink-0">{p.xp_reward}</TableCell>
+                          <TableCell className="text-right shrink-0">
                             {inCompetition ? (
                               <Badge variant="secondary" className="text-xs gap-1"><CheckCircle2 className="size-3" />Added</Badge>
                             ) : (
@@ -839,13 +846,19 @@ export default function AdminDashboardPage() {
                 ) : (
                   allProblems.map((p) => (
                     <TableRow key={p.id}>
-                      <TableCell>
-                        <p className="font-medium">{p.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{p.description}</p>
+                      <TableCell className="max-w-0">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1.5 text-left group w-full"
+                          onClick={() => setPreviewProblem(p)}
+                        >
+                          <span className="font-medium group-hover:underline underline-offset-2 truncate">{p.title}</span>
+                          <Eye className="size-3.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
                       </TableCell>
-                      <TableCell>{p.xp_reward}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.created_at ? formatTimestamp(p.created_at) : "—"}</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="whitespace-nowrap">{p.xp_reward}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">{p.created_at ? formatTimestamp(p.created_at) : "—"}</TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
                         <Button
                           size="sm"
                           variant="destructive"
@@ -897,6 +910,61 @@ export default function AdminDashboardPage() {
           </Table>
         </CardContent>
       </Card>
+      {/* ── Problem Preview Modal ─────────────────────────────────────────────── */}
+      {previewProblem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.45)" }}
+          onClick={() => setPreviewProblem(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-[24px] border border-border bg-background shadow-2xl p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-xl font-bold leading-snug">{previewProblem.title}</h2>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1 text-xs"><Zap className="size-3" />{previewProblem.xp_reward} XP</Badge>
+                  {previewProblem.created_at && (
+                    <span className="text-xs text-muted-foreground">{formatTimestamp(previewProblem.created_at)}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-1.5 hover:bg-muted transition-colors"
+                onClick={() => setPreviewProblem(null)}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="rounded-xl bg-muted/40 border border-border p-4">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{previewProblem.description || "No description."}</p>
+            </div>
+            {[1, 2, 3].map((n) => {
+              const input = previewProblem[`public_testcase_${n}_input` as keyof Problem] as string | null
+              const output = previewProblem[`public_testcase_${n}_output` as keyof Problem] as string | null
+              if (!input && !output) return null
+              return (
+                <div key={n} className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Test Case {n}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded-lg bg-muted/30 border border-border p-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">Input</p>
+                      <pre className="text-xs whitespace-pre-wrap font-mono">{input || "—"}</pre>
+                    </div>
+                    <div className="rounded-lg bg-muted/30 border border-border p-3">
+                      <p className="text-[10px] text-muted-foreground mb-1">Expected Output</p>
+                      <pre className="text-xs whitespace-pre-wrap font-mono">{output || "—"}</pre>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
