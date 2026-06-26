@@ -16,9 +16,9 @@ import type {
   Problem, SubmissionGroup,
 } from "@/types/models"
 import {
-  AlertTriangle, ArrowRight, CheckCircle2, Clock, Eye, FilePlus2,
-  Gauge, Play, PlusCircle, Radio, RefreshCcw, Trash2, Trophy,
-  Users2, X, XCircle, Zap,
+  AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, ChevronUp,
+  Clock, Eye, FilePlus2, Gauge, Play, PlusCircle, Radio, RefreshCcw,
+  Trash2, Trophy, Users2, X, XCircle, Zap,
 } from "lucide-react"
 
 const TOTAL_SLOTS = 10
@@ -102,6 +102,7 @@ export default function AdminDashboardPage() {
   const [showNewProblemForm, setShowNewProblemForm] = useState(false)
   const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" | "add" } | null>(null)
   const [previewProblem, setPreviewProblem] = useState<Problem | null>(null)
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
@@ -258,6 +259,35 @@ export default function AdminDashboardPage() {
       setMessage(`Submission #${submissionId} ${action}d.`)
     } catch (e) { setMessage(e instanceof Error ? e.message : `Failed to ${action}.`) }
   }
+
+  function toggleGroup(groupId: number) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(groupId)) { next.delete(groupId) } else { next.add(groupId) }
+      return next
+    })
+  }
+
+  // Group flat submissions by submission_group_id → one card per student
+  const submissionsByGroup = useMemo(() => {
+    const map = new Map<number, { groupId: number; userId: number; userName: string; userEmail: string; elapsedSeconds: number | null; submittedAt: string; items: PendingSubmission[] }>()
+    for (const s of submissions) {
+      const key = s.submission_group_id ?? s.user_id
+      if (!map.has(key)) {
+        map.set(key, {
+          groupId: key,
+          userId: s.user_id,
+          userName: s.user_name,
+          userEmail: s.user_email,
+          elapsedSeconds: s.elapsed_seconds,
+          submittedAt: s.created_at,
+          items: [],
+        })
+      }
+      map.get(key)!.items.push(s)
+    }
+    return Array.from(map.values())
+  }, [submissions])
 
   // ── Derived stats ────────────────────────────────────────────────────────────
 
@@ -725,56 +755,90 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-2xl">Submission Review</CardTitle>
-              <CardDescription>Approve or reject pending submissions.</CardDescription>
+              <CardDescription>
+                {submissionsByGroup.length > 0
+                  ? `${submissionsByGroup.length} student${submissionsByGroup.length !== 1 ? "s" : ""} · ${submissions.length} pending answer${submissions.length !== 1 ? "s" : ""}`
+                  : "Approve or reject pending submissions."}
+              </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => void loadSubmissions()} className="gap-2">
               <RefreshCcw className="size-4" />Refresh
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          {submissions.length === 0 ? (
+        <CardContent className="space-y-3">
+          {submissionsByGroup.length === 0 ? (
             <p className="py-6 text-sm text-muted-foreground">No pending submissions.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Problem</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Submitted</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {submissions.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>
-                      <p className="font-medium">{s.user_name}</p>
-                      <p className="text-xs text-muted-foreground">{s.user_email}</p>
-                    </TableCell>
-                    <TableCell>{s.problem_title}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1 font-mono text-sm">
+            submissionsByGroup.map((group, idx) => {
+              const isOpen = expandedGroups.has(group.groupId)
+              const pendingCount = group.items.length
+              return (
+                <div key={group.groupId} className="rounded-2xl border border-border bg-muted/20 overflow-hidden">
+                  {/* ── Group header (always visible) ── */}
+                  <button
+                    type="button"
+                    className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/30 transition-colors text-left"
+                    onClick={() => toggleGroup(group.groupId)}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="shrink-0 flex items-center justify-center size-7 rounded-full bg-primary/10 text-primary text-xs font-bold">{idx + 1}</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold truncate">{group.userName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{group.userEmail}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="hidden sm:flex items-center gap-1.5 font-mono text-sm font-semibold">
                         <Clock className="size-3.5 text-muted-foreground" />
-                        {formatElapsed(s.elapsed_seconds)}
+                        {formatElapsed(group.elapsedSeconds)}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{formatTimestamp(s.created_at)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 justify-end">
-                        <Button size="sm" className="gap-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => void reviewSubmission(s.id, "approve")}>
-                          <CheckCircle2 className="size-3.5" />Approve
-                        </Button>
-                        <Button size="sm" variant="outline" className="gap-1 text-red-600 border-red-300 hover:bg-red-50" onClick={() => void reviewSubmission(s.id, "reject")}>
-                          <XCircle className="size-3.5" />Reject
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <Badge variant="secondary" className="text-xs">
+                        {pendingCount} answer{pendingCount !== 1 ? "s" : ""}
+                      </Badge>
+                      {isOpen
+                        ? <ChevronUp className="size-4 text-muted-foreground" />
+                        : <ChevronDown className="size-4 text-muted-foreground" />}
+                    </div>
+                  </button>
+
+                  {/* ── Expanded: individual answers ── */}
+                  {isOpen && (
+                    <div className="border-t border-border divide-y divide-border">
+                      {group.items.map((s) => (
+                        <div key={s.id} className="px-5 py-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3 flex-wrap">
+                            <div>
+                              <p className="font-medium text-sm">{s.problem_title}</p>
+                              <p className="text-xs text-muted-foreground">{formatTimestamp(s.created_at)}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                className="gap-1 bg-green-600 hover:bg-green-700 text-white"
+                                onClick={() => void reviewSubmission(s.id, "approve")}
+                              >
+                                <CheckCircle2 className="size-3.5" />Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                onClick={() => void reviewSubmission(s.id, "reject")}
+                              >
+                                <XCircle className="size-3.5" />Reject
+                              </Button>
+                            </div>
+                          </div>
+                          {/* Code preview */}
+                          <pre className="text-xs bg-muted/40 border border-border rounded-xl px-4 py-3 overflow-x-auto max-h-48 font-mono leading-relaxed whitespace-pre-wrap">{s.code}</pre>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })
           )}
         </CardContent>
       </Card>
