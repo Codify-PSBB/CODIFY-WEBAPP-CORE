@@ -1987,3 +1987,301 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   color: #50fa7b !important;
   font-weight: bold;
 }
+
+/* ==========================================
+   13. Ocean Depth Theme (Dark)
+   ========================================== */
+.theme-ocean {
+  --background: #0a1628;
+  --foreground: #cdd6f4;
+  --card: #0f1c2e;
+  --card-foreground: #cdd6f4;
+  --popover: #0f1c2e;
+  --popover-foreground: #cdd6f4;
+  --primary: #4adbc8;
+  --primary-foreground: #0a1628;
+  --secondary: #1e2e4a;
+  --secondary-foreground: #89dceb;
+  --muted: #152035;
+  --muted-foreground: #547b97;
+  --accent: #1e3a5f;
+  --accent-foreground: #89dceb;
+  --border: #1e3050;
+  --input: #0f1c2e;
+  --ring: #4adbc8;
+  --radius: 0.75rem;
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --shadow-soft: 0 4px 24px rgba(74, 219, 200, 0.08);
+  --shadow-lg: 0 10px 40px rgba(74, 219, 200, 0.12);
+  --glass-bg: rgba(15, 28, 46, 0.85);
+  --glass-border: rgba(74, 219, 200, 0.15);
+}
+
+.theme-ocean body {
+  background-color: #0a1628;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(74, 219, 200, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(137, 180, 250, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(30, 46, 74, 0.4) 0%, transparent 70%);
+  background-attachment: fixed;
+}
+
+.theme-ocean h1,
+.theme-ocean h2,
+.theme-ocean h3,
+.theme-ocean .font-bold {
+  font-family: "Inter", sans-serif !important;
+  color: #4adbc8 !important;
+}
+
+.theme-ocean .card-modern,
+.theme-ocean [class*="bg-card"] {
+  background: rgba(15, 28, 46, 0.9) !important;
+  border: 1px solid #1e3050 !important;
+  box-shadow: 0 4px 24px rgba(74, 219, 200, 0.06) !important;
+  border-radius: 0.75rem !important;
+}
+
+.theme-ocean .card-modern:hover,
+.theme-ocean [class*="bg-card"]:hover {
+  border-color: rgba(74, 219, 200, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(74, 219, 200, 0.12) !important;
+}
+
+.theme-ocean button,
+.theme-ocean .btn-primary {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #4adbc8 0%, #22a99c 100%) !important;
+  color: #0a1628 !important;
+  font-weight: 700;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 4px 14px rgba(74, 219, 200, 0.25);
+  border: none !important;
+}
+
+.theme-ocean button:hover,
+.theme-ocean .btn-primary:hover {
+  background: linear-gradient(135deg, #5de8d4 0%, #4adbc8 100%) !important;
+  box-shadow: 0 6px 20px rgba(74, 219, 200, 0.4) !important;
+  transform: translateY(-1px);
+}
+
+.theme-ocean .input-modern,
+.theme-ocean input,
+.theme-ocean textarea {
+  border-radius: 0.5rem !important;
+  border: 1px solid #1e3050 !important;
+  background-color: #0a1628 !important;
+  color: #cdd6f4 !important;
+}
+
+.theme-ocean .input-modern:focus,
+.theme-ocean input:focus,
+.theme-ocean textarea:focus {
+  border-color: #4adbc8 !important;
+  box-shadow: 0 0 0 2px rgba(74, 219, 200, 0.2) !important;
+}
+
+.theme-ocean ::-webkit-scrollbar-track {
+  background: #0a1628;
+}
+.theme-ocean ::-webkit-scrollbar-thumb {
+  background: #1e3050;
+  border-radius: 6px;
+}
+.theme-ocean ::-webkit-scrollbar-thumb:hover {
+  background: #4adbc8;
+}
+
+.theme-ocean ::selection {
+  background: rgba(74, 219, 200, 0.25);
+  color: #cdd6f4;
+}
+
+.theme-ocean .badge-modern,
+.theme-ocean .badge {
+  background-color: rgba(74, 219, 200, 0.1) !important;
+  border: 1px solid rgba(74, 219, 200, 0.35) !important;
+  color: #4adbc8 !important;
+  border-radius: 9999px !important;
+}
+
+.theme-ocean table th {
+  background-color: #0f1c2e !important;
+  color: #4adbc8 !important;
+  border-bottom: 2px solid #1e3050 !important;
+}
+
+.theme-ocean header {
+  background: rgba(10, 22, 40, 0.85) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #1e3050 !important;
+}
+
+.theme-ocean header nav a.bg-secondary {
+  background-color: #1e2e4a !important;
+  color: #4adbc8 !important;
+}
+
+.theme-ocean [data-slot="tabs-list"] {
+  background-color: #0f1c2e !important;
+  border: 1px solid #1e3050;
+  border-radius: 0.5rem !important;
+}
+
+.theme-ocean [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #4adbc8 !important;
+  color: #0a1628 !important;
+  font-weight: bold;
+}
+
+
+/* ==========================================
+   14. Crimson Sunset Theme (Dark)
+   ========================================== */
+.theme-sunset {
+  --background: #1a0c14;
+  --foreground: #f8e2e2;
+  --card: #2d1b2e;
+  --card-foreground: #f8e2e2;
+  --popover: #2d1b2e;
+  --popover-foreground: #f8e2e2;
+  --primary: #ff8b5a;
+  --primary-foreground: #1a0c14;
+  --secondary: #3f2540;
+  --secondary-foreground: #fab387;
+  --muted: #2d1b2e;
+  --muted-foreground: #8c6060;
+  --accent: #4d2035;
+  --accent-foreground: #ffb86c;
+  --border: #4a2535;
+  --input: #2d1b2e;
+  --ring: #ff8b5a;
+  --radius: 0.5rem;
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Inter", sans-serif;
+  --shadow-soft: 0 4px 24px rgba(255, 139, 90, 0.1);
+  --shadow-lg: 0 10px 40px rgba(255, 139, 90, 0.15);
+  --glass-bg: rgba(45, 27, 46, 0.88);
+  --glass-border: rgba(255, 139, 90, 0.2);
+}
+
+.theme-sunset body {
+  background-color: #1a0c14;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(255, 80, 40, 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse at 80% 90%, rgba(255, 139, 90, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(63, 37, 64, 0.5) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+.theme-sunset h1,
+.theme-sunset h2,
+.theme-sunset h3,
+.theme-sunset .font-bold {
+  font-family: "Inter", sans-serif !important;
+  color: #ff8b5a !important;
+}
+
+.theme-sunset .card-modern,
+.theme-sunset [class*="bg-card"] {
+  background: rgba(45, 27, 46, 0.9) !important;
+  border: 1px solid #4a2535 !important;
+  box-shadow: 0 4px 24px rgba(255, 139, 90, 0.07) !important;
+  border-radius: 0.5rem !important;
+}
+
+.theme-sunset .card-modern:hover,
+.theme-sunset [class*="bg-card"]:hover {
+  border-color: rgba(255, 139, 90, 0.4) !important;
+  box-shadow: 0 8px 32px rgba(255, 139, 90, 0.14) !important;
+}
+
+.theme-sunset button,
+.theme-sunset .btn-primary {
+  font-family: "Inter", sans-serif;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8b5a 100%) !important;
+  color: #1a0c14 !important;
+  font-weight: 700;
+  border-radius: 0.375rem !important;
+  box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
+  border: none !important;
+}
+
+.theme-sunset button:hover,
+.theme-sunset .btn-primary:hover {
+  background: linear-gradient(135deg, #ff8b5a 0%, #ffab82 100%) !important;
+  box-shadow: 0 6px 20px rgba(255, 139, 90, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.theme-sunset .input-modern,
+.theme-sunset input,
+.theme-sunset textarea {
+  border-radius: 0.375rem !important;
+  border: 1px solid #4a2535 !important;
+  background-color: #1a0c14 !important;
+  color: #f8e2e2 !important;
+}
+
+.theme-sunset .input-modern:focus,
+.theme-sunset input:focus,
+.theme-sunset textarea:focus {
+  border-color: #ff8b5a !important;
+  box-shadow: 0 0 0 2px rgba(255, 139, 90, 0.2) !important;
+}
+
+.theme-sunset ::-webkit-scrollbar-track {
+  background: #1a0c14;
+}
+.theme-sunset ::-webkit-scrollbar-thumb {
+  background: #4a2535;
+  border-radius: 6px;
+}
+.theme-sunset ::-webkit-scrollbar-thumb:hover {
+  background: #ff8b5a;
+}
+
+.theme-sunset ::selection {
+  background: rgba(255, 139, 90, 0.25);
+  color: #f8e2e2;
+}
+
+.theme-sunset .badge-modern,
+.theme-sunset .badge {
+  background-color: rgba(255, 139, 90, 0.1) !important;
+  border: 1px solid rgba(255, 139, 90, 0.35) !important;
+  color: #ff8b5a !important;
+  border-radius: 4px !important;
+}
+
+.theme-sunset table th {
+  background-color: #2d1b2e !important;
+  color: #ffb86c !important;
+  border-bottom: 2px solid #4a2535 !important;
+}
+
+.theme-sunset header {
+  background: rgba(26, 12, 20, 0.88) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid #4a2535 !important;
+}
+
+.theme-sunset header nav a.bg-secondary {
+  background-color: #3f2540 !important;
+  color: #ff8b5a !important;
+}
+
+.theme-sunset [data-slot="tabs-list"] {
+  background-color: #2d1b2e !important;
+  border: 1px solid #4a2535;
+  border-radius: 0.375rem !important;
+}
+
+.theme-sunset [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: #ff8b5a !important;
+  color: #1a0c14 !important;
+  font-weight: bold;
+}
+
