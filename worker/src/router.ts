@@ -8,7 +8,7 @@ import { handleLogin, handleRegister } from "./handlers/auth";
 import { appStatusHandler } from "./handlers/appStatus";
 import { adminReviewHandler } from "./handlers/adminReview";
 import { adminSubmissionsHandler } from "./handlers/adminSubmissions";
-import { adminUsersHandler } from "./handlers/adminUsers";
+import { adminUsersHandler, adminCreateUserHandler } from "./handlers/adminUsers";
 import { leaderboardHandler } from "./handlers/leaderboard";
 import { submissionsHandler } from "./handlers/submissions";
 import { competitionStatusHandler } from "./handlers/publicCompetition";
@@ -51,6 +51,7 @@ const routes: Route[] = [
 
   // ── Admin: users ─────────────────────────────────────────────────────────────
   { method: "GET", path: "/api/admin/users", middlewares: adminOnly, handler: adminUsersHandler },
+  { method: "POST", path: "/api/admin/users/create", middlewares: adminOnly, handler: adminCreateUserHandler },
 
   // ── Admin: problem bank ──────────────────────────────────────────────────────
   { method: "GET", path: "/api/admin/problems", middlewares: adminOnly, handler: adminProblemsGetHandler },

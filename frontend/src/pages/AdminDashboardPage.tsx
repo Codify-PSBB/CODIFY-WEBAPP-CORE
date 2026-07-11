@@ -103,6 +103,9 @@ export default function AdminDashboardPage() {
   const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" | "add" } | null>(null)
   const [previewProblem, setPreviewProblem] = useState<Problem | null>(null)
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
+  const [showNewUserForm, setShowNewUserForm] = useState(false)
+  const [newUserForm, setNewUserForm] = useState({ name: "", usn: "" })
+  const [creatingUser, setCreatingUser] = useState(false)
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
@@ -247,6 +250,23 @@ export default function AdminDashboardPage() {
       setMessage(`Problem #${problemId} deleted.`)
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to delete.") }
     finally { setProblemActionLoading(null) }
+  }
+
+  async function createUser(e: React.FormEvent) {
+    e.preventDefault()
+    setCreatingUser(true)
+    setMessage("")
+    try {
+      await apiRequest("/api/admin/users/create", { method: "POST", body: newUserForm })
+      setShowNewUserForm(false)
+      setNewUserForm({ name: "", usn: "" })
+      await loadUsers()
+      setMessage("User created successfully!")
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Failed to create user.")
+    } finally {
+      setCreatingUser(false)
+    }
   }
 
   // ── Submission review ────────────────────────────────────────────────────────
@@ -944,10 +964,38 @@ export default function AdminDashboardPage() {
       {/* ── User Table ──────────────────────────────────────────────────────── */}
       <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
         <CardHeader>
-          <CardTitle className="text-2xl">User Table</CardTitle>
-          <CardDescription>All registered users with role and XP.</CardDescription>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <CardTitle className="text-2xl">User Table</CardTitle>
+              <CardDescription>All registered users with role and XP.</CardDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowNewUserForm(!showNewUserForm)} className="gap-2">
+              <FilePlus2 className="size-4" />{showNewUserForm ? "Cancel" : "New User"}
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {showNewUserForm && (
+            <div className="rounded-2xl border border-border bg-muted/20 p-6 space-y-4">
+              <h4 className="font-semibold">Create New User</h4>
+              <form className="space-y-4" onSubmit={(e) => void createUser(e)}>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Name</label>
+                    <Input required value={newUserForm.name} onChange={(e) => setNewUserForm((c) => ({ ...c, name: e.target.value }))} placeholder="e.g. John Doe" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">USN (Username & Password)</label>
+                    <Input required value={newUserForm.usn} onChange={(e) => setNewUserForm((c) => ({ ...c, usn: e.target.value }))} placeholder="e.g. S123456" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={() => setShowNewUserForm(false)}>Cancel</Button>
+                  <Button type="submit" disabled={creatingUser}>{creatingUser ? "Creating…" : "Create User"}</Button>
+                </div>
+              </form>
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
