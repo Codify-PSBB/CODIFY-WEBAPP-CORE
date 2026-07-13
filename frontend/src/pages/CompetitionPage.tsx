@@ -78,8 +78,7 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
     return initial
   })
 
-  const [isRunningTests, setIsRunningTests] = useState(false)
-  const [testResultsMap, setTestResultsMap] = useState<Record<number, { passed: boolean; expected: string; got: string }[]>>({})
+  const [isRunning, setIsRunning] = useState(false)
   const [consoleLog, setConsoleLog] = useState<string[]>([])
   const [pyodideReady, setPyodideReady] = useState(false)
 
@@ -123,42 +122,35 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
     return () => { active = false }
   }, [])
 
-  async function runTests() {
-    if (!selectedProblem || publicTestCases.length === 0) {
-      log("No public test cases for this problem.")
-      return
-    }
-    setIsRunningTests(true)
+  async function runCode() {
+    if (!selectedProblem) return
+    setIsRunning(true)
     const currentCode = codeMap[selectedProblem.id] ?? ""
-    const results: { passed: boolean; expected: string; got: string }[] = []
 
     try {
       const runtime = await loadPyodideRuntime()
-      for (let i = 0; i < publicTestCases.length; i++) {
-        const tc = publicTestCases[i]
-        const lines: string[] = []
-        runtime.setStdout({ batched: (t: string) => lines.push(t) })
-        const inputCode = `${currentCode}\n\nimport sys\nfrom io import StringIO\nsys.stdin = StringIO(${JSON.stringify(tc.input)})\n`
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rt = runtime as any
-        const ns = rt.globals.get("dict")()
-        try {
-          await rt.runPythonAsync(inputCode, { globals: ns })
-        } finally {
-          ns.destroy()
+      const lines: string[] = []
+      runtime.setStdout({ batched: (t: string) => lines.push(t) })
+      runtime.setStderr({ batched: (t: string) => lines.push(`ERROR: ${t}`) })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rt = runtime as any
+      const ns = rt.globals.get("dict")()
+      try {
+        const result = await rt.runPythonAsync(currentCode, { globals: ns })
+        if (result !== undefined && result !== null) {
+          lines.push(String(result))
         }
-        const got = lines.join("").trim()
-        const expected = tc.output.trim()
-        const passed = got === expected
-        results.push({ passed, expected, got })
-        log(`Test ${i + 1}: ${passed ? "✓ PASS" : `✗ FAIL (expected "${expected}", got "${got}")`}`)
+      } finally {
+        ns.destroy()
       }
-      setTestResultsMap((prev) => ({ ...prev, [selectedProblem.id]: results }))
-      log(results.every((r) => r.passed) ? "All tests passed!" : "Some tests failed.")
+
+      const output = lines.join("\n") || "(no output)"
+      log(`Output:\n${output}`)
     } catch (e) {
-      log(`ERROR: ${e instanceof Error ? e.message : "Test execution failed"}`)
+      log(`ERROR: ${e instanceof Error ? e.message : "Python execution failed"}`)
     } finally {
-      setIsRunningTests(false)
+      setIsRunning(false)
     }
   }
 
@@ -221,8 +213,6 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
       </div>
     )
   }
-
-  const testResults = testResultsMap[selectedProblem?.id ?? 0] ?? []
 
   return (
     <div className="flex flex-col gap-4">
@@ -313,11 +303,11 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
             )}
           </div>
 
-          {/* Test cases */}
+          {/* Example test cases — reference only */}
           {publicTestCases.length > 0 && (
             <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
               <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground font-semibold">
-                Example Test Cases
+                Examples
               </p>
               <div className="space-y-3">
                 {publicTestCases.map((tc, i) => (
@@ -326,27 +316,9 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Input {i + 1}</p>
                       <pre className="whitespace-pre-wrap break-words text-foreground">{tc.input}</pre>
                     </div>
-                    <div className={`rounded-xl border p-3 ${
-                      testResults[i] !== undefined
-                        ? testResults[i].passed
-                          ? "border-green-400/50 bg-green-50/50 dark:bg-green-900/10"
-                          : "border-red-400/50 bg-red-50/50 dark:bg-red-900/10"
-                        : "border-border bg-muted/40"
-                    }`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Output {i + 1}</p>
-                        {testResults[i] !== undefined && (
-                          testResults[i].passed
-                            ? <CheckCircle2 className="size-3.5 text-green-500" />
-                            : <XCircle className="size-3.5 text-red-500" />
-                        )}
-                      </div>
+                    <div className="rounded-xl border border-border bg-muted/40 p-3">
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Output {i + 1}</p>
                       <pre className="whitespace-pre-wrap break-words text-foreground">{tc.output}</pre>
-                      {testResults[i] && !testResults[i].passed && (
-                        <div className="mt-2 border-t border-red-300/40 pt-2 text-[11px] text-red-600 dark:text-red-400">
-                          Got: <span className="font-semibold">"{testResults[i].got}"</span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -397,23 +369,21 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
 
           {/* Action row */}
           <div className="flex items-center gap-3 flex-wrap">
-            {publicTestCases.length > 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => void runTests()}
-                disabled={isRunningTests || !selectedProblem}
-                className="gap-2"
-              >
-                {isRunningTests ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Play className="size-4" />
-                )}
-                {isRunningTests ? "Running…" : "Run Tests"}
-              </Button>
-            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => void runCode()}
+              disabled={isRunning || !selectedProblem}
+              className="gap-2"
+            >
+              {isRunning ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Play className="size-4" />
+              )}
+              {isRunning ? "Running…" : "Run"}
+            </Button>
             <Button
               type="button"
               size="lg"
