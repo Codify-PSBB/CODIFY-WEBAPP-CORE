@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import type { CompetitionProblem } from "@/types/models"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Zap, Timer, ChevronRight, Trophy } from "lucide-react"
+import { loadPyodideRuntime } from "@/lib/pyodide"
+import { Zap, Timer, ChevronRight, Trophy, Loader2, CheckCircle2 } from "lucide-react"
 
 interface Props {
   competitionId: number | null
@@ -12,6 +14,21 @@ interface Props {
 
 export default function CompetitionLobbyPage({ competitionId, problems }: Props) {
   const navigate = useNavigate()
+  const [pyodideReady, setPyodideReady] = useState(false)
+
+  // Preload Pyodide while the student is on the lobby page so it's ready by entry
+  useEffect(() => {
+    let active = true
+    void (async () => {
+      try {
+        await loadPyodideRuntime()
+        if (active) setPyodideReady(true)
+      } catch {
+        // Silent — CompetitionPage will handle errors on actual use
+      }
+    })()
+    return () => { active = false }
+  }, [])
 
   const totalXp = problems.reduce((sum, p) => sum + p.xp_reward, 0)
 
@@ -91,15 +108,30 @@ export default function CompetitionLobbyPage({ competitionId, problems }: Props)
       </div>
 
       {/* CTA */}
-      <Button
-        size="lg"
-        className="gap-2 px-10 py-6 text-lg rounded-2xl shadow-lg"
-        onClick={() => navigate("/competition/enter")}
-        disabled={problems.length === 0 || competitionId === null}
-      >
-        Enter Competition
-        <ChevronRight className="size-5" />
-      </Button>
+      <div className="flex flex-col items-center gap-3">
+        <Button
+          size="lg"
+          className="gap-2 px-10 py-6 text-lg rounded-2xl shadow-lg"
+          onClick={() => navigate("/competition/enter")}
+          disabled={problems.length === 0 || competitionId === null}
+        >
+          Enter Competition
+          <ChevronRight className="size-5" />
+        </Button>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {pyodideReady ? (
+            <>
+              <CheckCircle2 className="size-3.5 text-green-500" />
+              <span>Python runtime ready</span>
+            </>
+          ) : (
+            <>
+              <Loader2 className="size-3.5 animate-spin" />
+              <span>Loading Python runtime in background…</span>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

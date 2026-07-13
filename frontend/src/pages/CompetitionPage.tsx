@@ -9,7 +9,7 @@ import { apiRequest } from "@/lib/api"
 import type { CompetitionProblem } from "@/types/models"
 import {
   CheckCircle2, ChevronRight, Clock, Play,
-  Send, XCircle, Zap, AlertTriangle
+  Send, XCircle, Zap, AlertTriangle, Loader2,
 } from "lucide-react"
 import { loadPyodideRuntime } from "@/lib/pyodide"
 
@@ -81,6 +81,7 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
   const [isRunningTests, setIsRunningTests] = useState(false)
   const [testResultsMap, setTestResultsMap] = useState<Record<number, { passed: boolean; expected: string; got: string }[]>>({})
   const [consoleLog, setConsoleLog] = useState<string[]>([])
+  const [pyodideReady, setPyodideReady] = useState(false)
 
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -107,14 +108,19 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
 
   // Preload Pyodide
   useEffect(() => {
+    let active = true
     void (async () => {
       try {
         await loadPyodideRuntime()
-        log("Python runtime ready.")
+        if (active) {
+          setPyodideReady(true)
+          log("Python runtime ready.")
+        }
       } catch (e) {
-        log(`WARNING: Failed to preload Python runtime: ${e instanceof Error ? e.message : String(e)}`)
+        if (active) log(`WARNING: Failed to preload Python runtime: ${e instanceof Error ? e.message : String(e)}`)
       }
     })()
+    return () => { active = false }
   }, [])
 
   async function runTests() {
@@ -240,6 +246,15 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
               {selectedProblem.xp_reward} XP
             </Badge>
           )}
+          {/* Pyodide runtime status */}
+          <Badge variant="outline" className={`gap-1.5 rounded-full px-3 py-1 ${pyodideReady ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+            {pyodideReady ? (
+              <CheckCircle2 className="size-3" />
+            ) : (
+              <Loader2 className="size-3 animate-spin" />
+            )}
+            {pyodideReady ? "Python ready" : "Loading Python…"}
+          </Badge>
         </div>
       </div>
 
@@ -391,7 +406,11 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
                 disabled={isRunningTests || !selectedProblem}
                 className="gap-2"
               >
-                <Play className="size-4" />
+                {isRunningTests ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Play className="size-4" />
+                )}
                 {isRunningTests ? "Running…" : "Run Tests"}
               </Button>
             )}

@@ -10,6 +10,15 @@ import { loader } from "@monaco-editor/react";
 // Since this app is hosted on Cloudflare, cdnjs is significantly faster and more reliable.
 loader.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
 
+// Register service worker for Pyodide asset caching (survives page refreshes)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Silent fail — SW is a progressive enhancement, not critical
+    });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
