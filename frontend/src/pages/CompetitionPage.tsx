@@ -36,6 +36,13 @@ function formatTime(seconds: number): string {
 
 const STORAGE_KEY = "codify_competition_start"
 
+/** Per-problem code persistence — survives reloads, tab closes, and in-app navigation. */
+function codeStorageKey(competitionId: number | null, problemId: number): string {
+  return `codify_code_${competitionId ?? "none"}_${problemId}`
+}
+
+const DEFAULT_CODE = "# Write your Python solution here\n\n"
+
 export default function CompetitionPage({ competitionId, problems }: Props) {
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -68,15 +75,30 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
     }
   }, [])
 
-  // Per-problem state
+  // Per-problem state — restored from localStorage on mount
   const [activeProblemId, setActiveProblemId] = useState<number>(problems[0]?.id ?? 0)
   const [codeMap, setCodeMap] = useState<Record<number, string>>(() => {
     const initial: Record<number, string> = {}
     for (const p of problems) {
-      initial[p.id] = "# Write your Python solution here\n\n"
+      const saved = localStorage.getItem(codeStorageKey(competitionId, p.id))
+      initial[p.id] = saved ?? DEFAULT_CODE
     }
     return initial
   })
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
+
+  /** Persist a single problem's code to localStorage. */
+  function saveCode(problemId: number, code: string) {
+    localStorage.setItem(codeStorageKey(competitionId, problemId), code)
+    setLastSavedAt(new Date().toLocaleTimeString())
+  }
+
+  /** Remove all saved code for this competition (called on successful submit). */
+  function clearSavedCode() {
+    for (const p of problems) {
+      localStorage.removeItem(codeStorageKey(competitionId, p.id))
+    }
+  }
 
   const [isRunning, setIsRunning] = useState(false)
   const [consoleLog, setConsoleLog] = useState<string[]>([])
@@ -185,6 +207,7 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
 
       const groupId = res.data?.submission_group_id
       sessionStorage.removeItem(STORAGE_KEY)
+      clearSavedCode()  // remove persisted drafts — they've been submitted
       if (timerRef.current !== null) window.clearInterval(timerRef.current)
       setSubmitted(true)
       setSubmitResult({
@@ -245,6 +268,12 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
             )}
             {pyodideReady ? "Python ready" : "Loading Python…"}
           </Badge>
+          {/* Auto-save indicator */}
+          {lastSavedAt && (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              Saved {lastSavedAt}
+            </span>
+          )}
         </div>
       </div>
 
@@ -348,7 +377,11 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
               theme={getEditorThemeName(theme)}
               beforeMount={defineEditorThemes}
               value={codeMap[activeProblemId] ?? "# Write your Python solution here\n\n"}
-              onChange={(v) => setCodeMap((prev) => ({ ...prev, [activeProblemId]: v ?? "" }))}
+              onChange={(v) => {
+                const newValue = v ?? ""
+                setCodeMap((prev) => ({ ...prev, [activeProblemId]: newValue }))
+                saveCode(activeProblemId, newValue)
+              }}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
