@@ -1,40 +1,25 @@
-# Student Account Management Instructions
+# Scripts
 
-This directory contains the utility script `create-users.mjs` to batch-create and import student accounts into your Cloudflare D1 database.
+## sync-frontend-dist.mjs
 
-## Instructions
+Copies `frontend/dist/` → root `dist/` so the Cloudflare Worker can serve the built frontend assets.
 
-### 1. Populate the User List
-Create or edit `scripts/users.json` with the student accounts. Format:
-```json
-[
-  {
-    "name": "Jane Doe",
-    "eduId": "S12345",
-    "grade": 9,
-    "password": "changeme123"
-  },
-  {
-    "name": "Alex Smith",
-    "eduId": "S67890",
-    "grade": 10,
-    "password": "changeme456"
-  }
-]
-```
-
-### 2. Generate the SQL script
-Run the script to hash the passwords (using the platform's standard SHA-256 + salt configuration) and generate SQL insertions:
 ```bash
-node scripts/create-users.mjs
+node scripts/sync-frontend-dist.mjs
 ```
-This generates `scripts/insert_users.sql`.
 
-### 3. Deploy/Import to Production
-Run the generated SQL against your remote Cloudflare D1 database:
+## verify-admin-security.js
+
+Verifies that the admin email list in `worker/src/lib/schoolRules.ts` matches the expected 4 admin accounts.
+
 ```bash
-npx wrangler d1 execute coding-club-db --remote --file=scripts/insert_users.sql
+node scripts/verify-admin-security.js
 ```
 
-## Security Note
-Both `users.json` and `insert_users.sql` are listed in `.gitignore` to prevent raw credentials or password hashes from being committed to repository history.
+## User Account Creation
+
+User accounts are created through the **admin panel** (`/api/admin/users/create`).
+
+- Password is set to the student's uppercase USN (e.g. `S150008`).
+- Passwords are hashed with PBKDF2 (100k iterations, SHA-256) in the Worker.
+- There is no bulk-import script — add users one-by-one via the admin UI.
