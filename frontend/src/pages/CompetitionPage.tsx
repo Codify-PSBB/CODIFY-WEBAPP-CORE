@@ -305,10 +305,10 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
       </div>
 
       {/* ── Main layout ── */}
-      <div className="grid gap-5 xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="grid gap-5 lg:grid-cols-[1fr_1fr] 2xl:grid-cols-[1.05fr_0.95fr]">
 
         {/* LEFT: Problem statement + test cases */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0">
           <div className="rounded-2xl border border-border bg-card p-6 flex-1">
             {selectedProblem ? (
               <div className="space-y-4">
@@ -357,9 +357,9 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
         </div>
 
         {/* RIGHT: Editor + Submit */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-w-0">
           {/* Monaco editor */}
-          <div className="rounded-2xl border border-border overflow-hidden flex-1">
+          <div className="rounded-2xl border border-border overflow-hidden flex-1 min-w-0">
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1.5">
