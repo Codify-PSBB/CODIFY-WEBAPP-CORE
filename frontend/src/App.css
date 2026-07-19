@@ -2576,14 +2576,14 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
 .theme-sunset body::after {
   content: "";
   position: fixed;
-  bottom: -120px; left: 50%; width: 500px; height: 500px;
-  margin-left: -250px;
-  background: radial-gradient(circle, rgba(251, 146, 60, 0.9) 0%, rgba(239, 68, 68, 0.6) 30%, transparent 70%);
+  bottom: -220px; left: 50%; width: 380px; height: 380px;
+  margin-left: -190px;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.4) 0%, rgba(239, 68, 68, 0.18) 40%, transparent 70%);
   animation: sunset-glow 8s ease-in-out infinite;
   pointer-events: none;
   z-index: 0;
   border-radius: 50%;
-  filter: blur(2px);
+  filter: blur(18px);
 }
 /* Twinkling stars at top using box-shadow dot cluster */
 .theme-sunset body::before {
