@@ -460,3 +460,112 @@ export const adminProblemsDeleteHandler: RouteHandler = async (ctx) => {
     );
   }
 };
+export const adminProblemsUpdateHandler: RouteHandler = async (ctx) => {
+  let body: CreateProblemRequestBody & ProblemActionRequestBody;
+
+  try {
+    body = (await ctx.request.json()) as CreateProblemRequestBody & ProblemActionRequestBody;
+  } catch {
+    return Response.json(
+      { status: "error", message: "Invalid JSON body." },
+      { status: 400 }
+    );
+  }
+
+  const problemId = parsePositiveInt(body.problem_id);
+  if (!problemId) {
+    return Response.json(
+      { status: "error", message: "`problem_id` must be a positive integer." },
+      { status: 400 }
+    );
+  }
+
+  const title = parseNonEmptyString(body.title);
+  const description = parseNonEmptyString(body.description);
+  const xpReward = parseNonNegativeInt(body.xp_reward);
+
+  if (!title || !description || xpReward === null) {
+    return Response.json(
+      {
+        status: "error",
+        message:
+          "`title` and `description` are required. `xp_reward` must be a non-negative integer."
+      },
+      { status: 400 }
+    );
+  }
+
+  const publicTestcase1Input = parseOptionalString(body.public_testcase_1_input);
+  const publicTestcase1Output = parseOptionalString(body.public_testcase_1_output);
+  const publicTestcase2Input = parseOptionalString(body.public_testcase_2_input);
+  const publicTestcase2Output = parseOptionalString(body.public_testcase_2_output);
+  const publicTestcase3Input = parseOptionalString(body.public_testcase_3_input);
+  const publicTestcase3Output = parseOptionalString(body.public_testcase_3_output);
+  const testcases = parseOptionalString(body.testcases);
+
+  try {
+    const db = createDbClient(ctx.env.DB);
+
+    const existing = await db.first<ProblemRow>(
+      "SELECT id FROM problems WHERE id = ?",
+      [problemId]
+    );
+    if (!existing) {
+      return Response.json(
+        { status: "error", message: "Problem not found." },
+        { status: 404 }
+      );
+    }
+
+    const result = await db.run(
+      `UPDATE problems SET
+        title = ?,
+        description = ?,
+        public_testcase_1_input = ?,
+        public_testcase_1_output = ?,
+        public_testcase_2_input = ?,
+        public_testcase_2_output = ?,
+        public_testcase_3_input = ?,
+        public_testcase_3_output = ?,
+        testcases = ?,
+        xp_reward = ?
+      WHERE id = ?`,
+      [
+        title, description,
+        publicTestcase1Input, publicTestcase1Output,
+        publicTestcase2Input, publicTestcase2Output,
+        publicTestcase3Input, publicTestcase3Output,
+        testcases, xpReward,
+        problemId
+      ]
+    );
+
+    if (changedRows(result) === 0) {
+      return Response.json(
+        { status: "error", message: "Problem not found." },
+        { status: 404 }
+      );
+    }
+
+    const updated = await db.first<ProblemRow>(
+      `SELECT
+        id, title, description,
+        public_testcase_1_input, public_testcase_1_output,
+        public_testcase_2_input, public_testcase_2_output,
+        public_testcase_3_input, public_testcase_3_output,
+        testcases, xp_reward, active, created_at
+      FROM problems WHERE id = ?`,
+      [problemId]
+    );
+
+    return Response.json({
+      status: "success",
+      data: { problem: updated, message: `Problem #${problemId} updated.` }
+    });
+  } catch {
+    return Response.json(
+      { status: "error", message: "Failed to update problem." },
+      { status: 500 }
+    );
+  }
+};

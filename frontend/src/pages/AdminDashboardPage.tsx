@@ -17,7 +17,7 @@ import type {
 } from "@/types/models"
 import {
   AlertTriangle, ArrowRight, CheckCircle2, ChevronDown, ChevronUp,
-  Clock, Eye, FilePlus2, Gauge, Play, PlusCircle, Radio, RefreshCcw,
+  Clock, Eye, FilePlus2, Gauge, Pencil, Play, PlusCircle, Radio, RefreshCcw,
   Trash2, Trophy, Users2, X, XCircle, Zap,
 } from "lucide-react"
 
@@ -102,6 +102,9 @@ export default function AdminDashboardPage() {
   const [showNewProblemForm, setShowNewProblemForm] = useState(false)
   const [problemActionLoading, setProblemActionLoading] = useState<{ problemId: number; action: "archive" | "delete" | "add" } | null>(null)
   const [previewProblem, setPreviewProblem] = useState<Problem | null>(null)
+  const [editingProblem, setEditingProblem] = useState<Problem | null>(null)
+  const [editForm, setEditForm] = useState<ProblemFormState>(defaultProblemForm)
+  const [savingEdit, setSavingEdit] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
   const [showNewUserForm, setShowNewUserForm] = useState(false)
   const [newUserForm, setNewUserForm] = useState({ name: "", usn: "" })
@@ -250,6 +253,57 @@ export default function AdminDashboardPage() {
       setMessage(`Problem #${problemId} deleted.`)
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to delete.") }
     finally { setProblemActionLoading(null) }
+  }
+
+  function openEditModal(p: Problem) {
+    setEditForm({
+      title: p.title,
+      description: p.description ?? "",
+      publicTestcase1Input: p.public_testcase_1_input ?? "",
+      publicTestcase1Output: p.public_testcase_1_output ?? "",
+      publicTestcase2Input: p.public_testcase_2_input ?? "",
+      publicTestcase2Output: p.public_testcase_2_output ?? "",
+      publicTestcase3Input: p.public_testcase_3_input ?? "",
+      publicTestcase3Output: p.public_testcase_3_output ?? "",
+      testcases: p.testcases ?? "",
+      xpReward: String(p.xp_reward),
+      active: p.active === 1,
+    })
+    setEditingProblem(p)
+  }
+
+  async function saveEditedProblem(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingProblem) return
+    const xpReward = Number(editForm.xpReward)
+    if (!Number.isInteger(xpReward) || xpReward < 0) { setMessage("XP reward must be a non-negative integer."); return }
+    if (!editForm.title.trim() || !editForm.description.trim()) { setMessage("Title and statement are required."); return }
+    setSavingEdit(true); setMessage("")
+    try {
+      await apiRequest("/api/admin/problems/update", {
+        method: "POST",
+        body: {
+          problem_id: editingProblem.id,
+          title: editForm.title,
+          description: editForm.description,
+          public_testcase_1_input: editForm.publicTestcase1Input,
+          public_testcase_1_output: editForm.publicTestcase1Output,
+          public_testcase_2_input: editForm.publicTestcase2Input,
+          public_testcase_2_output: editForm.publicTestcase2Output,
+          public_testcase_3_input: editForm.publicTestcase3Input,
+          public_testcase_3_output: editForm.publicTestcase3Output,
+          testcases: editForm.testcases,
+          xp_reward: xpReward,
+        },
+      })
+      setEditingProblem(null)
+      await loadAllProblems()
+      setMessage(`Problem #${editingProblem.id} updated successfully!`)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Failed to update problem.")
+    } finally {
+      setSavingEdit(false)
+    }
   }
 
   async function createUser(e: React.FormEvent) {
@@ -589,20 +643,30 @@ export default function AdminDashboardPage() {
                           </TableCell>
                           <TableCell className="shrink-0">{p.xp_reward}</TableCell>
                           <TableCell className="text-right shrink-0">
-                            {inCompetition ? (
-                              <Badge variant="secondary" className="text-xs gap-1"><CheckCircle2 className="size-3" />Added</Badge>
-                            ) : (
+                            <div className="flex items-center justify-end gap-2">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="gap-1"
-                                onClick={() => void addProblemToCompetition(p.id)}
-                                disabled={isFull || (problemActionLoading?.problemId === p.id && problemActionLoading.action === "add")}
+                                onClick={() => openEditModal(p)}
                               >
-                                <PlusCircle className="size-3.5" />
-                                {isFull ? "Full" : `Add as Q${competitionProblems.length + 1}`}
+                                <Pencil className="size-3.5" />Edit
                               </Button>
-                            )}
+                              {inCompetition ? (
+                                <Badge variant="secondary" className="text-xs gap-1"><CheckCircle2 className="size-3" />Added</Badge>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() => void addProblemToCompetition(p.id)}
+                                  disabled={isFull || (problemActionLoading?.problemId === p.id && problemActionLoading.action === "add")}
+                                >
+                                  <PlusCircle className="size-3.5" />
+                                  {isFull ? "Full" : `Add as Q${competitionProblems.length + 1}`}
+                                </Button>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       )
@@ -1074,6 +1138,99 @@ export default function AdminDashboardPage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Problem Modal ──────────────────────────────────────────────────── */}
+      {editingProblem && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setEditingProblem(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[24px] border border-border bg-background shadow-2xl p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-5">
+              <div>
+                <h2 className="text-xl font-bold">Edit Problem #{editingProblem.id}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Changes apply immediately to the problem bank.</p>
+              </div>
+              <button
+                type="button"
+                className="shrink-0 rounded-full p-1.5 hover:bg-muted transition-colors"
+                onClick={() => setEditingProblem(null)}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <form className="space-y-4" onSubmit={(e) => void saveEditedProblem(e)}>
+              <div className="grid gap-4 md:grid-cols-[1.2fr_0.4fr]">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Title</label>
+                  <Input
+                    value={editForm.title}
+                    onChange={(e) => setEditForm((c) => ({ ...c, title: e.target.value }))}
+                    placeholder="e.g. Reverse The Number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">XP Reward</label>
+                  <Input
+                    type="number" min={0}
+                    value={editForm.xpReward}
+                    onChange={(e) => setEditForm((c) => ({ ...c, xpReward: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Problem Statement</label>
+                <Textarea
+                  className="min-h-28"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((c) => ({ ...c, description: e.target.value }))}
+                  placeholder="Full problem statement..."
+                />
+              </div>
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Test Case {n} Input</label>
+                    <Textarea
+                      className="min-h-20 font-mono text-xs"
+                      value={editForm[`publicTestcase${n}Input` as keyof ProblemFormState] as string}
+                      onChange={(e) => setEditForm((c) => ({ ...c, [`publicTestcase${n}Input`]: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Test Case {n} Output</label>
+                    <Textarea
+                      className="min-h-20 font-mono text-xs"
+                      value={editForm[`publicTestcase${n}Output` as keyof ProblemFormState] as string}
+                      onChange={(e) => setEditForm((c) => ({ ...c, [`publicTestcase${n}Output`]: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              ))}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Hidden Test Cases (JSON)</label>
+                <Textarea
+                  className="min-h-20 font-mono text-xs"
+                  value={editForm.testcases}
+                  onChange={(e) => setEditForm((c) => ({ ...c, testcases: e.target.value }))}
+                  placeholder='[["input", "expected_output"], ...]'
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" onClick={() => setEditingProblem(null)}>Cancel</Button>
+                <Button type="submit" className="gap-2" disabled={savingEdit}>
+                  <Pencil className="size-3.5" />
+                  {savingEdit ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -2,7 +2,8 @@ import {
   adminProblemsArchiveHandler,
   adminProblemsDeleteHandler,
   adminProblemsGetHandler,
-  adminProblemsPostHandler
+  adminProblemsPostHandler,
+  adminProblemsUpdateHandler
 } from "./handlers/adminProblems";
 import { handleLogin, handleRegister } from "./handlers/auth";
 import { appStatusHandler } from "./handlers/appStatus";
@@ -58,6 +59,7 @@ const routes: Route[] = [
   { method: "POST", path: "/api/admin/problems", middlewares: adminOnly, handler: adminProblemsPostHandler },
   { method: "POST", path: "/api/admin/problems/archive", middlewares: adminOnly, handler: adminProblemsArchiveHandler },
   { method: "POST", path: "/api/admin/problems/delete", middlewares: adminOnly, handler: adminProblemsDeleteHandler },
+  { method: "POST", path: "/api/admin/problems/update", middlewares: adminOnly, handler: adminProblemsUpdateHandler },
 
   // ── Admin: competition lifecycle ─────────────────────────────────────────────
   { method: "GET", path: "/api/admin/competition", middlewares: adminOnly, handler: adminCompetitionGetHandler },
