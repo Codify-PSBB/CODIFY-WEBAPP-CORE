@@ -929,6 +929,31 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
   background-size: 100% 100%, auto;
   background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@keyframes brass-gear-turn {
+  to { transform: rotate(360deg); }
+}
+
+/* A quiet brass mechanism sits behind the workspace without competing with code. */
+.theme-solarized body::before {
+  content: "";
+  position: fixed;
+  top: 5rem;
+  right: -5rem;
+  width: 20rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 0 18%, rgba(226, 135, 67, 0.09) 18.5% 22%, transparent 22.5% 42%, rgba(226, 135, 67, 0.08) 42.5% 48%, transparent 48.5%),
+    repeating-conic-gradient(from 4deg, rgba(226, 135, 67, 0.1) 0 5deg, transparent 5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0 64%, transparent 65%);
+  mask-image: radial-gradient(circle, #000 0 64%, transparent 65%);
+  animation: brass-gear-turn 80s linear infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .theme-solarized h1,
@@ -1317,7 +1342,10 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
 
 .theme-paper body {
   background-color: #f4f1ea;
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  background-image:
+    linear-gradient(90deg, transparent 0 8.5%, rgba(140, 47, 47, 0.08) 8.5% calc(8.5% + 1px), transparent calc(8.5% + 1px)),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(74, 63, 59, 0.035) 31px 32px),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
   background-attachment: fixed;
 }
 
@@ -1335,6 +1363,23 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   border: 1px solid #d4cfc4 !important;
   box-shadow: 2px 2px 0px rgba(43, 37, 35, 0.1) !important;
   border-radius: 4px !important;
+  position: relative;
+}
+
+/* Printer's registration marks give paper cards a restrained editorial finish. */
+.theme-paper .card-modern::before,
+.theme-paper [class*="bg-card"]::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(140, 47, 47, 0.12);
+  background:
+    linear-gradient(#8c2f2f, #8c2f2f) left top / 12px 1px no-repeat,
+    linear-gradient(#8c2f2f, #8c2f2f) left top / 1px 12px no-repeat,
+    linear-gradient(#8c2f2f, #8c2f2f) right bottom / 12px 1px no-repeat,
+    linear-gradient(#8c2f2f, #8c2f2f) right bottom / 1px 12px no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
 }
 
 .theme-paper button,
@@ -1563,6 +1608,22 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   border: 1px solid rgba(255, 255, 255, 0.8) !important;
   box-shadow: 0 8px 32px rgba(155, 130, 227, 0.1) !important;
   border-radius: 1.5rem !important;
+  position: relative;
+  overflow: hidden;
+}
+.theme-ethereal .card-modern::before,
+.theme-ethereal [class*="bg-card"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.65) 45%, rgba(198, 181, 240, 0.22) 52%, transparent 72%);
+  transform: translateX(-115%);
+  transition: transform 900ms ease;
+  pointer-events: none;
+}
+.theme-ethereal .card-modern:hover::before,
+.theme-ethereal [class*="bg-card"]:hover::before {
+  transform: translateX(115%);
 }
 .theme-ethereal .card-modern:hover {
   transform: translateY(-5px);
@@ -1807,6 +1868,39 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
     radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 45%),
     url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54 48c-2 0-3-1-3-3 0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3v4h60v-4zM30 20c-3 0-5 2-5 5 0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5s-5 2-5 5c0 2-1 3-3 3s-3-1-3-3c0-3-2-5-5-5v30h30V20z' fill='%2310b981' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E");
   background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@keyframes forest-fireflies {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.25; }
+  35% { transform: translate3d(12px, -18px, 0); opacity: 0.7; }
+  70% { transform: translate3d(-8px, -7px, 0); opacity: 0.4; }
+}
+
+/* Sparse fireflies add life while keeping the reading plane calm. */
+.theme-forest body::before {
+  content: "";
+  position: fixed;
+  top: 18%;
+  left: 10%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #a7f3d0;
+  box-shadow:
+    16vw 9vh 0 0 rgba(167, 243, 208, 0.75),
+    34vw 31vh 0 -1px rgba(52, 211, 153, 0.8),
+    51vw 5vh 0 0 rgba(167, 243, 208, 0.6),
+    67vw 43vh 0 -1px rgba(16, 185, 129, 0.85),
+    79vw 17vh 0 0 rgba(167, 243, 208, 0.65),
+    22vw 62vh 0 -1px rgba(52, 211, 153, 0.7),
+    58vw 70vh 0 0 rgba(167, 243, 208, 0.55),
+    84vw 57vh 0 -1px rgba(16, 185, 129, 0.75);
+  filter: drop-shadow(0 0 4px rgba(52, 211, 153, 0.8));
+  animation: forest-fireflies 9s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .theme-forest h1, 
@@ -2744,3 +2838,15 @@ html.dark:not(.theme-cyberpunk):not(.theme-matrix):not(.theme-solarized) header 
   font-weight: bold;
 }
 
+/* Theme ambience is decorative; preserve each visual identity without motion. */
+@media (prefers-reduced-motion: reduce) {
+  .theme-solarized body::before,
+  .theme-forest body::before {
+    animation: none;
+  }
+
+  .theme-ethereal .card-modern::before,
+  .theme-ethereal [class*="bg-card"]::before {
+    display: none;
+  }
+}
