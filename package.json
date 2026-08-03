@@ -14,7 +14,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "verify-admin-security": "node scripts/verify-admin-security.js",
     "verify-production-integrity": "python3 scripts/verify-production-integrity.py",
-    "security-check": "npm run verify-admin-security && npm run verify-production-integrity",
+    "verify-production-assets": "node scripts/verify-production-assets.mjs",
+    "security-check": "npm run verify-admin-security && npm run verify-production-integrity && npm run verify-production-assets",
     "production-gate": "npm run typecheck && npm run build && npm run security-check"
   },
   "overrides": {

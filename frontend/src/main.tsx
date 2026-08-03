@@ -5,10 +5,9 @@ import App from "./App";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { loader } from "@monaco-editor/react";
 
-// Use Cloudflare's cdnjs instead of jsDelivr.
-// Many school/corporate networks throttle or block jsDelivr.
-// Since this app is hosted on Cloudflare, cdnjs is significantly faster and more reliable.
-loader.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+// Vite copies the lockfile version of Monaco into the production build. Keeping
+// the runtime same-origin makes it compatible with the restrictive script CSP.
+loader.config({ paths: { vs: "/monaco/vs" } });
 
 // Register service worker for Pyodide asset caching (survives page refreshes)
 if ('serviceWorker' in navigator) {
