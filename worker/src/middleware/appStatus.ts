@@ -16,7 +16,7 @@ export const requireCompetitionLiveForMembers: Middleware = async (ctx) => {
   }
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "live") {
       return Response.json(
         { status: "error", message: "No competition is currently live." },

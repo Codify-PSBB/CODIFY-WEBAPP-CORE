@@ -71,12 +71,12 @@ export const adminCreateUserHandler: RouteHandler = async (ctx) => {
       status: "success",
       message: "User created successfully."
     });
-  } catch (err: any) {
-    console.error("Failed to create user:", err);
+  } catch (error: unknown) {
+    console.error("adminCreateUserHandler error", error);
     return Response.json(
       {
         status: "error",
-        message: err.message || "Failed to create user."
+        message: "Failed to create user."
       },
       { status: 500 }
     );

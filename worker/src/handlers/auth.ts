@@ -88,7 +88,8 @@ export async function handleLogin(ctx: RequestContext) {
         },
       },
     });
-  } catch (e: any) {
-    return jsonError(e.message || "Login failed", 500);
+  } catch (error: unknown) {
+    console.error("handleLogin error", error);
+    return jsonError("Login failed.", 500);
   }
 }

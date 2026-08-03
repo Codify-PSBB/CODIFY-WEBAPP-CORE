@@ -76,9 +76,9 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
       },
     });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("adminSubmissionsHandler error", error);
     return Response.json(
-      { status: "error", message: `Failed to fetch pending submissions: ${errorMessage}` },
+      { status: "error", message: "Failed to fetch pending submissions." },
       { status: 500 }
     );
   }

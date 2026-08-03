@@ -1,4 +1,5 @@
 import { createDbClient } from "../lib/db";
+import { readJsonBody } from "../lib/request";
 import { getUserId } from "../lib/user";
 import type { RouteHandler } from "../types";
 
@@ -17,169 +18,98 @@ interface SubmissionWithProblem {
   xp_reward: number;
 }
 
-interface ReviewedSubmissionRow {
-  id: number;
-  user_id: number;
-  problem_id: number;
-  status: "pending" | "approved" | "rejected";
-  reviewed_by: number | null;
-  created_at: string;
-}
-
 function parsePositiveInt(value: unknown): number | null {
-  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
-    return value;
-  }
-
-  if (typeof value === "string" && value.trim().length > 0) {
-    const parsed = Number(value);
-    if (Number.isInteger(parsed) && parsed > 0) {
-      return parsed;
-    }
-  }
-
-  return null;
+  const parsed = typeof value === "string" ? Number(value) : value;
+  return typeof parsed === "number" && Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 function parseAction(value: unknown): ReviewAction | null {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  const normalized = value.toLowerCase();
-  if (normalized === "approve" || normalized === "reject") {
-    return normalized;
-  }
-
-  return null;
-}
-
-function changedRows(result: D1Result): number {
-  const meta = result.meta as { changes?: number } | undefined;
-  return meta?.changes ?? 0;
+  const normalized = typeof value === "string" ? value.toLowerCase() : "";
+  return normalized === "approve" || normalized === "reject" ? normalized : null;
 }
 
 export const adminReviewHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) {
-    return Response.json(
-      {
-        status: "error",
-        message: "Authentication context missing."
-      },
-      { status: 500 }
-    );
+    return Response.json({ status: "error", message: "Authentication context missing." }, { status: 500 });
   }
 
   let body: ReviewRequestBody;
   try {
-    body = (await ctx.request.json()) as ReviewRequestBody;
+    body = await readJsonBody<ReviewRequestBody>(ctx.request, 16 * 1024);
   } catch {
-    return Response.json(
-      {
-        status: "error",
-        message: "Invalid JSON body."
-      },
-      { status: 400 }
-    );
+    return Response.json({ status: "error", message: "Invalid JSON body." }, { status: 400 });
   }
 
   const submissionId = parsePositiveInt(body.submission_id);
   const action = parseAction(body.action);
-
   if (!submissionId || !action) {
     return Response.json(
-      {
-        status: "error",
-        message: "`submission_id` (positive integer) and `action` (`approve` or `reject`) are required."
-      },
+      { status: "error", message: "`submission_id` and `action` (`approve` or `reject`) are required." },
       { status: 400 }
     );
   }
 
+  const db = createDbClient(ctx.env.DB);
   try {
-    const db = createDbClient(ctx.env.DB);
     const reviewerUserId = await getUserId(ctx.env.DB, ctx.user);
-
     const submission = await db.first<SubmissionWithProblem>(
-      `SELECT
-        s.id,
-        s.status,
-        s.user_id,
-        s.problem_id,
-        p.xp_reward
-      FROM submissions s
-      INNER JOIN problems p ON p.id = s.problem_id
-      WHERE s.id = ?`,
+      `SELECT s.id, s.status, s.user_id, s.problem_id, p.xp_reward
+       FROM submissions s JOIN problems p ON p.id = s.problem_id
+       WHERE s.id = ?`,
       [submissionId]
     );
 
     if (!submission) {
-      return Response.json(
-        {
-          status: "error",
-          message: "Submission not found."
-        },
-        { status: 404 }
-      );
+      return Response.json({ status: "error", message: "Submission not found." }, { status: 404 });
     }
-
     if (submission.status !== "pending") {
-      return Response.json(
+      return Response.json({ status: "error", message: "Submission is already reviewed." }, { status: 409 });
+    }
+
+    if (action === "reject") {
+      await db.run(
+        "UPDATE submissions SET status = 'rejected', reviewed_by = ? WHERE id = ? AND status = 'pending'",
+        [reviewerUserId, submissionId]
+      );
+    } else {
+      // Every statement is one D1 transaction. The award is inserted only when
+      // this reviewer won the pending->approved transition; changes() then gates XP.
+      await db.batch([
         {
-          status: "error",
-          message: "Submission is already reviewed."
+          sql: "UPDATE submissions SET status = 'approved', reviewed_by = ? WHERE id = ? AND status = 'pending'",
+          params: [reviewerUserId, submissionId],
         },
-        { status: 409 }
-      );
-    }
-
-    const nextStatus = action === "approve" ? "approved" : "rejected";
-
-    const updateSubmissionResult = await db.run(
-      "UPDATE submissions SET status = ?, reviewed_by = ? WHERE id = ? AND status = 'pending'",
-      [nextStatus, reviewerUserId, submissionId]
-    );
-
-    if (changedRows(updateSubmissionResult) === 0) {
-      return Response.json(
         {
-          status: "error",
-          message: "Submission review could not be applied."
+          sql: `INSERT INTO xp_awards (user_id, problem_id, submission_id, xp_awarded)
+                SELECT ?, ?, ?, ?
+                FROM submissions
+                WHERE id = ? AND status = 'approved' AND reviewed_by = ?
+                ON CONFLICT(user_id, problem_id) DO NOTHING`,
+          params: [submission.user_id, submission.problem_id, submissionId, submission.xp_reward, submissionId, reviewerUserId],
         },
-        { status: 409 }
-      );
+        {
+          sql: "UPDATE users SET xp = xp + ? WHERE id = ? AND changes() = 1",
+          params: [submission.xp_reward, submission.user_id],
+        },
+      ]);
     }
 
-    if (action === "approve") {
-      const priorApproved = await db.first<{ id: number }>(
-        "SELECT id FROM submissions WHERE user_id = ? AND problem_id = ? AND status = 'approved' AND id != ? LIMIT 1",
-        [submission.user_id, submission.problem_id, submissionId]
-      );
-      
-      if (!priorApproved) {
-        await db.run("UPDATE users SET xp = xp + ? WHERE id = ?", [submission.xp_reward, submission.user_id]);
-      }
+    const reviewed = await db.first<{
+      id: number;
+      user_id: number;
+      problem_id: number;
+      status: "pending" | "approved" | "rejected";
+      reviewed_by: number | null;
+      created_at: string;
+    }>("SELECT id, user_id, problem_id, status, reviewed_by, created_at FROM submissions WHERE id = ?", [submissionId]);
+
+    const expectedStatus = action === "approve" ? "approved" : "rejected";
+    if (!reviewed || reviewed.status !== expectedStatus || reviewed.reviewed_by !== reviewerUserId) {
+      return Response.json({ status: "error", message: "Submission is already reviewed." }, { status: 409 });
     }
-
-    const reviewed = await db.first<ReviewedSubmissionRow>(
-      "SELECT id, user_id, problem_id, status, reviewed_by, created_at FROM submissions WHERE id = ?",
-      [submissionId]
-    );
-
-    return Response.json({
-      status: "success",
-      data: {
-        submission: reviewed,
-        action
-      }
-    });
-  } catch {
-    return Response.json(
-      {
-        status: "error",
-        message: "Failed to review submission."
-      },
-      { status: 500 }
-    );
+    return Response.json({ status: "success", data: { submission: reviewed, action } });
+  } catch (error) {
+    console.error("adminReviewHandler error", error);
+    return Response.json({ status: "error", message: "Failed to review submission." }, { status: 500 });
   }
 };

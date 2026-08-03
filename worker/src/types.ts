@@ -11,6 +11,7 @@ export interface Env {
   APP_STATE: KVNamespace;
   JWT_SECRET: string;
   CODIFY_SALT: string;
+  ALLOWED_ORIGINS?: string;
 }
 
 export interface RequestContext {

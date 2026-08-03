@@ -7,7 +7,7 @@ import type { RouteHandler } from "../types";
 
 export const competitionStatusHandler: RouteHandler = async (ctx) => {
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
 
     let problems: unknown[] = [];
 

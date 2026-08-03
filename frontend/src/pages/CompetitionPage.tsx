@@ -200,21 +200,21 @@ export default function CompetitionPage({ competitionId, problems }: Props) {
         method: "POST",
         body: {
           competition_id: competitionId,
-          elapsed_seconds: elapsedSeconds,
           answers,
         },
       })
 
       const groupId = res.data?.submission_group_id
+      const recordedElapsed = res.data?.elapsed_seconds ?? elapsedSeconds
       sessionStorage.removeItem(STORAGE_KEY)
       clearSavedCode()  // remove persisted drafts — they've been submitted
       if (timerRef.current !== null) window.clearInterval(timerRef.current)
       setSubmitted(true)
       setSubmitResult({
         type: "success",
-        text: `Submitted ${answers.length} answer${answers.length !== 1 ? "s" : ""} in ${formatTime(elapsedSeconds)}! Group #${groupId}. Awaiting admin review.`,
+        text: `Submitted ${answers.length} answer${answers.length !== 1 ? "s" : ""} in ${formatTime(recordedElapsed)}! Group #${groupId}. Awaiting admin review.`,
       })
-      log(`✅ Submission group #${groupId} sent — ${answers.length} answer(s) in ${formatTime(elapsedSeconds)}.`)
+      log(`✅ Submission group #${groupId} sent — ${answers.length} answer(s) in ${formatTime(recordedElapsed)} (server-recorded).`)
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submission failed."
       setSubmitResult({ type: "error", text: msg })

@@ -7,7 +7,7 @@ import type { RouteHandler } from "../types";
 
 export const appStatusHandler: RouteHandler = async (ctx) => {
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     const appStatus = phaseToLegacyStatus(state.phase);
 
     return Response.json({

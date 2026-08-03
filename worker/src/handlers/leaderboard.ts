@@ -29,7 +29,10 @@ function deriveFallbackName(email: string): string {
 }
 
 function deriveStudentId(email: string): string {
-  return (email.split("@")[0] ?? email).toLowerCase();
+  const id = (email.split("@")[0] ?? "student").toLowerCase();
+  if (id.length <= 2) return "••";
+  if (id.length <= 5) return `${id[0]}${"•".repeat(id.length - 2)}${id[id.length - 1]}`;
+  return `${id.slice(0, 2)}${"•".repeat(Math.min(6, id.length - 4))}${id.slice(-2)}`;
 }
 
 interface CachePayload {
@@ -80,9 +83,9 @@ export const leaderboardHandler: RouteHandler = async (ctx) => {
 
     return Response.json({ status: "success", data: resultData });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("leaderboardHandler error", error);
     return Response.json(
-      { status: "error", message: `Failed to fetch leaderboard: ${errorMessage}` },
+      { status: "error", message: "Failed to fetch leaderboard." },
       { status: 500 }
     );
   }

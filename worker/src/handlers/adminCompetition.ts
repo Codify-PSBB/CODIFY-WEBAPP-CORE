@@ -1,12 +1,12 @@
 import { createDbClient } from "../lib/db";
-import { readCompetitionState, writeCompetitionState } from "../lib/competition";
+import { readCompetitionState } from "../lib/competition";
 import type { RouteHandler } from "../types";
 
 // ── GET /api/admin/competition ────────────────────────────────────────────────
 // Returns current competition state + full problem list for current competition.
 export const adminCompetitionGetHandler: RouteHandler = async (ctx) => {
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     const db = createDbClient(ctx.env.DB);
 
     let competition = null;
@@ -84,7 +84,7 @@ export const adminCompetitionCreateHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "idle") {
       return Response.json(
         { status: "error", message: `Cannot create a competition while phase is '${state.phase}'. Reset first.` },
@@ -94,19 +94,16 @@ export const adminCompetitionCreateHandler: RouteHandler = async (ctx) => {
 
     const db = createDbClient(ctx.env.DB);
     const inserted = await db.first<{ id: number }>(
-      "INSERT INTO competitions (status, created_by) VALUES ('setup', ?) RETURNING id",
+      `INSERT INTO competitions (status, created_by)
+       SELECT 'setup', ?
+       WHERE NOT EXISTS (SELECT 1 FROM competitions WHERE reset_at IS NULL)
+       RETURNING id`,
       [ctx.user.email]
     );
 
     if (!inserted) {
-      return Response.json({ status: "error", message: "Failed to create competition record." }, { status: 500 });
+      return Response.json({ status: "error", message: "A competition is already active." }, { status: 409 });
     }
-
-    await writeCompetitionState(ctx.env.APP_STATE, {
-      phase: "setup",
-      competition_id: inserted.id,
-      started_at: null,
-    });
 
     return Response.json({
       status: "success",
@@ -124,7 +121,7 @@ export const adminCompetitionAddProblemHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "setup" || state.competition_id === null) {
       return Response.json(
         { status: "error", message: "Can only add problems during 'setup' phase." },
@@ -174,7 +171,7 @@ export const adminCompetitionRemoveProblemHandler: RouteHandler = async (ctx) =>
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "setup" || state.competition_id === null) {
       return Response.json(
         { status: "error", message: "Can only remove problems during 'setup' phase." },
@@ -207,7 +204,7 @@ export const adminCompetitionGoLiveHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "setup" || state.competition_id === null) {
       return Response.json(
         { status: "error", message: "Competition must be in 'setup' phase to go live." },
@@ -230,15 +227,9 @@ export const adminCompetitionGoLiveHandler: RouteHandler = async (ctx) => {
 
     const startedAt = new Date().toISOString();
     await db.run(
-      "UPDATE competitions SET status = 'live', started_at = ? WHERE id = ?",
+      "UPDATE competitions SET status = 'live', started_at = ? WHERE id = ? AND status = 'setup' AND reset_at IS NULL",
       [startedAt, state.competition_id]
     );
-
-    await writeCompetitionState(ctx.env.APP_STATE, {
-      phase: "live",
-      competition_id: state.competition_id,
-      started_at: startedAt,
-    });
 
     return Response.json({
       status: "success",
@@ -256,7 +247,7 @@ export const adminCompetitionEndHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "live" || state.competition_id === null) {
       return Response.json(
         { status: "error", message: "Competition must be 'live' to end it." },
@@ -267,15 +258,9 @@ export const adminCompetitionEndHandler: RouteHandler = async (ctx) => {
     const endedAt = new Date().toISOString();
     const db = createDbClient(ctx.env.DB);
     await db.run(
-      "UPDATE competitions SET status = 'ended', ended_at = ? WHERE id = ?",
+      "UPDATE competitions SET status = 'ended', ended_at = ? WHERE id = ? AND status = 'live' AND reset_at IS NULL",
       [endedAt, state.competition_id]
     );
-
-    await writeCompetitionState(ctx.env.APP_STATE, {
-      phase: "ended",
-      competition_id: state.competition_id,
-      started_at: state.started_at,
-    });
 
     return Response.json({
       status: "success",
@@ -293,7 +278,7 @@ export const adminCompetitionResetHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
   try {
-    const state = await readCompetitionState(ctx.env.APP_STATE);
+    const state = await readCompetitionState(ctx.env.DB);
     if (state.phase !== "ended") {
       return Response.json(
         { status: "error", message: "Can only reset after a competition has ended." },
@@ -301,11 +286,12 @@ export const adminCompetitionResetHandler: RouteHandler = async (ctx) => {
       );
     }
 
-    await writeCompetitionState(ctx.env.APP_STATE, {
-      phase: "idle",
-      competition_id: null,
-      started_at: null,
-    });
+    const db = createDbClient(ctx.env.DB);
+    const resetAt = new Date().toISOString();
+    await db.run(
+      "UPDATE competitions SET reset_at = ? WHERE id = ? AND status = 'ended' AND reset_at IS NULL",
+      [resetAt, state.competition_id]
+    );
 
     return Response.json({
       status: "success",

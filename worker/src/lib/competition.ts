@@ -1,4 +1,4 @@
-// Shared helpers for reading and writing competition state from Cloudflare KV.
+import { createDbClient } from "./db";
 
 export type CompetitionPhase = "idle" | "setup" | "live" | "ended";
 
@@ -8,7 +8,11 @@ export interface CompetitionState {
   started_at: string | null;
 }
 
-const COMPETITION_STATE_KEY = "competition_state";
+interface CompetitionRow {
+  id: number;
+  status: "setup" | "live" | "ended";
+  started_at: string | null;
+}
 
 const DEFAULT_STATE: CompetitionState = {
   phase: "idle",
@@ -16,31 +20,26 @@ const DEFAULT_STATE: CompetitionState = {
   started_at: null,
 };
 
-export async function readCompetitionState(kv: KVNamespace): Promise<CompetitionState> {
-  const raw = await kv.get(COMPETITION_STATE_KEY);
-  if (!raw) return { ...DEFAULT_STATE };
-  try {
-    const parsed = JSON.parse(raw) as Partial<CompetitionState>;
-    const phase = parsed.phase;
-    if (phase !== "idle" && phase !== "setup" && phase !== "live" && phase !== "ended") {
-      return { ...DEFAULT_STATE };
-    }
-    return {
-      phase,
-      competition_id: typeof parsed.competition_id === "number" ? parsed.competition_id : null,
-      started_at: typeof parsed.started_at === "string" ? parsed.started_at : null,
-    };
-  } catch {
-    return { ...DEFAULT_STATE };
-  }
+/** D1 is the only authority for lifecycle state. Retired rows remain as history. */
+export async function readCompetitionState(dbBinding: D1Database): Promise<CompetitionState> {
+  const db = createDbClient(dbBinding);
+  const row = await db.first<CompetitionRow>(
+    `SELECT id, status, started_at
+     FROM competitions
+     WHERE reset_at IS NULL
+     ORDER BY id DESC
+     LIMIT 1`
+  );
+
+  if (!row) return { ...DEFAULT_STATE };
+
+  return {
+    phase: row.status,
+    competition_id: row.id,
+    started_at: row.started_at,
+  };
 }
 
-export async function writeCompetitionState(kv: KVNamespace, state: CompetitionState): Promise<void> {
-  await kv.put(COMPETITION_STATE_KEY, JSON.stringify(state));
-}
-
-// Legacy bridge: converts new phase to old "ON"/"OFF" so existing /api/status endpoint
-// still works for any clients that haven't updated yet.
 export function phaseToLegacyStatus(phase: CompetitionPhase): "ON" | "OFF" {
   return phase === "live" ? "ON" : "OFF";
 }

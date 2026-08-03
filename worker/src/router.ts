@@ -93,13 +93,7 @@ export async function handleApiRequest(request: Request, env: Env): Promise<Resp
   const url = new URL(request.url);
 
   if (url.pathname === "/api" || url.pathname === "/api/") {
-    return Response.json({
-      status: "success",
-      data: {
-        message: "API router ready.",
-        routes: routes.map((route) => ({ method: route.method, path: route.path }))
-      }
-    });
+    return notFoundHandler();
   }
 
   const pathMatches = routes.filter((route) => route.path === url.pathname);

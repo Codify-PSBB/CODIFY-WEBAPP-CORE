@@ -1,7 +1,11 @@
+import { readCompetitionState } from "../lib/competition";
 import { createDbClient } from "../lib/db";
 import type { RouteHandler } from "../types";
 
-const APP_STATUS_KEY = "app_status";
+const MAX_TITLE_CHARS = 160;
+const MAX_DESCRIPTION_CHARS = 20_000;
+const MAX_PUBLIC_TESTCASE_CHARS = 10_000;
+const MAX_PRIVATE_TESTCASES_CHARS = 100_000;
 
 interface ProblemRow {
   id: number;
@@ -49,6 +53,27 @@ function parseNonEmptyString(value: unknown): string | null {
 
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function exceedsLimit(value: string | null, maxChars: number): boolean {
+  return value !== null && value.length > maxChars;
+}
+
+function validateProblemSizes(fields: {
+  title: string;
+  description: string;
+  publicTestcases: Array<string | null>;
+  testcases: string | null;
+}): string | null {
+  if (fields.title.length > MAX_TITLE_CHARS) return `Title cannot exceed ${MAX_TITLE_CHARS} characters.`;
+  if (fields.description.length > MAX_DESCRIPTION_CHARS) return `Description cannot exceed ${MAX_DESCRIPTION_CHARS} characters.`;
+  if (fields.publicTestcases.some((value) => exceedsLimit(value, MAX_PUBLIC_TESTCASE_CHARS))) {
+    return `Each public testcase input/output cannot exceed ${MAX_PUBLIC_TESTCASE_CHARS} characters.`;
+  }
+  if (exceedsLimit(fields.testcases, MAX_PRIVATE_TESTCASES_CHARS)) {
+    return `Private testcases cannot exceed ${MAX_PRIVATE_TESTCASES_CHARS} characters.`;
+  }
+  return null;
 }
 
 function parseOptionalString(value: unknown): string | null {
@@ -209,6 +234,19 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
   const publicTestcase3Input = parseOptionalString(body.public_testcase_3_input);
   const publicTestcase3Output = parseOptionalString(body.public_testcase_3_output);
   const testcases = parseOptionalString(body.testcases);
+  const sizeError = validateProblemSizes({
+    title,
+    description,
+    publicTestcases: [
+      publicTestcase1Input, publicTestcase1Output,
+      publicTestcase2Input, publicTestcase2Output,
+      publicTestcase3Input, publicTestcase3Output,
+    ],
+    testcases,
+  });
+  if (sizeError) {
+    return Response.json({ status: "error", message: sizeError }, { status: 413 });
+  }
 
   try {
     const db = createDbClient(ctx.env.DB);
@@ -294,13 +332,10 @@ export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
   }
 
   try {
-    const currentStatus = (await ctx.env.APP_STATE.get(APP_STATUS_KEY))?.trim().toUpperCase() ?? "ON";
-    if (currentStatus === "ON") {
+    const state = await readCompetitionState(ctx.env.DB);
+    if (state.phase === "live") {
       return Response.json(
-        {
-          status: "error",
-          message: "Competition is ON. Turn it OFF before archiving a problem."
-        },
+        { status: "error", message: "End the live competition before archiving a problem." },
         { status: 409 }
       );
     }
@@ -502,6 +537,19 @@ export const adminProblemsUpdateHandler: RouteHandler = async (ctx) => {
   const publicTestcase3Input = parseOptionalString(body.public_testcase_3_input);
   const publicTestcase3Output = parseOptionalString(body.public_testcase_3_output);
   const testcases = parseOptionalString(body.testcases);
+  const sizeError = validateProblemSizes({
+    title,
+    description,
+    publicTestcases: [
+      publicTestcase1Input, publicTestcase1Output,
+      publicTestcase2Input, publicTestcase2Output,
+      publicTestcase3Input, publicTestcase3Output,
+    ],
+    testcases,
+  });
+  if (sizeError) {
+    return Response.json({ status: "error", message: sizeError }, { status: 413 });
+  }
 
   try {
     const db = createDbClient(ctx.env.DB);
