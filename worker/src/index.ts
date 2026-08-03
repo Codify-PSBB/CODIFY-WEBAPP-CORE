@@ -15,7 +15,8 @@ function configuredOrigins(env: Env): Set<string> {
 }
 
 function isAllowedOrigin(origin: string, env: Env): boolean {
-  return LOCAL_ORIGIN.test(origin) || configuredOrigins(env).has(origin);
+  const allowLocalDevelopment = env.ALLOW_LOCALHOST_ORIGINS === "true";
+  return (allowLocalDevelopment && LOCAL_ORIGIN.test(origin)) || configuredOrigins(env).has(origin);
 }
 
 function buildCorsHeaders(request: Request, env: Env): Headers {

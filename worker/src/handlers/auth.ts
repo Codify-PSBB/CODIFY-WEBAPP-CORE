@@ -1,6 +1,7 @@
 import { createDbClient } from "../lib/db";
 import { hashPassword } from "../lib/hash";
 import { signJwt } from "../lib/jwt";
+import { readJsonBody, RequestBodyTooLargeError } from "../lib/request";
 import { isAdminEmail, normalizeEmail } from "../lib/schoolRules";
 import type { RequestContext } from "../types";
 
@@ -17,12 +18,23 @@ export async function handleRegister(ctx: RequestContext) {
 }
 
 export async function handleLogin(ctx: RequestContext) {
-  try {
-    const body = (await ctx.request.json()) as any;
-    const { eduId, password } = body;
+  const MAX_LOGIN_BODY_BYTES = 4 * 1024;
+  const MAX_EDU_ID_CHARS = 128;
+  const MAX_PASSWORD_CHARS = 256;
 
-    if (!eduId || !password || typeof eduId !== "string" || typeof password !== "string") {
-      return jsonError("Missing or invalid required fields (eduId, password).");
+  try {
+    const body = await readJsonBody<unknown>(ctx.request, MAX_LOGIN_BODY_BYTES);
+    if (typeof body !== "object" || body === null || Array.isArray(body)) {
+      return jsonError("Invalid EDU ID or password.");
+    }
+    const { eduId, password } = body as Record<string, unknown>;
+
+    if (
+      typeof eduId !== "string" || typeof password !== "string" ||
+      eduId.trim().length === 0 || password.length === 0 ||
+      eduId.length > MAX_EDU_ID_CHARS || password.length > MAX_PASSWORD_CHARS
+    ) {
+      return jsonError("Invalid EDU ID or password.");
     }
 
     // Accept either "s150008" or "s150008@psbbschools.edu.in"
@@ -89,6 +101,12 @@ export async function handleLogin(ctx: RequestContext) {
       },
     });
   } catch (error: unknown) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return jsonError("Login request is too large.", 413);
+    }
+    if (error instanceof SyntaxError) {
+      return jsonError("Invalid EDU ID or password.");
+    }
     console.error("handleLogin error", error);
     return jsonError("Login failed.", 500);
   }

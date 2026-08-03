@@ -3,11 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2026-08-03"
 
 [vars]
-# Comma-separated production frontend origins. Localhost/127.0.0.1 are allowed for development.
+# Comma-separated production frontend origins. Never include localhost here.
 ALLOWED_ORIGINS = "https://codify-webapp-core.pages.dev"
-
-# Set this with: wrangler secret put CLERK_SECRET_KEY
-# (do not store real secret in this file)
+ALLOW_LOCALHOST_ORIGINS = "false"
 
 [[d1_databases]]
 binding = "DB"

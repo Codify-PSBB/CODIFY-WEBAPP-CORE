@@ -13,7 +13,9 @@
     "build": "npm run build --workspaces --if-present && node scripts/sync-frontend-dist.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "verify-admin-security": "node scripts/verify-admin-security.js",
-    "security-check": "npm run verify-admin-security"
+    "verify-production-integrity": "python3 scripts/verify-production-integrity.py",
+    "security-check": "npm run verify-admin-security && npm run verify-production-integrity",
+    "production-gate": "npm run typecheck && npm run build && npm run security-check"
   },
   "overrides": {
     "esbuild": "^0.25.0",

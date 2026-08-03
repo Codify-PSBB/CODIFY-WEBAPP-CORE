@@ -12,6 +12,7 @@ export interface Env {
   JWT_SECRET: string;
   CODIFY_SALT: string;
   ALLOWED_ORIGINS?: string;
+  ALLOW_LOCALHOST_ORIGINS?: string;
 }
 
 export interface RequestContext {

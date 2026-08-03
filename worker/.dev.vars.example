@@ -1,5 +1,5 @@
-# JWT Secret for signing session tokens
-JWT_SECRET="your_jwt_secret_here"
-
-# Clerk Secret Key for admin/user authentication
-CLERK_SECRET_KEY="your_clerk_secret_key_here"
+# Local development only. Copy to .dev.vars; never commit real values.
+JWT_SECRET="replace-with-a-long-random-development-secret"
+CODIFY_SALT="replace-with-a-random-development-salt"
+ALLOWED_ORIGINS="http://localhost:5173"
+ALLOW_LOCALHOST_ORIGINS="true"

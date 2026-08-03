@@ -124,6 +124,17 @@ function changedRows(result: D1Result): number {
   return meta?.changes ?? 0;
 }
 
+function isLiveCompetitionMutationError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes("live competition problem");
+}
+
+function liveCompetitionMutationResponse(): Response {
+  return Response.json(
+    { status: "error", message: "End the live competition before changing this problem." },
+    { status: 409 }
+  );
+}
+
 function parseActiveFlag(value: unknown): number | null {
   if (value === undefined) {
     return 1;
@@ -294,7 +305,8 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
       },
       { status: 201 }
     );
-  } catch {
+  } catch (error) {
+    if (isLiveCompetitionMutationError(error)) return liveCompetitionMutationResponse();
     return Response.json(
       {
         status: "error",
@@ -380,7 +392,8 @@ export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
         message: `Problem #${problemId} archived.`
       }
     });
-  } catch {
+  } catch (error) {
+    if (isLiveCompetitionMutationError(error)) return liveCompetitionMutationResponse();
     return Response.json(
       {
         status: "error",
@@ -485,7 +498,8 @@ export const adminProblemsDeleteHandler: RouteHandler = async (ctx) => {
         message: `Problem #${problemId} deleted.`
       }
     });
-  } catch {
+  } catch (error) {
+    if (isLiveCompetitionMutationError(error)) return liveCompetitionMutationResponse();
     return Response.json(
       {
         status: "error",
@@ -610,7 +624,8 @@ export const adminProblemsUpdateHandler: RouteHandler = async (ctx) => {
       status: "success",
       data: { problem: updated, message: `Problem #${problemId} updated.` }
     });
-  } catch {
+  } catch (error) {
+    if (isLiveCompetitionMutationError(error)) return liveCompetitionMutationResponse();
     return Response.json(
       { status: "error", message: "Failed to update problem." },
       { status: 500 }
