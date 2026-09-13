@@ -1,5 +1,5 @@
-ï»¿<p align="center">
-  <img src="logos/5.png" alt="Codify wordmark" width="320" />
+<p align="center">
+  <img src="assets/banner.jpg" alt="Codify wordmark" width="320" />
 </p>
 
 # Codify
@@ -18,7 +18,7 @@ This platform is purpose-built for a small-group, in-person event at PSBB School
 
 ## Architecture
 
-The backend is a single Cloudflare Worker. The frontend runs as a React SPA on Cloudflare Pages. Student Python code executes entirely in the browser via Pyodide (WebAssembly) â€” the backend never runs student code.
+The backend is a single Cloudflare Worker. The frontend runs as a React SPA on Cloudflare Pages. Student Python code executes entirely in the browser via Pyodide (WebAssembly) — the backend never runs student code.
 
 ```mermaid
 graph TD
@@ -48,11 +48,11 @@ CREATE UNIQUE INDEX idx_competitions_one_current
 
 ## What I built
 
-**Competition lifecycle engine** â€” four phases (`idle â†’ setup â†’ live â†’ ended â†’ idle`) enforced through D1 SQL middleware guards. Non-admin users are restricted to the leaderboard outside of `live` phase.
+**Competition lifecycle engine** — four phases (`idle ? setup ? live ? ended ? idle`) enforced through D1 SQL middleware guards. Non-admin users are restricted to the leaderboard outside of `live` phase.
 
-**Custom authentication** â€” the initial plan used Clerk for authentication. After evaluating it, I replaced it with a built-in credential system: passwords hashed as `SHA-256(password + CODIFY_SALT)`, JWTs created and verified using the Web Crypto API (`crypto.subtle`, HMAC-SHA256), and domain restriction to `@psbbschools.edu.in`. Admin access is an allowlist of four email addresses in `schoolRules.ts`.
+**Custom authentication** — the initial plan used Clerk for authentication. After evaluating it, I replaced it with a built-in credential system: passwords hashed as `SHA-256(password + CODIFY_SALT)`, JWTs created and verified using the Web Crypto API (`crypto.subtle`, HMAC-SHA256), and domain restriction to `@psbbschools.edu.in`. Admin access is an allowlist of four email addresses in `schoolRules.ts`.
 
-**Idempotent scoring under concurrent admin review** â€” when two admins approve the same submission simultaneously, XP must be awarded exactly once. This is solved with a 3-statement atomic D1 batch:
+**Idempotent scoring under concurrent admin review** — when two admins approve the same submission simultaneously, XP must be awarded exactly once. This is solved with a 3-statement atomic D1 batch:
 
 ```sql
 -- 1. Status transition succeeds only if still 'pending'
@@ -67,7 +67,7 @@ INSERT INTO xp_awards (user_id, problem_id, submission_id, xp_awarded)
 UPDATE users SET xp = xp + ? WHERE id = ? AND changes() = 1;
 ```
 
-**Browser-only Python execution** â€” Pyodide runs the student's code in a WebAssembly sandbox inside the browser tab. The backend receives only the raw source text as a string. There is no code execution server, no sandboxed container, and no subprocess.
+**Browser-only Python execution** — Pyodide runs the student's code in a WebAssembly sandbox inside the browser tab. The backend receives only the raw source text as a string. There is no code execution server, no sandboxed container, and no subprocess.
 
 ---
 
@@ -80,7 +80,7 @@ Cloudflare D1 is serverless SQLite. There are no persistent database connections
 The solution uses SQLite's native mechanisms:
 - The partial unique index above handles "one active competition at a time" at the engine level.
 - `BEFORE INSERT` triggers reject submissions if the competition is not in `live` state at insertion time, making the check atomic with the write.
-- The idempotent XP scoring batch above uses `changes()` â€” a SQLite function that returns the number of rows affected by the most recent statement in the same connection â€” to gate the final `UPDATE`.
+- The idempotent XP scoring batch above uses `changes()` — a SQLite function that returns the number of rows affected by the most recent statement in the same connection — to gate the final `UPDATE`.
 
 ### Authentication pivot mid-development
 
@@ -111,13 +111,13 @@ For production deployment, see [`docs/PRODUCTION_DEPLOYMENT.md`](./docs/PRODUCTI
 
 - This is not a public SaaS product. It is deployed for a specific school club at PSBB Schools.
 - Authentication is credential-only with a hardcoded admin allowlist. There is no admin UI for user management; accounts are created by database migration.
-- The original Clerk authentication reference remains in the README's architecture table â€” this is a documentation error. The actual implementation uses Web Crypto JWTs (see `worker/src/handlers/auth.ts`).
+- The original Clerk authentication reference remains in the README's architecture table — this is a documentation error. The actual implementation uses Web Crypto JWTs (see `worker/src/handlers/auth.ts`).
 - Multi-problem competitions are supported in the data model. The UI currently presents one active problem at a time.
 
 ---
 
 ## Verification
 
-The schema migrations are in `database/migrations/` (numbered 0001â€“0008). Each migration is a plain SQL file that can be inspected or re-run.
+The schema migrations are in `database/migrations/` (numbered 0001–0008). Each migration is a plain SQL file that can be inspected or re-run.
 
 A production integrity check script is in `scripts/verify-production-integrity.py`. It validates that the D1 database constraints, triggers, and indexes are present and match the expected schema.
