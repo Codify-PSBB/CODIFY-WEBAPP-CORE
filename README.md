@@ -1,153 +1,123 @@
----
-<p align="center">
+﻿<p align="center">
   <img src="logos/5.png" alt="Codify wordmark" width="320" />
 </p>
 
+# Codify
+
+A private competition platform for a school coding club, built on Cloudflare's serverless stack. Students solve Python problems and submit solutions for manual admin review. Admins control the competition lifecycle and award XP.
+
 ---
 
-Codify is an internal competition platform for a school coding club. It is designed for small events, fast review cycles, and a very simple student experience.
+## The problem
 
-Students solve Python problems, test ideas in a browser-based interpreter, and submit solutions for manual review. Admins check the submissions, award XP, and control when the competition is open.
+School coding competitions typically run on either borrowed external platforms (which require accounts, have irrelevant features, and are slow to configure) or ad-hoc Google Forms. Neither gives the organizer control over when the competition is open, a live leaderboard, or a browser-based Python environment students can use without installing anything.
 
-This project is intentionally lightweight. It is not a public SaaS product, and it is not built to be a feature-heavy contest platform.
+This platform is purpose-built for a small-group, in-person event at PSBB Schools, replacing spreadsheets and manual coordination with a lightweight but complete workflow.
 
-## What This Platform Does
+---
 
-- Lets students view the current competition problem
-- Lets students write and submit Python code
-- Lets students test code in the browser with Pyodide
-- Lets admins review submissions by hand
-- Tracks XP and shows a live leaderboard
-- Uses a simple ON/OFF competition state so admins can control access during events
+## Architecture
 
-## Who It Is For
+The backend is a single Cloudflare Worker. The frontend runs as a React SPA on Cloudflare Pages. Student Python code executes entirely in the browser via Pyodide (WebAssembly) — the backend never runs student code.
 
-This platform is built for:
+```mermaid
+graph TD
+    A[Student Browser] -->|HTTPS| B["Cloudflare Pages
+    React SPA"]
+    A -->|Python execution| P["Pyodide WASM
+    browser-only sandbox"]
+    B -->|fetch API| C["Cloudflare Worker
+    TypeScript router"]
+    C -->|SQL| D[("Cloudflare D1
+    SQLite")]
+    C -->|credential auth| E["Web Crypto API
+    HMAC-SHA256 JWTs"]
 
-- Students participating in school coding competitions
-- Admins supervising the event in the computer lab
-- Teachers and club leads who need a simple, reliable workflow
+    style P fill:#2d4a2d,color:#fff,stroke:#4a8c4a
+    style D fill:#1a2d4a,color:#fff,stroke:#4a7ab5
+```
 
-It is designed for a small group environment, not for open registration or public use.
+Competition lifecycle is enforced at the database layer. A partial unique index ensures at most one competition can be in an active state at a time:
 
-## How It Works
+```sql
+CREATE UNIQUE INDEX idx_competitions_one_current
+  ON competitions((1)) WHERE reset_at IS NULL;
+```
 
-1. An admin turns the competition ON.
-2. Students sign in with their school account.
-3. Students read the problem and write Python code.
-4. Students test ideas in the browser interpreter.
-5. Students submit their final code.
-6. Admins review each submission manually.
-7. Approved submissions award XP.
-8. The leaderboard updates.
-9. The admin turns the competition OFF when the session ends.
+---
 
-## Student Experience
+## What I built
 
-Students only need a few screens:
+**Competition lifecycle engine** — four phases (`idle → setup → live → ended → idle`) enforced through D1 SQL middleware guards. Non-admin users are restricted to the leaderboard outside of `live` phase.
 
-- Competition page: problem statement, code editor, submit button, submission history
-- Python interpreter: browser-only Python runtime for local testing
-- Leaderboard: ranked by XP
+**Custom authentication** — the initial plan used Clerk for authentication. After evaluating it, I replaced it with a built-in credential system: passwords hashed as `SHA-256(password + CODIFY_SALT)`, JWTs created and verified using the Web Crypto API (`crypto.subtle`, HMAC-SHA256), and domain restriction to `@psbbschools.edu.in`. Admin access is an allowlist of four email addresses in `schoolRules.ts`.
 
-The student flow is kept simple on purpose so the competition stays focused on problem solving instead of navigating the app.
+**Idempotent scoring under concurrent admin review** — when two admins approve the same submission simultaneously, XP must be awarded exactly once. This is solved with a 3-statement atomic D1 batch:
 
-## Admin Experience
+```sql
+-- 1. Status transition succeeds only if still 'pending'
+UPDATE submissions SET status='approved', reviewed_by=? WHERE id=? AND status='pending';
 
-Admins can:
+-- 2. Insert XP record only if the above succeeded (via subquery check)
+INSERT INTO xp_awards (user_id, problem_id, submission_id, xp_awarded)
+  SELECT ?, ?, ?, ? FROM submissions WHERE id=? AND status='approved' AND reviewed_by=?
+  ON CONFLICT(user_id, problem_id) DO NOTHING;
 
-- View all users
-- Review pending submissions
-- Approve or reject solutions
-- Turn the competition ON or OFF
-- Check the leaderboard
-- Monitor submission history
+-- 3. Update user XP only if a row was actually inserted above
+UPDATE users SET xp = xp + ? WHERE id = ? AND changes() = 1;
+```
 
-Admin access is based on a hardcoded allowlist of school email addresses.
+**Browser-only Python execution** — Pyodide runs the student's code in a WebAssembly sandbox inside the browser tab. The backend receives only the raw source text as a string. There is no code execution server, no sandboxed container, and no subprocess.
 
-## Architecture At A Glance
+---
 
-The application uses a small serverless stack:
+## Technical challenges
 
-- Frontend: React + Vite on Cloudflare Pages
-- Backend: Cloudflare Worker written in TypeScript
-- Database: Cloudflare D1 (SQLite)
-- App state: Cloudflare KV
-- Authentication: Clerk
-- Python execution: Pyodide in the browser only
+### Serverless SQLite concurrency without row-level locking
 
-Simple architecture is a core requirement. The backend does not run student code, and there are no extra services, containers, or microservices.
+Cloudflare D1 is serverless SQLite. There are no persistent database connections and no distributed transaction coordinator. Race conditions that would be trivially solved with `SELECT ... FOR UPDATE` in Postgres require a different approach.
 
-## Core Principles
+The solution uses SQLite's native mechanisms:
+- The partial unique index above handles "one active competition at a time" at the engine level.
+- `BEFORE INSERT` triggers reject submissions if the competition is not in `live` state at insertion time, making the check atomic with the write.
+- The idempotent XP scoring batch above uses `changes()` — a SQLite function that returns the number of rows affected by the most recent statement in the same connection — to gate the final `UPDATE`.
 
-- Simplicity first
-- Manual review instead of automated judging
-- Internal school tool, not a public platform
-- Cloudflare-only infrastructure
-- Browser-only Python execution
+### Authentication pivot mid-development
 
-## Repository Structure
+Clerk was removed after recognizing that pre-created accounts (required for a controlled school environment) are a poor fit for Clerk's self-registration model. Replacing it required implementing JWT signing from scratch using the Web Crypto API, which is available natively in the Cloudflare Worker runtime without additional dependencies.
 
-- `frontend/` React app
-- `worker/` Cloudflare Worker API
-- `database/` D1 migrations
-- `shared/` shared types and utilities
-- `docs/` project documentation
-- `logos/` brand assets used in the README and other visuals
+---
 
-## Technology Stack
+## Quick start (local development)
 
-| Layer | Tooling |
-| --- | --- |
-| Frontend | React, Vite, TailwindCSS, shadcn/ui |
-| Backend | Cloudflare Workers, TypeScript |
-| Data | Cloudflare D1 |
-| Global state | Cloudflare KV |
-| Auth | Clerk |
-| Browser Python | Pyodide |
+```bash
+# Install dependencies
+npm install
 
-## Project Goals
+# Run the frontend (Vite dev server)
+cd frontend && npm run dev
 
-The platform is meant to be:
+# Run the worker locally (Wrangler dev)
+cd worker && npx wrangler dev
+```
 
-- Easy to understand
-- Fast to run in a school lab
-- Simple to maintain
-- Safe for student use
-- Clear for admins during live competitions
+For production deployment, see [`docs/PRODUCTION_DEPLOYMENT.md`](./docs/PRODUCTION_DEPLOYMENT.md).
 
-## Security And Rules
+---
 
-A few rules shape the system:
+## Current status and limitations
 
-- Only school email addresses are allowed
-- Admins are identified by a hardcoded list of emails
-- Student code runs only in the browser
-- The backend never executes Python
-- The competition can be switched OFF so members can only see the leaderboard
+**Status: internal tool, deployed privately.**
 
-## Development Notes
+- This is not a public SaaS product. It is deployed for a specific school club at PSBB Schools.
+- Authentication is credential-only with a hardcoded admin allowlist. There is no admin UI for user management; accounts are created by database migration.
+- The original Clerk authentication reference remains in the README's architecture table — this is a documentation error. The actual implementation uses Web Crypto JWTs (see `worker/src/handlers/auth.ts`).
+- Multi-problem competitions are supported in the data model. The UI currently presents one active problem at a time.
 
-If you are working on this repo, the main idea is to keep the product small and readable. Prefer straightforward flows over clever abstractions.
+---
 
-When adding features, favor:
+## Verification
 
-- Clear screens
-- Minimal admin steps
-- Simple database changes
-- Explicit API responses
-- UI that is easy to scan during a real competition session
+The schema migrations are in `database/migrations/` (numbered 0001–0008). Each migration is a plain SQL file that can be inspected or re-run.
 
-## Deployment
-
-The app is built and deployed through Cloudflare tooling.
-
-- Frontend deployment target: Cloudflare Pages
-- API deployment target: Cloudflare Workers
-- Persistent data: D1
-- Toggle state: KV
-
-## In One Sentence
-
-Codify is a simple school competition platform that helps students solve Python problems and helps admins review and score them without extra complexity.
-
+A production integrity check script is in `scripts/verify-production-integrity.py`. It validates that the D1 database constraints, triggers, and indexes are present and match the expected schema.
