@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic SQLite checks for migration 0008 and its integrity triggers."""
+"""Deterministic SQLite checks for migration 0009 and its integrity triggers."""
 
 from pathlib import Path
 import sqlite3
@@ -35,7 +35,7 @@ def expect_integrity(conn: sqlite3.Connection, sql: str, params: tuple, fragment
 
 def test_fresh_schema() -> None:
     conn = sqlite3.connect(":memory:")
-    for number in range(1, 9):
+    for number in range(1, 10):
         apply(conn, number)
     assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
 
@@ -43,22 +43,22 @@ def test_fresh_schema() -> None:
 def test_legacy_selection() -> None:
     conn = base_through_0007()
     conn.execute("INSERT INTO competitions (id,status,created_by) VALUES (1,'ended','admin'),(2,'ended','admin')")
-    apply(conn, 8)
+    apply(conn, 9)
     assert conn.execute("SELECT COUNT(*) FROM competitions WHERE reset_at IS NULL").fetchone()[0] == 0
 
     conn = base_through_0007()
     conn.execute("INSERT INTO competitions (id,status,created_by) VALUES (1,'ended','admin'),(2,'live','admin')")
-    apply(conn, 8)
+    apply(conn, 9)
     assert conn.execute("SELECT id FROM competitions WHERE reset_at IS NULL").fetchall() == [(2,)]
 
     conn = base_through_0007()
     conn.execute("INSERT INTO competitions (id,status,created_by) VALUES (1,'setup','admin'),(2,'live','admin')")
     try:
-        apply(conn, 8)
+        apply(conn, 9)
     except sqlite3.IntegrityError:
         pass
     else:
-        raise AssertionError("migration 0008 must reject ambiguous setup/live rows")
+        raise AssertionError("migration 0009 must reject ambiguous setup/live rows")
 
 
 def test_submission_and_problem_guards() -> None:
@@ -66,7 +66,7 @@ def test_submission_and_problem_guards() -> None:
     conn.execute("INSERT INTO competitions (id,status,created_by,started_at) VALUES (1,'live','admin',CURRENT_TIMESTAMP)")
     conn.execute("INSERT INTO competition_problems (competition_id,problem_id) VALUES (1,1)")
     conn.execute("INSERT INTO submission_groups (id,user_id,competition_id) VALUES (1,1,1)")
-    apply(conn, 8)
+    apply(conn, 9)
 
     insert = "INSERT INTO submissions (user_id,problem_id,code,competition_id,submission_group_id) VALUES (?,?,?,?,?)"
     expect_integrity(conn, insert, (2, 1, "x", 1, 1), "group mismatch")
