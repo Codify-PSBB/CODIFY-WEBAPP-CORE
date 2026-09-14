@@ -52,6 +52,7 @@ export interface PendingSubmission {
   user_id: number;
   user_name: string;
   user_email: string;
+  user_grade: number | null;
   problem_id: number;
   problem_title: string;
   code: string;
@@ -67,6 +68,7 @@ export interface SubmissionGroup {
   user_id: number;
   user_name: string;
   user_email: string;
+  user_grade: number | null;
   competition_id: number;
   elapsed_seconds: number;
   submitted_at: string;
@@ -85,6 +87,7 @@ export interface AdminUser {
   email: string;
   role: "member" | "admin";
   xp: number;
+  grade: number | null;
 }
 
 // Legacy — kept for backward compat with any old references

@@ -107,8 +107,9 @@ export default function AdminDashboardPage() {
   const [savingEdit, setSavingEdit] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
   const [showNewUserForm, setShowNewUserForm] = useState(false)
-  const [newUserForm, setNewUserForm] = useState({ name: "", usn: "" })
+  const [newUserForm, setNewUserForm] = useState({ name: "", usn: "", grade: "9" })
   const [creatingUser, setCreatingUser] = useState(false)
+  const [gradeUpdating, setGradeUpdating] = useState<string | null>(null)
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
@@ -311,15 +312,38 @@ export default function AdminDashboardPage() {
     setCreatingUser(true)
     setMessage("")
     try {
-      await apiRequest("/api/admin/users/create", { method: "POST", body: newUserForm })
+      const numericGrade = Number(newUserForm.grade)
+      if (numericGrade !== 9 && numericGrade !== 10) {
+        setMessage("Grade must be 9 or 10.")
+        return
+      }
+      await apiRequest("/api/admin/users/create", {
+        method: "POST",
+        body: { name: newUserForm.name, usn: newUserForm.usn, grade: numericGrade },
+      })
       setShowNewUserForm(false)
-      setNewUserForm({ name: "", usn: "" })
+      setNewUserForm({ name: "", usn: "", grade: "9" })
       await loadUsers()
       setMessage("User created successfully!")
     } catch (err) {
       setMessage(err instanceof Error ? err.message : "Failed to create user.")
     } finally {
       setCreatingUser(false)
+    }
+  }
+
+  async function setUserGrade(email: string, grade: number) {
+    if (grade !== 9 && grade !== 10) return
+    setGradeUpdating(email)
+    setMessage("")
+    try {
+      await apiRequest("/api/admin/users/set-grade", { method: "POST", body: { email, grade } })
+      setUsers((prev) => prev.map((u) => (u.email === email ? { ...u, grade } : u)))
+      setMessage(`Grade updated to ${grade} for ${email}.`)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Failed to update grade.")
+    } finally {
+      setGradeUpdating(null)
     }
   }
 
@@ -344,7 +368,7 @@ export default function AdminDashboardPage() {
 
   // Group flat submissions by submission_group_id → one card per student
   const submissionsByGroup = useMemo(() => {
-    const map = new Map<number, { groupId: number; userId: number; userName: string; userEmail: string; elapsedSeconds: number | null; submittedAt: string; items: PendingSubmission[] }>()
+    const map = new Map<number, { groupId: number; userId: number; userName: string; userEmail: string; userGrade: number | null; elapsedSeconds: number | null; submittedAt: string; items: PendingSubmission[] }>()
     for (const s of submissions) {
       const key = s.submission_group_id ?? s.user_id
       if (!map.has(key)) {
@@ -353,6 +377,7 @@ export default function AdminDashboardPage() {
           userId: s.user_id,
           userName: s.user_name,
           userEmail: s.user_email,
+          userGrade: s.user_grade ?? null,
           elapsedSeconds: s.elapsed_seconds,
           submittedAt: s.created_at,
           items: [],
@@ -871,6 +896,9 @@ export default function AdminDashboardPage() {
                         <p className="font-semibold truncate">{group.userName}</p>
                         <p className="text-xs text-muted-foreground truncate">{group.userEmail}</p>
                       </div>
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {group.userGrade === 9 || group.userGrade === 10 ? `Grade ${group.userGrade}` : "No grade"}
+                      </Badge>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       <div className="hidden sm:flex items-center gap-1.5 font-mono text-sm font-semibold">
@@ -1031,7 +1059,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <CardTitle className="text-2xl">User Table</CardTitle>
-              <CardDescription>All registered users with role and XP.</CardDescription>
+              <CardDescription>All registered users with role, grade, and XP.</CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowNewUserForm(!showNewUserForm)} className="gap-2">
               <FilePlus2 className="size-4" />{showNewUserForm ? "Cancel" : "New User"}
@@ -1043,7 +1071,7 @@ export default function AdminDashboardPage() {
             <div className="rounded-2xl border border-border bg-muted/20 p-6 space-y-4">
               <h4 className="font-semibold">Create New User</h4>
               <form className="space-y-4" onSubmit={(e) => void createUser(e)}>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Name</label>
                     <Input required value={newUserForm.name} onChange={(e) => setNewUserForm((c) => ({ ...c, name: e.target.value }))} placeholder="e.g. John Doe" />
@@ -1051,6 +1079,18 @@ export default function AdminDashboardPage() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">USN (Username & Password)</label>
                     <Input required value={newUserForm.usn} onChange={(e) => setNewUserForm((c) => ({ ...c, usn: e.target.value }))} placeholder="e.g. S123456" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Grade</label>
+                    <select
+                      required
+                      value={newUserForm.grade}
+                      onChange={(e) => setNewUserForm((c) => ({ ...c, grade: e.target.value }))}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="9">Grade 9</option>
+                      <option value="10">Grade 10</option>
+                    </select>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -1066,18 +1106,36 @@ export default function AdminDashboardPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Grade</TableHead>
                 <TableHead className="text-right">XP</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="py-6 text-muted-foreground">No users yet.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="py-6 text-muted-foreground">No users yet.</TableCell></TableRow>
               ) : (
                 users.map((u) => (
                   <TableRow key={u.email}>
                     <TableCell className="font-medium">{u.name}</TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell><Badge variant={u.role === "admin" ? "default" : "secondary"}>{u.role}</Badge></TableCell>
+                    <TableCell>
+                      {u.role === "admin" ? (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      ) : (
+                        <select
+                          value={u.grade === 9 || u.grade === 10 ? String(u.grade) : ""}
+                          disabled={gradeUpdating === u.email}
+                          onChange={(e) => void setUserGrade(u.email, Number(e.target.value))}
+                          className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                          aria-label={`Grade for ${u.email}`}
+                        >
+                          <option value="" disabled>Select</option>
+                          <option value="9">Grade 9</option>
+                          <option value="10">Grade 10</option>
+                        </select>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right font-semibold">{u.xp}</TableCell>
                   </TableRow>
                 ))

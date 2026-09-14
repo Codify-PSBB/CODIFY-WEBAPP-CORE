@@ -88,6 +88,7 @@ export default function SubmissionQueuePage() {
         submission.problem_title,
         String(submission.id),
         String(submission.problem_id),
+        submission.user_grade ? `grade ${submission.user_grade}` : "",
       ].some((value) => value.toLowerCase().includes(normalizedQuery))
     })
   }, [query, submissions])
@@ -210,6 +211,7 @@ export default function SubmissionQueuePage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Student</TableHead>
+                <TableHead>Grade</TableHead>
                 <TableHead>Problem</TableHead>
                 <TableHead>Submitted</TableHead>
                 <TableHead className="text-right">Action</TableHead>
@@ -218,7 +220,7 @@ export default function SubmissionQueuePage() {
             <TableBody>
               {filteredSubmissions.length === 0 ? (
                 <TableRow>
-                  <TableCell className="py-8 text-muted-foreground" colSpan={5}>
+                  <TableCell className="py-8 text-muted-foreground" colSpan={6}>
                     No pending submissions match the current queue filter.
                   </TableCell>
                 </TableRow>
@@ -238,6 +240,13 @@ export default function SubmissionQueuePage() {
                         <p className="font-medium text-foreground">{submission.user_name}</p>
                         <p className="text-sm text-muted-foreground">{submission.user_email}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="rounded-full text-xs">
+                        {submission.user_grade === 9 || submission.user_grade === 10
+                          ? `Grade ${submission.user_grade}`
+                          : "No grade"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       <div>
@@ -289,6 +298,11 @@ export default function SubmissionQueuePage() {
                       <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Student</p>
                       <p className="font-semibold text-foreground">{selectedSubmission.user_name}</p>
                       <p className="text-sm text-muted-foreground">{selectedSubmission.user_email}</p>
+                      <Badge variant="outline" className="w-fit rounded-full text-xs">
+                        {selectedSubmission.user_grade === 9 || selectedSubmission.user_grade === 10
+                          ? `Grade ${selectedSubmission.user_grade}`
+                          : "No grade"}
+                      </Badge>
                     </CardContent>
                   </Card>
                   <Card className="rounded-2xl border-white/70 bg-muted/30 shadow-none dark:border-border dark:bg-muted">
