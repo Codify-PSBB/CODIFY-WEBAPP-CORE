@@ -6,7 +6,7 @@ This guide serves as the definitive reference for the **Codify Webapp** platform
 
 ## 1. System Overview & Technology Stack
 
-Codify is an internal, school-lab-based programming competition platform designed for grades 8 and 9. It is designed around the principles of **simplicity**, **manual review**, and **browser-sandbox execution**.
+Codify is an internal, school-lab-based programming competition platform designed for grades 9 and 10. It is designed around the principles of **simplicity**, **manual review**, and **browser-sandbox execution**.
 
 ```
 +-------------------------------------------------------------------------+
@@ -46,9 +46,10 @@ Tracks students and administrators. No registration is allowed; accounts are pre
 * `role` (TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('member', 'admin')))
 * `xp` (INTEGER NOT NULL DEFAULT 0 CHECK(xp >= 0))
 * `password_hash` (TEXT): Hex-encoded SHA-256 hash of `password + salt`.
-* `grade` (INTEGER): Grades 8 or 9, used for grade-specific leaderboards.
+* `grade` (INTEGER): Grades 9 or 10, used for grade-specific leaderboards.
 * `created_at` (TEXT DEFAULT CURRENT_TIMESTAMP)
 * *Index*: `idx_users_xp` ON `users(xp DESC)`
+* *Index*: `idx_users_grade` ON `users(grade)`
 
 #### `problems`
 Master table for the admin-managed question bank.

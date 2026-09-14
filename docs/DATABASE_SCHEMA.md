@@ -9,6 +9,8 @@ Canonical schema for Cloudflare D1 (SQLite).
 - email: TEXT NOT NULL UNIQUE
 - role: TEXT NOT NULL, one of `member`, `admin`
 - xp: INTEGER NOT NULL DEFAULT 0
+- password_hash: TEXT NULL (hex-encoded SHA-256 of `password + salt`)
+- grade: INTEGER NULL, one of `9`, `10` (enforced at API layer; used for grade-wise leaderboards)
 - created_at: TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ## problems

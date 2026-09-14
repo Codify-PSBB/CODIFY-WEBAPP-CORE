@@ -7,7 +7,7 @@ PROJECT NAME
 Coding Club Competition Platform
 
 PURPOSE
-This is a web application used by a school coding club to run Python programming competitions for students in grades 8 and 9.
+This is a web application used by a school coding club to run Python programming competitions for students in grades 9 and 10.
 
 Students solve coding problems and submit their solutions. Admins manually review the submissions and award XP.
 
