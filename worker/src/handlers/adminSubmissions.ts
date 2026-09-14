@@ -6,6 +6,7 @@ interface SubmissionGroupRow {
   user_id: number;
   user_name: string;
   user_email: string;
+  user_grade: number | null;
   competition_id: number;
   elapsed_seconds: number;
   submitted_at: string;
@@ -16,6 +17,7 @@ interface PendingSubmissionRow {
   user_id: number;
   user_email: string;
   user_name: string;
+  user_grade: number | null;
   problem_id: number;
   problem_title: string;
   code: string;
@@ -37,6 +39,7 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
         s.user_id,
         u.name AS user_name,
         u.email AS user_email,
+        u.grade AS user_grade,
         s.problem_id,
         p.title AS problem_title,
         s.code,
@@ -60,6 +63,7 @@ export const adminSubmissionsHandler: RouteHandler = async (ctx) => {
         sg.user_id,
         u.name AS user_name,
         u.email AS user_email,
+        u.grade AS user_grade,
         sg.competition_id,
         sg.elapsed_seconds,
         sg.created_at AS submitted_at
