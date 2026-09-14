@@ -1,6 +1,6 @@
 # Production deployment runbook
 
-> Migration `0008_competition_integrity.sql` was amended before its first production application. If `0008` has already been applied anywhere, stop and create a new forward-only migration instead of reapplying it.
+> Migration `0009_competition_integrity.sql` was amended before its first production application. If `0009` has already been applied anywhere, stop and create a new forward-only migration instead of reapplying it.
 
 Deploy in this order. Do not deploy the Worker before the database migration.
 
@@ -15,8 +15,8 @@ Deploy in this order. Do not deploy the Worker before the database migration.
    npm run production-gate
    ```
 
-4. Confirm production has at most one legacy competition in `setup` or `live`. Resolve ambiguity manually; migration `0008` deliberately aborts rather than guessing.
-5. Confirm `database/migrations/0008_competition_integrity.sql` has **not** already been recorded as applied.
+4. Confirm production has at most one legacy competition in `setup` or `live`. Resolve ambiguity manually; migration `0009` deliberately aborts rather than guessing.
+5. Confirm `database/migrations/0009_competition_integrity.sql` has **not** already been recorded as applied.
 
 ## 2. Production configuration
 
@@ -27,7 +27,7 @@ Deploy in this order. Do not deploy the Worker before the database migration.
 
 ## 3. Database first
 
-Apply all pending D1 migrations through `0008` before deploying Worker code. Then inspect the production schema:
+Apply all pending D1 migrations through `0009` before deploying Worker code. Then inspect the production schema:
 
 - `competitions.reset_at` exists.
 - `xp_awards` exists.

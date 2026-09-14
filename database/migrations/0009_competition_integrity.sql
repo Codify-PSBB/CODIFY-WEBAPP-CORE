@@ -1,4 +1,4 @@
--- 0008_competition_integrity.sql
+-- 0009_competition_integrity.sql
 -- Keeps competition lifecycle authoritative in D1 and makes XP awards idempotent.
 
 PRAGMA foreign_keys = ON;
@@ -8,12 +8,12 @@ ALTER TABLE competitions ADD COLUMN reset_at TEXT;
 
 -- This migration is intentionally edited in place before its first production
 -- application. Abort rather than guessing if legacy data has multiple active rows.
-CREATE TABLE _migration_0008_active_guard (
+CREATE TABLE _migration_0009_active_guard (
   active_count INTEGER NOT NULL CHECK (active_count <= 1)
 );
-INSERT INTO _migration_0008_active_guard (active_count)
+INSERT INTO _migration_0009_active_guard (active_count)
 SELECT COUNT(*) FROM competitions WHERE status IN ('setup', 'live');
-DROP TABLE _migration_0008_active_guard;
+DROP TABLE _migration_0009_active_guard;
 
 -- Retire all history first. Retain the sole setup/live row when one exists.
 -- Ended-only databases intentionally have no current competition.
