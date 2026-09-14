@@ -4,7 +4,7 @@ compatibility_date = "2026-08-03"
 
 [vars]
 # Comma-separated production frontend origins. Never include localhost here.
-ALLOWED_ORIGINS = "https://codify-webapp-core.pages.dev"
+ALLOWED_ORIGINS = "https://codifypsbb.pages.dev"
 ALLOW_LOCALHOST_ORIGINS = "false"
 
 [[d1_databases]]
