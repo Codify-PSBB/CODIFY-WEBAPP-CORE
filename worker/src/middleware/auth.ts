@@ -1,5 +1,6 @@
 import { verifyCustomJwt } from "../lib/jwt";
 import { isAdminEmail, isAllowedSchoolEmail, normalizeEmail } from "../lib/schoolRules";
+import { getUserGrade } from "../lib/user";
 import type { AuthenticatedUser, Middleware } from "../types";
 
 function jsonError(message: string, status = 401): Response {
@@ -39,6 +40,7 @@ export const requireAuth: Middleware = async (ctx) => {
     userId: payload.sub as string,
     email,
     role: isAdminEmail(email) ? "admin" : "member",
+    grade: await getUserGrade(ctx.env.DB, payload.sub as string),
   };
 
   return { ...ctx, user };

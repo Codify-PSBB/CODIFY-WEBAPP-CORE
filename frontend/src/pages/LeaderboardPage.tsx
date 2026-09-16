@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { apiRequest } from "@/lib/api"
+import { useCompetitionContext } from "@/lib/competitionContext"
 import type { LeaderboardEntry } from "@/types/models"
 import { RefreshCcw, Trophy, Zap } from "lucide-react"
 
@@ -153,6 +154,13 @@ export default function LeaderboardPage() {
   const [data, setData] = useState<LeaderboardResponse>({})
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+  const { phase, eligible, targetGrade } = useCompetitionContext()
+  const notEligibleNotice =
+    phase === "live" && !eligible
+      ? targetGrade === 9 || targetGrade === 10
+        ? `The current competition is for Grade ${targetGrade} students only.`
+        : "The current competition is not open to your grade."
+      : null
 
   async function loadLeaderboard() {
     setLoading(true)
@@ -185,6 +193,12 @@ export default function LeaderboardPage() {
           Refresh
         </Button>
       </div>
+
+      {notEligibleNotice && (
+        <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-center text-sm font-medium text-amber-700 dark:text-amber-400">
+          {notEligibleNotice}
+        </div>
+      )}
 
       {message && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center text-sm font-medium text-destructive">

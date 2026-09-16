@@ -4,6 +4,7 @@ export interface AuthenticatedUser {
   userId: string;
   email: string;
   role: UserRole;
+  grade: number | null;
 }
 
 export interface Env {

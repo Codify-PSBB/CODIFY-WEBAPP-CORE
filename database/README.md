@@ -8,6 +8,7 @@ Current migrations:
 - `0003` through `0007`: evolve public tests, local authentication, grades, and the multi-problem competition lifecycle.
 - `0008_users_grade_index.sql`: indexes `users(grade)` for grade-wise leaderboards (grades 9 and 10, enforced at the API layer).
 - `0009_competition_integrity.sql`: makes D1 competition state authoritative, adds idempotent XP awards, and enforces submission/live-problem integrity at commit time.
+- `0010_competitions_target_grade.sql`: adds `competitions.target_grade` (NULL = both grades, 9, or 10) for grade-targeted competitions. Values are enforced at the API layer (mirrors `users.grade` policy).
 
 Production migrations must be applied before the corresponding Worker. Follow
 [`docs/PRODUCTION_DEPLOYMENT.md`](../docs/PRODUCTION_DEPLOYMENT.md).

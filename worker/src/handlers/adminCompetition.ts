@@ -20,7 +20,8 @@ export const adminCompetitionGetHandler: RouteHandler = async (ctx) => {
         started_at: string | null;
         ended_at: string | null;
         created_at: string;
-      }>("SELECT id, status, created_by, started_at, ended_at, created_at FROM competitions WHERE id = ?", [
+        target_grade: number | null;
+      }>("SELECT id, status, created_by, started_at, ended_at, created_at, target_grade FROM competitions WHERE id = ?", [
         state.competition_id,
       ]);
 
@@ -80,6 +81,7 @@ export const adminCompetitionGetHandler: RouteHandler = async (ctx) => {
 
 // ── POST /api/admin/competition/create ────────────────────────────────────────
 // Creates a new competition in 'setup' phase. Requires current phase to be 'idle'.
+// Optional body: { target_grade?: 9 | 10 | null } — null/absent = both grades.
 export const adminCompetitionCreateHandler: RouteHandler = async (ctx) => {
   if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
 
@@ -92,13 +94,26 @@ export const adminCompetitionCreateHandler: RouteHandler = async (ctx) => {
       );
     }
 
+    const body = (await ctx.request.json().catch(() => null)) as { target_grade?: unknown } | null;
+    let targetGrade: number | null = null;
+    const rawTarget = body?.target_grade ?? null;
+    if (rawTarget !== null && rawTarget !== undefined) {
+      if (rawTarget !== 9 && rawTarget !== 10) {
+        return Response.json(
+          { status: "error", message: "`target_grade` must be 9, 10, or null (open to both grades)." },
+          { status: 400 }
+        );
+      }
+      targetGrade = rawTarget as number;
+    }
+
     const db = createDbClient(ctx.env.DB);
     const inserted = await db.first<{ id: number }>(
-      `INSERT INTO competitions (status, created_by)
-       SELECT 'setup', ?
+      `INSERT INTO competitions (status, created_by, target_grade)
+       SELECT 'setup', ?, ?
        WHERE NOT EXISTS (SELECT 1 FROM competitions WHERE reset_at IS NULL)
        RETURNING id`,
-      [ctx.user.email]
+      [ctx.user.email, targetGrade]
     );
 
     if (!inserted) {
@@ -107,11 +122,64 @@ export const adminCompetitionCreateHandler: RouteHandler = async (ctx) => {
 
     return Response.json({
       status: "success",
-      data: { competition_id: inserted.id, phase: "setup", message: "Competition created. Add problems, then go live." },
+      data: {
+        competition_id: inserted.id,
+        phase: "setup",
+        target_grade: targetGrade,
+        message: "Competition created. Add problems, then go live.",
+      },
     });
   } catch (err) {
     console.error("adminCompetitionCreateHandler error:", err);
     return Response.json({ status: "error", message: "Failed to create competition." }, { status: 500 });
+  }
+};
+
+// ── POST /api/admin/competition/set-target-grade ─────────────────────────────
+// Edits the audience while the competition is still in 'setup'. Locked once live.
+export const adminCompetitionSetTargetGradeHandler: RouteHandler = async (ctx) => {
+  if (!ctx.user) return Response.json({ status: "error", message: "No auth context." }, { status: 500 });
+
+  try {
+    const state = await readCompetitionState(ctx.env.DB);
+    if (state.phase !== "setup" || state.competition_id === null) {
+      return Response.json(
+        { status: "error", message: "Can only set the target grade during 'setup' phase." },
+        { status: 409 }
+      );
+    }
+
+    const body = (await ctx.request.json().catch(() => null)) as { target_grade?: unknown } | null;
+    let targetGrade: number | null = null;
+    const rawTarget = body?.target_grade ?? null;
+    if (rawTarget !== null && rawTarget !== undefined) {
+      if (rawTarget !== 9 && rawTarget !== 10) {
+        return Response.json(
+          { status: "error", message: "`target_grade` must be 9, 10, or null (open to both grades)." },
+          { status: 400 }
+        );
+      }
+      targetGrade = rawTarget as number;
+    }
+
+    const db = createDbClient(ctx.env.DB);
+    await db.run(
+      "UPDATE competitions SET target_grade = ? WHERE id = ? AND status = 'setup' AND reset_at IS NULL",
+      [targetGrade, state.competition_id]
+    );
+
+    return Response.json({
+      status: "success",
+      data: {
+        target_grade: targetGrade,
+        message: targetGrade !== null
+          ? `Audience set to Grade ${targetGrade} only.`
+          : "Audience set to both grades.",
+      },
+    });
+  } catch (err) {
+    console.error("adminCompetitionSetTargetGradeHandler error:", err);
+    return Response.json({ status: "error", message: "Failed to update target grade." }, { status: 500 });
   }
 };
 

@@ -16,6 +16,7 @@ import { competitionStatusHandler } from "./handlers/publicCompetition";
 import {
   adminCompetitionGetHandler,
   adminCompetitionCreateHandler,
+  adminCompetitionSetTargetGradeHandler,
   adminCompetitionAddProblemHandler,
   adminCompetitionRemoveProblemHandler,
   adminCompetitionGoLiveHandler,
@@ -65,6 +66,7 @@ const routes: Route[] = [
   // ── Admin: competition lifecycle ─────────────────────────────────────────────
   { method: "GET", path: "/api/admin/competition", middlewares: adminOnly, handler: adminCompetitionGetHandler },
   { method: "POST", path: "/api/admin/competition/create", middlewares: adminOnly, handler: adminCompetitionCreateHandler },
+  { method: "POST", path: "/api/admin/competition/set-target-grade", middlewares: adminOnly, handler: adminCompetitionSetTargetGradeHandler },
   { method: "POST", path: "/api/admin/competition/problems/add", middlewares: adminOnly, handler: adminCompetitionAddProblemHandler },
   { method: "POST", path: "/api/admin/competition/problems/remove", middlewares: adminOnly, handler: adminCompetitionRemoveProblemHandler },
   { method: "POST", path: "/api/admin/competition/go-live", middlewares: adminOnly, handler: adminCompetitionGoLiveHandler },

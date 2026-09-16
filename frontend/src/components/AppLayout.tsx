@@ -4,17 +4,16 @@ import { Button } from "@/components/ui/button";
 import { getLocalTokenPayload, clearLocalToken } from "@/lib/auth";
 import { useTheme, Theme } from "@/components/ThemeProvider";
 import { useState, useRef, useEffect } from "react";
-import type { CompetitionPhase } from "@/types/models";
+import { useCompetitionContext } from "@/lib/competitionContext";
 
 export default function AppLayout({
-  competitionPhase = "idle",
   onSignOut,
 }: {
-  competitionPhase?: CompetitionPhase;
   onSignOut?: () => void;
 }) {
   const { pathname } = useLocation();
   const { theme, setTheme } = useTheme();
+  const { phase: competitionPhase, eligible: competitionEligible } = useCompetitionContext();
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +47,7 @@ export default function AppLayout({
 
   const localUser = getLocalTokenPayload();
   const isAdmin = localUser?.role === "admin";
-  const isLive = competitionPhase === "live";
+  const isLive = competitionPhase === "live" && (isAdmin || competitionEligible);
 
   const navItems: { name: string; path: string; live?: boolean }[] = [];
 

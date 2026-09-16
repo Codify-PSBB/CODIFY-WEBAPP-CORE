@@ -72,6 +72,7 @@ Tracks instances of competitions run over time.
 * `started_at` (TEXT)
 * `ended_at` (TEXT)
 * `created_at` (TEXT DEFAULT CURRENT_TIMESTAMP)
+* `target_grade` (INTEGER): NULL = open to both grades; `9` = Grade 9 only; `10` = Grade 10 only. Enforced at the API layer.
 * *Index*: `idx_competitions_status` ON `competitions(status)`
 
 #### `competition_problems`

@@ -48,6 +48,7 @@ interface CompetitionStateResponse {
     started_at: string | null
     ended_at: string | null
     created_at: string
+    target_grade: number | null
   } | null
   competition_problems?: CompetitionProblem[]
   submission_group_count?: number
@@ -110,6 +111,8 @@ export default function AdminDashboardPage() {
   const [newUserForm, setNewUserForm] = useState({ name: "", usn: "", grade: "9" })
   const [creatingUser, setCreatingUser] = useState(false)
   const [gradeUpdating, setGradeUpdating] = useState<string | null>(null)
+  const [newCompetitionTarget, setNewCompetitionTarget] = useState("")
+  const [targetGradeSaving, setTargetGradeSaving] = useState(false)
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
@@ -157,11 +160,28 @@ export default function AdminDashboardPage() {
   async function createCompetition() {
     setActionLoading(true); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/create", { method: "POST", body: {} })
+      const targetGrade = newCompetitionTarget === "" ? null : Number(newCompetitionTarget)
+      await apiRequest("/api/admin/competition/create", { method: "POST", body: { target_grade: targetGrade } })
       await loadCompetitionState()
       setMessage("Competition created! Now add problems and go live.")
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to create.") }
     finally { setActionLoading(false) }
+  }
+
+  async function updateCompetitionTarget(value: string) {
+    if (value !== "" && value !== "9" && value !== "10") return
+    setTargetGradeSaving(true); setMessage("")
+    try {
+      const targetGrade = value === "" ? null : Number(value)
+      await apiRequest("/api/admin/competition/set-target-grade", { method: "POST", body: { target_grade: targetGrade } })
+      await loadCompetitionState()
+      setMessage(
+        targetGrade === null
+          ? "Audience set to both grades."
+          : `Audience set to Grade ${targetGrade} only.`
+      )
+    } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to update target grade.") }
+    finally { setTargetGradeSaving(false) }
   }
 
   async function goLive() {
@@ -491,6 +511,18 @@ export default function AdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="text-sm font-medium">Open to</label>
+              <select
+                value={newCompetitionTarget}
+                onChange={(e) => setNewCompetitionTarget(e.target.value)}
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">All grades (9 & 10)</option>
+                <option value="9">Grade 9 only</option>
+                <option value="10">Grade 10 only</option>
+              </select>
+            </div>
             <Button
               size="lg"
               className="gap-2 text-base px-8 py-5 rounded-2xl"
@@ -527,6 +559,23 @@ export default function AdminDashboardPage() {
                     }`}>{competitionProblems.length}</span>
                     <span className="text-sm text-muted-foreground">/ {TOTAL_SLOTS}</span>
                   </div>
+
+                  {/* Target audience selector — editable only during setup */}
+                  <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-2">
+                    <label className="text-xs font-medium text-muted-foreground">Audience</label>
+                    <select
+                      value={competition?.target_grade === 9 || competition?.target_grade === 10 ? String(competition.target_grade) : ""}
+                      disabled={targetGradeSaving}
+                      onChange={(e) => void updateCompetitionTarget(e.target.value)}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="">Both grades</option>
+                      <option value="9">Grade 9 only</option>
+                      <option value="10">Grade 10 only</option>
+                    </select>
+                    {targetGradeSaving && <span className="text-xs text-muted-foreground">Saving…</span>}
+                  </div>
+
                   <Button
                     size="lg"
                     className="gap-2 bg-green-600 hover:bg-green-700 text-white px-8 rounded-2xl"
@@ -722,6 +771,9 @@ export default function AdminDashboardPage() {
                     <CardTitle className="text-2xl text-green-800 dark:text-green-300">Competition is LIVE</CardTitle>
                     <CardDescription>
                       {competition?.started_at && `Started: ${formatTimestamp(competition.started_at)}`}
+                      {competition?.target_grade !== null && competition?.target_grade !== undefined
+                        ? ` · Open to Grade ${competition.target_grade} only`
+                        : ""}
                       {" · "}{submissionGroupCount} student{submissionGroupCount !== 1 ? "s" : ""} submitted
                     </CardDescription>
                   </div>
@@ -815,6 +867,9 @@ export default function AdminDashboardPage() {
                 <CardTitle className="text-2xl">Competition Ended</CardTitle>
                 <CardDescription>
                   {competition?.ended_at && `Ended: ${formatTimestamp(competition.ended_at)}`}
+                  {competition?.target_grade !== null && competition?.target_grade !== undefined
+                    ? ` · Was open to Grade ${competition.target_grade} only`
+                    : ""}
                   {" · "}{submissionGroupCount} student{submissionGroupCount !== 1 ? "s" : ""} submitted
                 </CardDescription>
               </div>

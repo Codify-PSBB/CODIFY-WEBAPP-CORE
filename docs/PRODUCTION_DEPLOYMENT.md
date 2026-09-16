@@ -27,9 +27,10 @@ Deploy in this order. Do not deploy the Worker before the database migration.
 
 ## 3. Database first
 
-Apply all pending D1 migrations through `0009` before deploying Worker code. Then inspect the production schema:
+Apply all pending D1 migrations through `0010` before deploying Worker code. Then inspect the production schema:
 
 - `competitions.reset_at` exists.
+- `competitions.target_grade` exists (NULL = both grades, 9, or 10).
 - `xp_awards` exists.
 - triggers `validate_competition_submission`, `protect_competition_submission_identity`, `protect_live_competition_problem_update`, and `protect_live_competition_problem_delete` exist.
 - index `idx_competitions_one_current` exists.

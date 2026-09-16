@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { apiRequest } from "@/lib/api";
 import type { CompetitionPhase, CompetitionProblem } from "@/types/models";
+import { CompetitionCtx } from "@/lib/competitionContext";
 import { clearLocalToken, getLocalTokenPayload, setLocalToken } from "./lib/auth";
 import AppLayout from "./components/AppLayout";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -20,6 +21,8 @@ interface CompetitionStatusResponse {
   phase?: CompetitionPhase;
   competition_id?: number | null;
   started_at?: string | null;
+  target_grade?: number | null;
+  eligible?: boolean;
   problems?: CompetitionProblem[];
 }
 
@@ -28,13 +31,15 @@ interface CompetitionStatusResponse {
 function MemberCompetitionGuard({
   children,
   phase,
+  eligible,
 }: {
   children: ReactElement;
   phase: CompetitionPhase;
+  eligible: boolean;
 }) {
   const payload = getLocalTokenPayload();
   const isAdmin = payload?.role === "admin";
-  if (!isAdmin && phase !== "live") {
+  if (!isAdmin && (phase !== "live" || !eligible)) {
     return <Navigate to="/leaderboard" replace />;
   }
   return children;
@@ -134,6 +139,8 @@ export default function App() {
   const [localPayload, setLocalPayload] = useState(getLocalTokenPayload());
   const [competitionPhase, setCompetitionPhase] = useState<CompetitionPhase>("idle");
   const [competitionId, setCompetitionId] = useState<number | null>(null);
+  const [competitionTargetGrade, setCompetitionTargetGrade] = useState<number | null>(null);
+  const [competitionEligible, setCompetitionEligible] = useState<boolean>(true);
   const [competitionProblems, setCompetitionProblems] = useState<CompetitionProblem[]>([]);
 
   // Sync local token state on storage changes (e.g. logout from another tab)
@@ -159,12 +166,15 @@ export default function App() {
         if (!active) return;
         setCompetitionPhase(response.data?.phase ?? "idle");
         setCompetitionId(response.data?.competition_id ?? null);
+        setCompetitionTargetGrade(response.data?.target_grade ?? null);
+        setCompetitionEligible(response.data?.eligible ?? true);
         setCompetitionProblems(
           Array.isArray(response.data?.problems) ? response.data.problems : []
         );
       } catch {
         if (!active) return;
         setCompetitionPhase("idle");
+        setCompetitionEligible(true);
       }
     };
 
@@ -193,76 +203,78 @@ export default function App() {
 
   const defaultRedirect = isAdmin
     ? "/admin"
-    : competitionPhase === "live"
+    : competitionPhase === "live" && competitionEligible
     ? "/competition"
     : "/leaderboard";
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <AppLayout competitionPhase={competitionPhase} onSignOut={handleSignOut} />
-        }
-      >
-        <Route index element={<Navigate to={defaultRedirect} replace />} />
+    <CompetitionCtx.Provider value={{ phase: competitionPhase, eligible: competitionEligible, targetGrade: competitionTargetGrade }}>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <AppLayout onSignOut={handleSignOut} />
+          }
+        >
+          <Route index element={<Navigate to={defaultRedirect} replace />} />
 
-        {/* Member: competition */}
-        <Route
-          path="competition"
-          element={
-            <MemberCompetitionGuard phase={competitionPhase}>
-              <CompetitionLobbyPage
-                competitionId={competitionId}
-                problems={competitionProblems}
-                startedAt={null}
-              />
-            </MemberCompetitionGuard>
-          }
-        />
-        <Route
-          path="competition/enter"
-          element={
-            <MemberCompetitionGuard phase={competitionPhase}>
-              <CompetitionPage
-                competitionId={competitionId}
-                problems={competitionProblems}
-              />
-            </MemberCompetitionGuard>
-          }
-        />
+          {/* Member: competition */}
+          <Route
+            path="competition"
+            element={
+              <MemberCompetitionGuard phase={competitionPhase} eligible={competitionEligible}>
+                <CompetitionLobbyPage
+                  competitionId={competitionId}
+                  problems={competitionProblems}
+                  startedAt={null}
+                />
+              </MemberCompetitionGuard>
+            }
+          />
+          <Route
+            path="competition/enter"
+            element={
+              <MemberCompetitionGuard phase={competitionPhase} eligible={competitionEligible}>
+                <CompetitionPage
+                  competitionId={competitionId}
+                  problems={competitionProblems}
+                />
+              </MemberCompetitionGuard>
+            }
+          />
 
-        <Route
-          path="interpreter"
-          element={
-            (!isAdmin && competitionPhase !== "live") ? (
-              <Navigate to="/leaderboard" replace />
-            ) : (
-              <InterpreterPage />
-            )
-          }
-        />
+          <Route
+            path="interpreter"
+            element={
+              (!isAdmin && (competitionPhase !== "live" || !competitionEligible)) ? (
+                <Navigate to="/leaderboard" replace />
+              ) : (
+                <InterpreterPage />
+              )
+            }
+          />
 
-        <Route path="leaderboard" element={<LeaderboardPage />} />
+          <Route path="leaderboard" element={<LeaderboardPage />} />
 
-        {/* Admin only */}
-        <Route
-          path="admin"
-          element={
-            <AdminRouteGuard>
-              <AdminDashboardPage />
-            </AdminRouteGuard>
-          }
-        />
-        <Route
-          path="admin/queue"
-          element={
-            <AdminRouteGuard>
-              <SubmissionQueuePage />
-            </AdminRouteGuard>
-          }
-        />
-      </Route>
-    </Routes>
+          {/* Admin only */}
+          <Route
+            path="admin"
+            element={
+              <AdminRouteGuard>
+                <AdminDashboardPage />
+              </AdminRouteGuard>
+            }
+          />
+          <Route
+            path="admin/queue"
+            element={
+              <AdminRouteGuard>
+                <SubmissionQueuePage />
+              </AdminRouteGuard>
+            }
+          />
+        </Route>
+      </Routes>
+    </CompetitionCtx.Provider>
   );
 }

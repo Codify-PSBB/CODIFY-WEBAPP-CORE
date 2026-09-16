@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Deterministic SQLite checks for migration 0009 and its integrity triggers."""
+"""Deterministic SQLite checks for migrations 0009/0010 and their guards."""
 
 from pathlib import Path
 import sqlite3
@@ -35,9 +35,15 @@ def expect_integrity(conn: sqlite3.Connection, sql: str, params: tuple, fragment
 
 def test_fresh_schema() -> None:
     conn = sqlite3.connect(":memory:")
-    for number in range(1, 10):
+    for number in range(1, 11):
         apply(conn, number)
     assert conn.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    cols = [row[1] for row in conn.execute("PRAGMA table_info(competitions)")]
+    assert "target_grade" in cols, "migration 0010 must add competitions.target_grade"
+    conn.execute(
+        "INSERT INTO competitions (status, created_by, target_grade) VALUES ('setup', 'admin', 9)"
+    )
+    assert conn.execute("SELECT target_grade FROM competitions").fetchone()[0] == 9
 
 
 def test_legacy_selection() -> None:

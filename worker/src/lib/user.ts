@@ -23,3 +23,22 @@ export async function getUserId(
 
   return row.id;
 }
+
+/**
+ * Looks up a user's grade (9, 10, or NULL when unset).
+ * Used by requireAuth so grade-based competition gating always reflects the
+ * latest DB value rather than a possibly stale JWT claim.
+ */
+export async function getUserGrade(
+  db: D1Database,
+  userId: string
+): Promise<number | null> {
+  const client = createDbClient(db);
+
+  const row = await client.first<{ grade: number | null }>(
+    "SELECT grade FROM users WHERE id = ?",
+    [userId]
+  );
+
+  return row?.grade ?? null;
+}

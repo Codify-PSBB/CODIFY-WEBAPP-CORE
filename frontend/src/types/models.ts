@@ -4,6 +4,10 @@ export interface CompetitionState {
   phase: CompetitionPhase;
   competition_id: number | null;
   started_at: string | null;
+  /** NULL = open to both grades; otherwise 9 or 10. */
+  target_grade: number | null;
+  /** False when a live competition exists but targets a different grade. */
+  eligible: boolean;
   problems: CompetitionProblem[];
 }
 
