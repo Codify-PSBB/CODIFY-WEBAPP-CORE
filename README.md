@@ -29,7 +29,7 @@ Codify was created to make coding education more practical and measurable. The p
 
 | Metric | Value |
 |---|---:|
-| Student participants | ~50–68 registered (Grades 8–9 cohort) |
+| Student participants | ~50–68 registered (Grades in 9-10 cohort) |
 | School branches served | 1 (PSBB Schools) |
 | Active club supervision | 4 student admins / club leads |
 | Typical live lab session | ~30 concurrent participants |
