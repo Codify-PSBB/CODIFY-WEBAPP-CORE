@@ -32,7 +32,7 @@ Codify was created to make coding education more practical and measurable. The p
 | Student participants | ~50–68 registered (Grades in 9-10 cohort) |
 | School branches served | 1 (PSBB Schools) |
 | Active club supervision | 4 student admins / club leads |
-| Typical live lab session | ~30 concurrent participants |
+| Typical live lab session | ~40 concurrent participants |
 | Problem bank | 10+ curated algorithmic problems |
 | Submissions recorded | Multi-problem batch submissions |
 
