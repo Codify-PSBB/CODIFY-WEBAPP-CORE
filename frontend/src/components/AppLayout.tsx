@@ -27,22 +27,14 @@ export default function AppLayout({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const themesList: { id: Theme; name: string; iconBg: string; borderCol: string }[] = [
-    { id: "light", name: "Light Minimalist", iconBg: "bg-slate-100", borderCol: "border-slate-300" },
-    { id: "nordic", name: "Nordic Frost", iconBg: "bg-blue-50", borderCol: "border-sky-300" },
-    { id: "paper", name: "Vintage Print", iconBg: "bg-[#f4f1ea]", borderCol: "border-stone-400" },
-    { id: "sakura", name: "Sakura Blossom", iconBg: "bg-rose-100", borderCol: "border-rose-300" },
-    { id: "ethereal", name: "Ethereal Dreamscape", iconBg: "bg-purple-100", borderCol: "border-purple-300" },
-    { id: "dark", name: "Carbon Space", iconBg: "bg-zinc-900", borderCol: "border-zinc-700" },
-    { id: "academia", name: "Dark Academia", iconBg: "bg-[#24211f]", borderCol: "border-red-900" },
-    { id: "forest", name: "Emerald Moss", iconBg: "bg-[#0c1a15]", borderCol: "border-emerald-700" },
-    { id: "synthwave", name: "Synthwave Outrun", iconBg: "bg-fuchsia-950", borderCol: "border-pink-500" },
-    { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500" },
-    { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500" },
-    { id: "dracula", name: "Dracula Classic", iconBg: "bg-[#282a36]", borderCol: "border-purple-400" },
-    { id: "solarized", name: "Solarized Amber", iconBg: "bg-amber-950", borderCol: "border-amber-600" },
-    { id: "ocean", name: "Ocean Depth", iconBg: "bg-cyan-950", borderCol: "border-cyan-600" },
-    { id: "sunset", name: "Crimson Sunset", iconBg: "bg-orange-950", borderCol: "border-orange-500" },
+  const themesList: { id: Theme; name: string; iconBg: string; borderCol: string; group: "Light" | "Dark" }[] = [
+    { id: "light", name: "Light Minimalist", iconBg: "bg-slate-100", borderCol: "border-slate-300", group: "Light" },
+    { id: "paper", name: "Vintage Print", iconBg: "bg-[#f4f1ea]", borderCol: "border-stone-400", group: "Light" },
+    { id: "ethereal", name: "Ethereal Dreamscape", iconBg: "bg-purple-100", borderCol: "border-purple-300", group: "Light" },
+    { id: "dark", name: "Carbon Space", iconBg: "bg-zinc-900", borderCol: "border-zinc-700", group: "Dark" },
+    { id: "cyberpunk", name: "Cyberpunk Neon", iconBg: "bg-purple-950", borderCol: "border-purple-500", group: "Dark" },
+    { id: "matrix", name: "Retro Matrix", iconBg: "bg-black", borderCol: "border-emerald-500", group: "Dark" },
+    { id: "synthwave", name: "Synthwave Outrun", iconBg: "bg-fuchsia-950", borderCol: "border-pink-500", group: "Dark" },
   ];
 
   const localUser = getLocalTokenPayload();
@@ -135,21 +127,42 @@ export default function AppLayout({
 
               {showThemeMenu && (
                 <div className="absolute right-0 mt-2.5 w-56 rounded-2xl border border-border bg-card p-2.5 shadow-lg z-50 animate-fade-in">
-                  <div className="px-2.5 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Choose Theme
+                  <div className="px-2.5 py-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Light Themes
                   </div>
-                  <div className="mt-1.5 space-y-1 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
-                    {themesList.map((t) => (
+                  <div className="space-y-0.5 mb-2">
+                    {themesList.filter(t => t.group === "Light").map((t) => (
                       <button
                         key={t.id}
                         onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl text-left hover:bg-secondary transition-colors ${
+                        className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded-xl text-left hover:bg-secondary transition-colors ${
                           theme === t.id ? "bg-secondary font-semibold" : ""
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          <span className={`h-4.5 w-4.5 rounded-full border ${t.iconBg} ${t.borderCol} shrink-0`} />
-                          <span>{t.name}</span>
+                          <span className={`h-4 w-4 rounded-full border ${t.iconBg} ${t.borderCol} shrink-0`} />
+                          <span className="text-xs font-medium">{t.name}</span>
+                        </div>
+                        {theme === t.id && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-border/60 my-1 pt-1.5 px-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Dark Themes
+                  </div>
+                  <div className="space-y-0.5">
+                    {themesList.filter(t => t.group === "Dark").map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => { setTheme(t.id); setShowThemeMenu(false); }}
+                        className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded-xl text-left hover:bg-secondary transition-colors ${
+                          theme === t.id ? "bg-secondary font-semibold" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className={`h-4 w-4 rounded-full border ${t.iconBg} ${t.borderCol} shrink-0`} />
+                          <span className="text-xs font-medium">{t.name}</span>
                         </div>
                         {theme === t.id && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                       </button>

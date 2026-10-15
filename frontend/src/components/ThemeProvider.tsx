@@ -6,7 +6,7 @@ import {
   useState,
 } from "react"
 
-export type Theme = "light" | "dark" | "cyberpunk" | "matrix" | "solarized" | "nordic" | "paper" | "synthwave" | "ethereal" | "academia" | "forest" | "sakura" | "dracula" | "ocean" | "sunset"
+export type Theme = "light" | "paper" | "ethereal" | "dark" | "cyberpunk" | "matrix" | "synthwave"
 
 interface ThemeContextValue {
   theme: Theme
@@ -23,19 +23,11 @@ function readInitialTheme(): Theme {
     if (
       storedTheme === "dark" ||
       storedTheme === "light" ||
+      storedTheme === "paper" ||
+      storedTheme === "ethereal" ||
       storedTheme === "cyberpunk" ||
       storedTheme === "matrix" ||
-      storedTheme === "solarized" ||
-      storedTheme === "nordic" ||
-      storedTheme === "paper" ||
-      storedTheme === "synthwave" ||
-      storedTheme === "ethereal" ||
-      storedTheme === "academia" ||
-      storedTheme === "forest" ||
-      storedTheme === "sakura" ||
-      storedTheme === "dracula" ||
-      storedTheme === "ocean" ||
-      storedTheme === "sunset"
+      storedTheme === "synthwave"
     ) {
       return storedTheme as Theme
     }
@@ -54,10 +46,16 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const root = document.documentElement
     // Remove all old classes
-    root.classList.remove("light", "dark", "theme-cyberpunk", "theme-matrix", "theme-solarized", "theme-nordic", "theme-paper", "theme-synthwave", "theme-ethereal", "theme-academia", "theme-forest", "theme-sakura", "theme-dracula", "theme-ocean", "theme-sunset")
+    root.classList.remove(
+      "light", "dark",
+      "theme-cyberpunk", "theme-matrix", "theme-solarized",
+      "theme-nordic", "theme-paper", "theme-synthwave",
+      "theme-ethereal", "theme-academia", "theme-forest",
+      "theme-sakura", "theme-dracula", "theme-ocean", "theme-sunset"
+    )
     
     // Add dark/light depending on theme base
-    if (theme === "light" || theme === "nordic" || theme === "paper" || theme === "ethereal" || theme === "sakura") {
+    if (theme === "light" || theme === "paper" || theme === "ethereal") {
       root.classList.add("light")
       root.style.colorScheme = "light"
       if (theme !== "light") {
