@@ -6,12 +6,14 @@ export interface CompetitionCtxValue {
   /** False when a live competition exists but targets a different grade. */
   eligible: boolean;
   targetGrade: number | null;
+  gradeMissing?: boolean;
 }
 
 export const CompetitionCtx = createContext<CompetitionCtxValue>({
   phase: "idle",
   eligible: true,
   targetGrade: null,
+  gradeMissing: false,
 });
 
 export function useCompetitionContext(): CompetitionCtxValue {

@@ -4,7 +4,6 @@ import type { Middleware } from "../types";
 /**
  * Middleware: blocks non-admin members from submitting when competition is not live
  * or is grade-targeted away from them.
- * Replaces the old "app_status" KV key check with the new competition phase check.
  */
 export const requireCompetitionLiveForMembers: Middleware = async (ctx) => {
   if (!ctx.user) {
@@ -17,14 +16,15 @@ export const requireCompetitionLiveForMembers: Middleware = async (ctx) => {
   }
 
   try {
-    const state = await readCompetitionState(ctx.env.DB);
+    const userGrade = ctx.user.grade ?? null;
+    const state = await readCompetitionState(ctx.env.DB, userGrade);
     if (state.phase !== "live") {
       return Response.json(
-        { status: "error", message: "No competition is currently live." },
+        { status: "error", message: "No competition is currently live for your grade." },
         { status: 403 }
       );
     }
-    if (!isGradeEligible(state.target_grade, ctx.user.grade ?? null)) {
+    if (!isGradeEligible(state.target_grade, userGrade)) {
       return Response.json(
         {
           status: "error",

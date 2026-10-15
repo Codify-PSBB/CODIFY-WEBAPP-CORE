@@ -10,11 +10,14 @@ export interface CompetitionState {
   target_grade: number | null;
 }
 
-interface CompetitionRow {
+export interface CompetitionRow {
   id: number;
   status: "setup" | "live" | "ended";
   started_at: string | null;
   target_grade: number | null;
+  created_by: string;
+  ended_at?: string | null;
+  created_at?: string;
 }
 
 const DEFAULT_STATE: CompetitionState = {
@@ -24,16 +27,40 @@ const DEFAULT_STATE: CompetitionState = {
   target_grade: null,
 };
 
-/** D1 is the only authority for lifecycle state. Retired rows remain as history. */
-export async function readCompetitionState(dbBinding: D1Database): Promise<CompetitionState> {
+/**
+ * Reads competition state for a specific target grade (9 or 10) or all grades.
+ * If grade is provided:
+ * 1. Checks for an active competition specifically matching that grade.
+ * 2. If none, checks for an active competition open to both grades (target_grade IS NULL).
+ * If grade is not provided:
+ * Looks for any active competition.
+ */
+export async function readCompetitionState(
+  dbBinding: D1Database,
+  memberGrade?: number | null
+): Promise<CompetitionState> {
   const db = createDbClient(dbBinding);
-  const row = await db.first<CompetitionRow>(
-    `SELECT id, status, started_at, target_grade
-     FROM competitions
-     WHERE reset_at IS NULL
-     ORDER BY id DESC
-     LIMIT 1`
-  );
+  let row: CompetitionRow | null = null;
+
+  if (memberGrade === 9 || memberGrade === 10) {
+    row = await db.first<CompetitionRow>(
+      `SELECT id, status, started_at, target_grade, created_by, ended_at, created_at
+       FROM competitions
+       WHERE reset_at IS NULL
+         AND (target_grade = ? OR target_grade IS NULL)
+       ORDER BY (CASE WHEN target_grade = ? THEN 0 ELSE 1 END), id DESC
+       LIMIT 1`,
+      [memberGrade, memberGrade]
+    );
+  } else {
+    row = await db.first<CompetitionRow>(
+      `SELECT id, status, started_at, target_grade, created_by, ended_at, created_at
+       FROM competitions
+       WHERE reset_at IS NULL
+       ORDER BY id DESC
+       LIMIT 1`
+    );
+  }
 
   if (!row) return { ...DEFAULT_STATE };
 
@@ -43,6 +70,31 @@ export async function readCompetitionState(dbBinding: D1Database): Promise<Compe
     started_at: row.started_at,
     target_grade: row.target_grade,
   };
+}
+
+export async function readCompetitionById(
+  dbBinding: D1Database,
+  competitionId: number
+): Promise<CompetitionRow | null> {
+  const db = createDbClient(dbBinding);
+  return db.first<CompetitionRow>(
+    `SELECT id, status, started_at, target_grade, created_by, ended_at, created_at
+     FROM competitions
+     WHERE id = ? AND reset_at IS NULL`,
+    [competitionId]
+  );
+}
+
+export async function readAllActiveCompetitions(
+  dbBinding: D1Database
+): Promise<CompetitionRow[]> {
+  const db = createDbClient(dbBinding);
+  return db.all<CompetitionRow>(
+    `SELECT id, status, started_at, target_grade, created_by, ended_at, created_at
+     FROM competitions
+     WHERE reset_at IS NULL
+     ORDER BY (CASE WHEN target_grade IS NULL THEN 0 ELSE target_grade END) ASC, id DESC`
+  );
 }
 
 /**

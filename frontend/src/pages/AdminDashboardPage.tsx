@@ -12,7 +12,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { apiRequest } from "@/lib/api"
 import type {
-  AdminUser, CompetitionPhase, CompetitionProblem, PendingSubmission,
+  ActiveCompetitionSummary, AdminUser, CompetitionPhase, CompetitionProblem, PendingSubmission,
   Problem, SubmissionGroup,
 } from "@/types/models"
 import {
@@ -52,6 +52,7 @@ interface CompetitionStateResponse {
   } | null
   competition_problems?: CompetitionProblem[]
   submission_group_count?: number
+  active_competitions?: ActiveCompetitionSummary[]
 }
 
 interface AdminProblemsResponse { problems?: Problem[] }
@@ -81,6 +82,8 @@ const defaultProblemForm: ProblemFormState = {
 
 export default function AdminDashboardPage() {
   // Competition state
+  const [selectedGradeTab, setSelectedGradeTab] = useState<"9" | "10" | "all">("9")
+  const [activeCompetitions, setActiveCompetitions] = useState<ActiveCompetitionSummary[]>([])
   const [phase, setPhase] = useState<CompetitionPhase>("idle")
   const [competition, setCompetition] = useState<CompetitionStateResponse["competition"]>(null)
   const [competitionProblems, setCompetitionProblems] = useState<CompetitionProblem[]>([])
@@ -111,19 +114,22 @@ export default function AdminDashboardPage() {
   const [newUserForm, setNewUserForm] = useState({ name: "", usn: "", grade: "9" })
   const [creatingUser, setCreatingUser] = useState(false)
   const [gradeUpdating, setGradeUpdating] = useState<string | null>(null)
-  const [newCompetitionTarget, setNewCompetitionTarget] = useState("")
+  const [newCompetitionTarget, setNewCompetitionTarget] = useState("9")
   const [targetGradeSaving, setTargetGradeSaving] = useState(false)
 
   // ── Loaders ─────────────────────────────────────────────────────────────────
 
-  const loadCompetitionState = useCallback(async () => {
-    const res = await apiRequest<CompetitionStateResponse>("/api/admin/competition")
+  const loadCompetitionState = useCallback(async (gradeToLoad?: "9" | "10" | "all") => {
+    const g = gradeToLoad ?? selectedGradeTab
+    const queryParam = g === "all" ? "both" : g
+    const res = await apiRequest<CompetitionStateResponse>(`/api/admin/competition?grade=${queryParam}`)
     const data = res.data
     setPhase(data?.phase ?? "idle")
     setCompetition(data?.competition ?? null)
     setCompetitionProblems(Array.isArray(data?.competition_problems) ? data.competition_problems : [])
     setSubmissionGroupCount(data?.submission_group_count ?? 0)
-  }, [])
+    setActiveCompetitions(Array.isArray(data?.active_competitions) ? data.active_competitions : [])
+  }, [selectedGradeTab])
 
   const loadAllProblems = useCallback(async () => {
     const res = await apiRequest<AdminProblemsResponse>("/api/admin/problems")
@@ -155,26 +161,50 @@ export default function AdminDashboardPage() {
 
   useEffect(() => { void refreshAll() }, [refreshAll])
 
+  const switchGradeTab = (tab: "9" | "10" | "all") => {
+    setSelectedGradeTab(tab)
+    setNewCompetitionTarget(tab === "all" ? "" : tab)
+    void loadCompetitionState(tab)
+  }
+
   // ── Competition actions ──────────────────────────────────────────────────────
 
-  async function createCompetition() {
+  async function createCompetition(customTargetGrade?: number | null) {
     setActionLoading(true); setMessage("")
     try {
-      const targetGrade = newCompetitionTarget === "" ? null : Number(newCompetitionTarget)
+      let targetGrade: number | null = null
+      if (customTargetGrade !== undefined) {
+        targetGrade = customTargetGrade
+      } else if (newCompetitionTarget === "9" || newCompetitionTarget === "10") {
+        targetGrade = Number(newCompetitionTarget)
+      } else if (newCompetitionTarget === "") {
+        targetGrade = null
+      } else {
+        targetGrade = selectedGradeTab === "9" ? 9 : selectedGradeTab === "10" ? 10 : null
+      }
+
       await apiRequest("/api/admin/competition/create", { method: "POST", body: { target_grade: targetGrade } })
-      await loadCompetitionState()
-      setMessage("Competition created! Now add problems and go live.")
+      await loadCompetitionState(selectedGradeTab)
+      setMessage(
+        targetGrade !== null
+          ? `Grade ${targetGrade} competition created! Add problems and go live.`
+          : "Competition created! Add problems and go live."
+      )
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to create.") }
     finally { setActionLoading(false) }
   }
 
   async function updateCompetitionTarget(value: string) {
     if (value !== "" && value !== "9" && value !== "10") return
+    if (!competition?.id) return
     setTargetGradeSaving(true); setMessage("")
     try {
       const targetGrade = value === "" ? null : Number(value)
-      await apiRequest("/api/admin/competition/set-target-grade", { method: "POST", body: { target_grade: targetGrade } })
-      await loadCompetitionState()
+      await apiRequest("/api/admin/competition/set-target-grade", {
+        method: "POST",
+        body: { competition_id: competition.id, target_grade: targetGrade }
+      })
+      await loadCompetitionState(selectedGradeTab)
       setMessage(
         targetGrade === null
           ? "Audience set to both grades."
@@ -185,51 +215,76 @@ export default function AdminDashboardPage() {
   }
 
   async function goLive() {
+    if (!competition?.id) return
     setActionLoading(true); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/go-live", { method: "POST", body: {} })
-      await loadCompetitionState()
-      setMessage("🚀 Competition is now LIVE!")
+      await apiRequest("/api/admin/competition/go-live", {
+        method: "POST",
+        body: { competition_id: competition.id }
+      })
+      await loadCompetitionState(selectedGradeTab)
+      setMessage(
+        competition.target_grade !== null
+          ? `🚀 Grade ${competition.target_grade} competition is now LIVE!`
+          : "🚀 Competition is now LIVE!"
+      )
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to go live.") }
     finally { setActionLoading(false) }
   }
 
   async function endCompetition() {
-    if (!window.confirm("End the competition? Students will no longer be able to submit.")) return
+    if (!competition?.id) return
+    const compLabel = competition.target_grade ? `Grade ${competition.target_grade}` : "current"
+    if (!window.confirm(`End the ${compLabel} competition? Students will no longer be able to submit.`)) return
     setActionLoading(true); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/end", { method: "POST", body: {} })
-      await loadCompetitionState()
+      await apiRequest("/api/admin/competition/end", {
+        method: "POST",
+        body: { competition_id: competition.id }
+      })
+      await loadCompetitionState(selectedGradeTab)
       setMessage("Competition ended.")
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to end.") }
     finally { setActionLoading(false) }
   }
 
   async function resetToIdle() {
+    if (!competition?.id) return
     if (!window.confirm("Reset to idle? Historical data is preserved in the DB.")) return
     setActionLoading(true); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/reset", { method: "POST", body: {} })
-      await loadCompetitionState()
+      await apiRequest("/api/admin/competition/reset", {
+        method: "POST",
+        body: { competition_id: competition.id }
+      })
+      await loadCompetitionState(selectedGradeTab)
       setMessage("Reset to idle.")
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to reset.") }
     finally { setActionLoading(false) }
   }
 
   async function addProblemToCompetition(problemId: number) {
+    if (!competition?.id) return
     setProblemActionLoading({ problemId, action: "add" }); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/problems/add", { method: "POST", body: { problem_id: problemId } })
-      await loadCompetitionState()
+      await apiRequest("/api/admin/competition/problems/add", {
+        method: "POST",
+        body: { competition_id: competition.id, problem_id: problemId }
+      })
+      await loadCompetitionState(selectedGradeTab)
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to add problem.") }
     finally { setProblemActionLoading(null) }
   }
 
   async function removeProblemFromCompetition(problemId: number) {
+    if (!competition?.id) return
     setProblemActionLoading({ problemId, action: "archive" }); setMessage("")
     try {
-      await apiRequest("/api/admin/competition/problems/remove", { method: "POST", body: { problem_id: problemId } })
-      await loadCompetitionState()
+      await apiRequest("/api/admin/competition/problems/remove", {
+        method: "POST",
+        body: { competition_id: competition.id, problem_id: problemId }
+      })
+      await loadCompetitionState(selectedGradeTab)
     } catch (e) { setMessage(e instanceof Error ? e.message : "Failed to remove problem.") }
     finally { setProblemActionLoading(null) }
   }
@@ -499,30 +554,78 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
+      {/* ── Simultaneous Competition Track Switcher ────────────────────────── */}
+      <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
+        <CardContent className="p-5">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-semibold">Simultaneous Tracks</p>
+              <h3 className="text-xl font-bold">Manage Grade Tracks</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Grade 9 and Grade 10 competitions can now be configured and run simultaneously.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { id: "9" as const, label: "Grade 9 Track", target: 9 },
+                { id: "10" as const, label: "Grade 10 Track", target: 10 },
+                { id: "all" as const, label: "Combined Track", target: null },
+              ].map((tab) => {
+                const comp = activeCompetitions.find((c) => c.target_grade === tab.target)
+                const isSelected = selectedGradeTab === tab.id
+                return (
+                  <Button
+                    key={tab.id}
+                    variant={isSelected ? "default" : "outline"}
+                    size="default"
+                    className={`rounded-2xl gap-2 font-medium px-4 py-2 transition-all ${isSelected ? "shadow-md ring-2 ring-primary/20" : "hover:bg-muted"}`}
+                    onClick={() => switchGradeTab(tab.id)}
+                  >
+                    <span>{tab.label}</span>
+                    {comp ? (
+                      <Badge
+                        variant={comp.status === "live" ? "default" : "secondary"}
+                        className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                          comp.status === "live"
+                            ? "bg-green-600 text-white animate-pulse"
+                            : comp.status === "setup"
+                            ? "bg-blue-600 text-white"
+                            : "bg-amber-600 text-white"
+                        }`}
+                      >
+                        {comp.status}
+                        {comp.status === "live" && ` (${comp.submission_group_count})`}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] px-2 py-0.5 rounded-full text-muted-foreground border-dashed">
+                        Idle
+                      </Badge>
+                    )}
+                  </Button>
+                )
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* PHASE: IDLE                                                           */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {phase === "idle" && (
         <Card className="rounded-[28px] border-white/70 bg-white/90 shadow-soft dark:border-border dark:bg-background">
           <CardHeader>
-            <CardTitle className="text-2xl">Start a New Competition</CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase">
+                {selectedGradeTab === "9" ? "Grade 9 Track" : selectedGradeTab === "10" ? "Grade 10 Track" : "Combined Track"}
+              </Badge>
+            </div>
+            <CardTitle className="text-2xl">
+              Start {selectedGradeTab === "9" ? "Grade 9" : selectedGradeTab === "10" ? "Grade 10" : "All-Grades"} Competition
+            </CardTitle>
             <CardDescription>
-              Create a competition, add problems in the setup phase, then go live when ready.
+              Create a competition for this track, add questions in setup phase, then go live. Both Grade 9 and Grade 10 competitions can be live simultaneously.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-start gap-4">
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="text-sm font-medium">Open to</label>
-              <select
-                value={newCompetitionTarget}
-                onChange={(e) => setNewCompetitionTarget(e.target.value)}
-                className="h-10 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="">All grades (9 & 10)</option>
-                <option value="9">Grade 9 only</option>
-                <option value="10">Grade 10 only</option>
-              </select>
-            </div>
             <Button
               size="lg"
               className="gap-2 text-base px-8 py-5 rounded-2xl"
@@ -530,7 +633,7 @@ export default function AdminDashboardPage() {
               disabled={actionLoading}
             >
               <Play className="size-5" />
-              {actionLoading ? "Creating…" : "Create New Competition"}
+              {actionLoading ? "Creating…" : `Create ${selectedGradeTab === "9" ? "Grade 9" : selectedGradeTab === "10" ? "Grade 10" : "Combined"} Competition`}
             </Button>
           </CardContent>
         </Card>
@@ -546,9 +649,14 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                      {selectedGradeTab === "9" ? "Grade 9 Track" : selectedGradeTab === "10" ? "Grade 10 Track" : "Combined Track"}
+                    </Badge>
+                  </div>
                   <CardTitle className="text-2xl">Competition Setup</CardTitle>
                   <CardDescription>
-                    Fill up to {TOTAL_SLOTS} question slots. Pick from the bank below or create new ones.
+                    Fill up to {TOTAL_SLOTS} question slots for {selectedGradeTab === "9" ? "Grade 9" : selectedGradeTab === "10" ? "Grade 10" : "all grades"}. Pick from the bank below or create new ones.
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-3">
@@ -768,6 +876,11 @@ export default function AdminDashboardPage() {
                     <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500" />
                   </span>
                   <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase bg-green-500/10 text-green-700 dark:text-green-300">
+                        {selectedGradeTab === "9" ? "Grade 9 Track" : selectedGradeTab === "10" ? "Grade 10 Track" : "Combined Track"}
+                      </Badge>
+                    </div>
                     <CardTitle className="text-2xl text-green-800 dark:text-green-300">Competition is LIVE</CardTitle>
                     <CardDescription>
                       {competition?.started_at && `Started: ${formatTimestamp(competition.started_at)}`}
@@ -864,6 +977,11 @@ export default function AdminDashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                    {selectedGradeTab === "9" ? "Grade 9 Track" : selectedGradeTab === "10" ? "Grade 10 Track" : "Combined Track"}
+                  </Badge>
+                </div>
                 <CardTitle className="text-2xl">Competition Ended</CardTitle>
                 <CardDescription>
                   {competition?.ended_at && `Ended: ${formatTimestamp(competition.ended_at)}`}

@@ -262,11 +262,6 @@ export const adminProblemsPostHandler: RouteHandler = async (ctx) => {
   try {
     const db = createDbClient(ctx.env.DB);
 
-    // Enforce a single live competition question at a time.
-    if (active === 1) {
-      await db.run("UPDATE problems SET active = 0 WHERE active = 1");
-    }
-
     await db.run(
       `INSERT INTO problems (title, description, public_testcase_1_input, public_testcase_1_output, public_testcase_2_input, public_testcase_2_output, public_testcase_3_input, public_testcase_3_output, testcases, xp_reward, active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -344,15 +339,20 @@ export const adminProblemsArchiveHandler: RouteHandler = async (ctx) => {
   }
 
   try {
-    const state = await readCompetitionState(ctx.env.DB);
-    if (state.phase === "live") {
+    const db = createDbClient(ctx.env.DB);
+
+    const liveComp = await db.first<{ id: number }>(
+      `SELECT c.id FROM competition_problems cp
+       JOIN competitions c ON c.id = cp.competition_id
+       WHERE cp.problem_id = ? AND c.status = 'live' AND c.reset_at IS NULL`,
+      [problemId]
+    );
+    if (liveComp) {
       return Response.json(
-        { status: "error", message: "End the live competition before archiving a problem." },
+        { status: "error", message: "Cannot archive a problem that is part of a LIVE competition." },
         { status: 409 }
       );
     }
-
-    const db = createDbClient(ctx.env.DB);
 
     const result = await db.run("UPDATE problems SET active = 0 WHERE id = ?", [problemId]);
     if (changedRows(result) === 0) {

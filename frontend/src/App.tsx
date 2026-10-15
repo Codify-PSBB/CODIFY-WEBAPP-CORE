@@ -23,6 +23,7 @@ interface CompetitionStatusResponse {
   started_at?: string | null;
   target_grade?: number | null;
   eligible?: boolean;
+  grade_missing?: boolean;
   problems?: CompetitionProblem[];
 }
 
@@ -141,6 +142,7 @@ export default function App() {
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [competitionTargetGrade, setCompetitionTargetGrade] = useState<number | null>(null);
   const [competitionEligible, setCompetitionEligible] = useState<boolean>(true);
+  const [gradeMissing, setGradeMissing] = useState<boolean>(false);
   const [competitionProblems, setCompetitionProblems] = useState<CompetitionProblem[]>([]);
 
   // Sync local token state on storage changes (e.g. logout from another tab)
@@ -168,6 +170,7 @@ export default function App() {
         setCompetitionId(response.data?.competition_id ?? null);
         setCompetitionTargetGrade(response.data?.target_grade ?? null);
         setCompetitionEligible(response.data?.eligible ?? true);
+        setGradeMissing(response.data?.grade_missing ?? false);
         setCompetitionProblems(
           Array.isArray(response.data?.problems) ? response.data.problems : []
         );
@@ -175,6 +178,7 @@ export default function App() {
         if (!active) return;
         setCompetitionPhase("idle");
         setCompetitionEligible(true);
+        setGradeMissing(false);
       }
     };
 
@@ -208,7 +212,7 @@ export default function App() {
     : "/leaderboard";
 
   return (
-    <CompetitionCtx.Provider value={{ phase: competitionPhase, eligible: competitionEligible, targetGrade: competitionTargetGrade }}>
+    <CompetitionCtx.Provider value={{ phase: competitionPhase, eligible: competitionEligible, targetGrade: competitionTargetGrade, gradeMissing }}>
       <Routes>
         <Route
           path="/"

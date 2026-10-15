@@ -11,6 +11,18 @@ export interface CompetitionState {
   problems: CompetitionProblem[];
 }
 
+export interface ActiveCompetitionSummary {
+  id: number;
+  status: CompetitionPhase;
+  target_grade: number | null;
+  created_by: string;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  problem_count: number;
+  submission_group_count: number;
+}
+
 export interface CompetitionProblem {
   id: number;
   problem_id: number;

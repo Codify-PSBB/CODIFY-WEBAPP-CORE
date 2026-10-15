@@ -154,9 +154,11 @@ export default function LeaderboardPage() {
   const [data, setData] = useState<LeaderboardResponse>({})
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
-  const { phase, eligible, targetGrade } = useCompetitionContext()
+  const { phase, eligible, targetGrade, gradeMissing } = useCompetitionContext()
   const notEligibleNotice =
-    phase === "live" && !eligible
+    gradeMissing
+      ? "Your account does not have a grade assigned. Please contact an admin to set your grade (Grade 9 or 10) to participate in competitions."
+      : phase === "live" && !eligible
       ? targetGrade === 9 || targetGrade === 10
         ? `The current competition is for Grade ${targetGrade} students only.`
         : "The current competition is not open to your grade."

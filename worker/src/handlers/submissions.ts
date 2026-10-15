@@ -1,5 +1,5 @@
 import { createDbClient, type QueryInput } from "../lib/db";
-import { readCompetitionState } from "../lib/competition";
+import { isGradeEligible } from "../lib/competition";
 import { readJsonBody, RequestBodyTooLargeError } from "../lib/request";
 import { getUserId } from "../lib/user";
 import type { RouteHandler } from "../types";
@@ -82,9 +82,40 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
 
   const db = createDbClient(ctx.env.DB);
   try {
-    const state = await readCompetitionState(ctx.env.DB);
-    if (state.phase !== "live" || state.competition_id !== competitionId || !state.started_at) {
+    const comp = await db.first<{
+      id: number;
+      status: string;
+      started_at: string | null;
+      target_grade: number | null;
+    }>(
+      "SELECT id, status, started_at, target_grade FROM competitions WHERE id = ? AND reset_at IS NULL",
+      [competitionId]
+    );
+
+    if (!comp || comp.status !== "live" || !comp.started_at) {
       return Response.json({ status: "error", message: "This competition is not currently accepting submissions." }, { status: 409 });
+    }
+
+    const userGrade = ctx.user.grade ?? null;
+    const isAdmin = ctx.user.role === "admin";
+    if (!isAdmin) {
+      if (userGrade === null && comp.target_grade !== null) {
+        return Response.json(
+          { status: "error", message: "Your account has no grade assigned. Please contact an admin to participate." },
+          { status: 403 }
+        );
+      }
+      if (!isGradeEligible(comp.target_grade, userGrade)) {
+        return Response.json(
+          {
+            status: "error",
+            message: comp.target_grade !== null
+              ? `This competition is for Grade ${comp.target_grade} students only.`
+              : "You are not eligible for this competition.",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const validProblems = await db.all<{ problem_id: number }>(
@@ -96,7 +127,7 @@ export const submissionsHandler: RouteHandler = async (ctx) => {
       return Response.json({ status: "error", message: "One or more answers do not belong to this competition." }, { status: 422 });
     }
 
-    const startedAtMs = Date.parse(state.started_at);
+    const startedAtMs = Date.parse(comp.started_at);
     if (!Number.isFinite(startedAtMs)) throw new Error("Live competition has an invalid start time.");
     const receivedAt = new Date();
     const elapsedSeconds = Math.max(0, Math.floor((receivedAt.getTime() - startedAtMs) / 1000));
